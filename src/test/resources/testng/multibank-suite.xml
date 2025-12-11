@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MultiBank Trading Platform Test Suite" parallel="methods" thread-count="3" verbose="1">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+    </listeners>
+
+    <test name="Navigation and Layout Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.multibank.NavigationTests">
+                <methods>
+                    <include name="testNavigationMenuDisplayed"/>
+                    <include name="testNavigationMenuItems"/>
+                    <include name="testNavigationItemVisibility"/>
+                    <include name="testNavigationItemFunctionality"/>
+                    <include name="testDashboardNavigation"/>
+                    <include name="testMarketsNavigation"/>
+                    <include name="testTradeNavigation"/>
+                    <include name="testFeaturesNavigation"/>
+                    <include name="testAboutUsNavigation"/>
+                    <include name="testSupportNavigation"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Trading Functionality Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.multibank.TradingTests">
+                <methods>
+                    <include name="testSpotTradingSectionDisplayed"/>
+                    <include name="testTradingPairsTableDisplayed"/>
+                    <include name="testTradingPairsTableColumns"/>
+                    <include name="testTradingPairsDisplayed"/>
+                    <include name="testSpecificTradingPairVisible"/>
+                    <include name="testTradingPairDataStructure"/>
+                    <include name="testFavoritesTabVisible"/>
+                    <include name="testAllPairsTabVisible"/>
+                    <include name="testFearIndexVisible"/>
+                    <include name="testTopGainersVisible"/>
+                    <include name="testTopLosersVisible"/>
+                    <include name="testMBGTokenSectionVisible"/>
+                    <include name="testRealWorldAssetsSectionVisible"/>
+                    <include name="testQuickAccessToolsVisible"/>
+                    <include name="testTradingPairsCount"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Content Validation Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.multibank.ContentValidationTests">
+                <methods>
+                    <include name="testFooterDisplayed"/>
+                    <include name="testAppStoreLinkVisible"/>
+                    <include name="testGooglePlayLinkVisible"/>
+                    <include name="testDownloadLinksPointToCorrectStores"/>
+                    <include name="testQRCodeVisible"/>
+                    <include name="testMarketingBannersVisible"/>
+                    <include name="testSpecificMarketingBannerVisible"/>
+                    <include name="testAboutUsPageAccessible"/>
+                    <include name="testWhyMultiBankSectionVisible"/>
+                    <include name="testAboutUsPageComponents"/>
+                    <include name="testAboutUsContentLoaded"/>
+                    <include name="testSocialMediaLinksVisible"/>
+                    <include name="testPageElementsRenderCorrectly"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

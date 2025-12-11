@@ -7,9 +7,18 @@
 - Maven installed
 - IDE (IntelliJ IDEA / Eclipse / VS Code)
 
+## Current Implementation: MultiBank Trading Platform
+
+This framework includes a complete test suite for https://trade.multibank.io/ with:
+- 38 automated test cases
+- 4 page objects
+- External JSON test data
+- Cross-browser support
+- Comprehensive logging and reporting
+
 ---
 
-## Quick Commands Reference
+## Quick Commands Reference - MultiBank Tests
 
 ### Build & Compile
 ```bash
@@ -29,28 +38,38 @@ mvn clean install
 mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
 ```
 
-### Run Tests
+### Run MultiBank Tests
 ```bash
-# Run all tests
-mvn clean test
+# Run all MultiBank tests (38 test cases)
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
 
 # Run specific test class
-mvn clean test -Dtest=YourTestClass
+mvn clean test -Dtest=NavigationTests       # 10 navigation tests
+mvn clean test -Dtest=TradingTests          # 15 trading tests
+mvn clean test -Dtest=ContentValidationTests # 13 content tests
 
-# Run with specific TestNG suite
+# Run with different browsers
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=chromium
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
+
+# Run in headless mode
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true
+
+# Run in parallel (3 threads)
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -DthreadCount=3
+```
+
+### Run Custom Tests
+```bash
+# Run all tests in src/test/java
+mvn clean test
+
+# Run with custom TestNG suite
 mvn clean test -DsuiteXmlFile=testng.xml
 
 # Run with TestNG groups
 mvn clean test -Dgroups=smoke
-
-# Run in parallel
-mvn clean test -DthreadCount=4
-
-# Run with specific browser
-mvn clean test -Dbrowser=firefox
-
-# Run in headless mode
-mvn clean test -Dheadless=true
 ```
 
 ### BDD/Cucumber Tests
@@ -82,50 +101,44 @@ mvn allure:report
 ```
 core-automation-framework/
 ├── src/main/java/com/automation/
+│   ├── pages/multibank/              # MultiBank Page Objects
+│   │   ├── NavigationPage.java       # Navigation menu (10+ methods)
+│   │   ├── TradingPage.java          # Trading functionality (20+ methods)
+│   │   ├── FooterPage.java           # Footer and downloads (15+ methods)
+│   │   └── AboutUsPage.java          # About Us page (10+ methods)
+│   ├── utils/
+│   │   ├── TestDataReader.java       # JSON test data reader
+│   │   ├── PlaywrightManager.java
+│   │   ├── WaitUtils.java
+│   │   ├── FileUtils.java
+│   │   └── TestDataGenerator.java
 │   ├── api/              # API testing infrastructure
-│   │   ├── APIClient.java
-│   │   ├── BaseAPI.java
-│   │   └── validators/ResponseValidator.java
 │   ├── base/             # Base test classes
-│   │   ├── BaseTest.java
-│   │   ├── BaseWebTest.java
-│   │   └── BaseAPITest.java
 │   ├── config/           # Configuration management
-│   │   ├── ConfigReader.java
-│   │   └── TestConfig.java
 │   ├── db/               # Database layer
-│   │   ├── DatabaseConnection.java
-│   │   ├── DatabaseConnectionFactory.java
-│   │   ├── DatabaseType.java
-│   │   ├── MongoDBConnection.java
-│   │   ├── SQLConnection.java
-│   │   └── QueryBuilder.java
 │   ├── factory/          # Factory patterns
-│   │   ├── BrowserFactory.java
-│   │   └── PageFactory.java
-│   ├── listeners/        # TestNG listeners
-│   │   ├── TestListener.java
-│   │   └── RetryAnalyzer.java
-│   ├── pages/            # Page Object base class
-│   │   └── BasePage.java
-│   └── utils/            # Utilities
-│       ├── PlaywrightManager.java
-│       ├── WaitUtils.java
-│       ├── FileUtils.java
-│       └── TestDataGenerator.java
+│   └── listeners/        # TestNG listeners
 │
-├── src/test/java/        # Your test classes go here
-│   └── com/automation/   # Create your test packages here
+├── src/test/java/com/automation/
+│   ├── multibank/                    # MultiBank Test Suite
+│   │   ├── NavigationTests.java      # 10 navigation tests
+│   │   ├── TradingTests.java         # 15 trading tests
+│   │   └── ContentValidationTests.java # 13 content tests
+│   └── providers/
+│       └── TestDataProviders.java    # Data providers for tests
 │
 ├── src/test/resources/
-│   ├── features/         # BDD feature files (create if using Cucumber)
-│   ├── testdata/         # Test data files
+│   ├── testdata/                     # External test data
+│   │   ├── navigation-data.json      # Navigation menu data
+│   │   ├── trading-data.json         # Trading pairs data
+│   │   └── content-data.json         # Content validation data
 │   └── testng/
+│       ├── multibank-suite.xml       # MultiBank test suite
 │       ├── testng.xml
 │       └── testng-bdd.xml
 │
 └── src/main/resources/
-    ├── config.properties # Main configuration
+    ├── config.properties # Configured for MultiBank
     └── logback.xml       # Logging configuration
 ```
 
@@ -137,16 +150,17 @@ core-automation-framework/
 
 Main configuration file location: `src/main/resources/config.properties`
 
+**Current Configuration (MultiBank):**
 ```properties
-# Web UI Configuration
-base.url=https://your-app-url.com
+# Web UI Configuration - MultiBank Trading Platform
+base.url=https://trade.multibank.io
 browser=chromium           # chromium, firefox, webkit
 headless=false
 timeout=30000
 screenshot.on.failure=true
 
 # API Configuration
-api.base.url=https://api.your-app.com
+api.base.url=https://jsonplaceholder.typicode.com
 api.timeout=30000
 
 # Database Configuration
@@ -168,85 +182,99 @@ test.data.path=src/test/resources/testdata
 report.path=target/reports
 ```
 
+**To test a different application:** Simply change the `base.url` value.
+
 ---
 
-## Creating Your First Test
+## MultiBank Test Suite Details
 
-### Step 1: Create a Page Object
+### Test Coverage Summary (38 Tests)
 
-Create file: `src/main/java/com/automation/pages/HomePage.java`
+**1. NavigationTests.java** - 10 tests
+- Navigation menu display and structure
+- Individual navigation items visibility (parameterized)
+- Navigation functionality validation
+- Specific navigation tests for each menu item
+
+**2. TradingTests.java** - 15 tests
+- Spot trading section display
+- Trading pairs table structure and columns
+- Trading pair data validation
+- Specific trading pairs visibility (parameterized with BTC, ETH, SOL, XRP)
+- Market indicators (Fear Index, Top Gainers/Losers)
+- Investment opportunities (MBG Token, Real World Assets)
+- Quick access tools validation
+
+**3. ContentValidationTests.java** - 13 tests
+- Footer display verification
+- App Store and Google Play links validation
+- Download links URL verification
+- Marketing banners presence and content
+- About Us page accessibility and components
+- Social media links verification
+- Page rendering validation
+
+### Example: MultiBank Navigation Test
 
 ```java
-package com.automation.pages;
+@Test(description = "Verify navigation items are functional",
+      dataProvider = "navigationItemsProvider",
+      dataProviderClass = TestDataProviders.class)
+@Severity(SeverityLevel.CRITICAL)
+public void testNavigationItemFunctionality(String itemName, String expectedUrlPart) {
+    log.info("Testing navigation functionality for: {}", itemName);
 
-public class HomePage extends BasePage {
-    private final String searchInput = "#search";
-    private final String searchButton = "button[type='submit']";
-    private final String logo = ".logo";
+    navigationPage.clickNavigationItem(itemName);
+    page.waitForLoadState();
 
-    public HomePage() {
-        super();
-    }
+    String currentUrl = navigationPage.getCurrentUrl();
 
-    public HomePage searchFor(String term) {
-        fill(searchInput, term);
-        click(searchButton);
-        return this;
-    }
+    assertThat(currentUrl)
+            .as("URL should contain expected part: " + expectedUrlPart)
+            .containsIgnoringCase(expectedUrlPart);
 
-    public boolean isLogoDisplayed() {
-        waitForSelector(logo);
-        return true;
-    }
+    log.info("Navigation test completed for {}", itemName);
+}
+```
 
-    public String getPageTitle() {
-        return getTitle();
+### Example: External Test Data Usage
+
+```java
+@BeforeMethod(alwaysRun = true)
+public void setupTest() {
+    navigationPage = new NavigationPage();
+    testData = TestDataReader.readJsonFile("navigation-data.json");
+}
+
+@Test
+public void testNavigationMenuItems() {
+    List<String> expectedItems = TestDataReader.getStringList(
+        testData, "navigationMenu", "expectedItems"
+    );
+    List<String> actualItems = navigationPage.getNavigationMenuItems();
+
+    for (String expectedItem : expectedItems) {
+        assertThat(actualItems).anyMatch(
+            item -> item.toLowerCase().contains(expectedItem.toLowerCase())
+        );
     }
 }
 ```
 
-### Step 2: Create a Test Class
-
-Create file: `src/test/java/com/automation/webui/HomePageTests.java`
-
-```java
-package com.automation.webui;
-
-import com.automation.base.BaseWebTest;
-import com.automation.pages.HomePage;
-import org.testng.annotations.Test;
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class HomePageTests extends BaseWebTest {
-
-    @Test(description = "Verify home page loads successfully")
-    public void testHomePageLoad() {
-        HomePage homePage = new HomePage();
-
-        assertThat(homePage.isLogoDisplayed())
-                .as("Logo should be displayed")
-                .isTrue();
-
-        assertThat(homePage.getPageTitle())
-                .as("Page title should contain app name")
-                .containsIgnoringCase("your app");
-    }
-
-    @Test(description = "Verify search functionality")
-    public void testSearch() {
-        HomePage homePage = new HomePage();
-        homePage.searchFor("test query");
-
-        assertThat(homePage.getPageTitle())
-                .containsIgnoringCase("search");
-    }
-}
-```
-
-### Step 3: Run Your Test
+### Running Specific Tests
 
 ```bash
-mvn clean test -Dtest=HomePageTests
+# Run all navigation tests
+mvn clean test -Dtest=NavigationTests
+
+# Run specific test method
+mvn clean test -Dtest=NavigationTests#testNavigationMenuDisplayed
+
+# Run all trading tests
+mvn clean test -Dtest=TradingTests
+
+# Run all content validation tests
+mvn clean test -Dtest=ContentValidationTests
 ```
 
 ---
@@ -670,17 +698,54 @@ mvn dependency:tree
 
 ---
 
+## MultiBank Test Execution Examples
+
+### Run Complete Test Suite
+```bash
+# All 38 tests with Allure reporting
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
+mvn allure:serve
+```
+
+### Cross-Browser Testing
+```bash
+# Test in all browsers
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=chromium
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
+```
+
+### CI/CD Integration Example
+```bash
+# Headless execution for CI/CD
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true -DthreadCount=3
+```
+
+---
+
 ## You're Ready!
 
-Your framework is configured with:
+Your framework includes:
+- Production-ready MultiBank test suite (38 tests)
 - Modern web automation (Playwright)
-- API testing infrastructure (RestAssured)
-- Database testing support
-- BDD capability (Cucumber)
-- Comprehensive reporting (Allure)
-- Production-ready architecture
+- Page Object Model with 4 page objects
+- External JSON test data management
+- Cross-browser testing support
+- Data-driven testing with TestNG DataProviders
+- Comprehensive logging (SLF4J)
+- Allure reporting integration
+- Screenshot capture on failure
+- Parallel execution capability
 
-**Quick Start**: Create your first page object and test!
+**Quick Start - MultiBank Tests:**
+```bash
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
+```
+
+**View Results:**
+```bash
+mvn allure:serve
+```
 
 **Full Documentation**: See README.md for complete details
 

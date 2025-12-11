@@ -1,0 +1,39 @@
+{
+  "downloadSection": {
+    "appStoreLink": "https://apps.apple.com",
+    "googlePlayLink": "https://play.google.com",
+    "qrCodeVisible": true
+  },
+  "marketingBanners": {
+    "expectedBanners": [
+      "Instant Buy",
+      "Card/Wire Transfer",
+      "24/7 Support"
+    ],
+    "rotationEnabled": true
+  },
+  "aboutUsPage": {
+    "url": "/about",
+    "whyMultiBankSection": {
+      "visible": true,
+      "expectedComponents": [
+        "Company Overview",
+        "Trust & Security",
+        "Global Presence",
+        "Regulatory Compliance"
+      ]
+    }
+  },
+  "investmentOpportunities": {
+    "mbgTokenPromotion": true,
+    "realWorldAssets": {
+      "visible": true,
+      "expectedText": "29B in Real Assets"
+    }
+  },
+  "quickAccessTools": {
+    "convertAssets": true,
+    "quickBuyCrypto": true,
+    "panicSell": true
+  }
+}

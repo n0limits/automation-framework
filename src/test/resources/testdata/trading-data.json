@@ -1,0 +1,28 @@
+{
+  "tradingPairs": {
+    "categories": ["Favorites", "All"],
+    "tableColumns": [
+      "Pair",
+      "Max Leverage",
+      "Short",
+      "Long",
+      "Charts",
+      "Change 24h"
+    ],
+    "expectedPairs": [
+      "BTC/USDT",
+      "ETH/USDT",
+      "SOL/USDT",
+      "XRP/USDT"
+    ]
+  },
+  "marketIndicators": {
+    "fearIndexVisible": true,
+    "topGainersVisible": true,
+    "topLosersVisible": true
+  },
+  "tradingFeatures": {
+    "spotTradingAvailable": true,
+    "maxLeverageDisplayed": true
+  }
+}

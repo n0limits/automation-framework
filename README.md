@@ -1,6 +1,15 @@
 # Core Automation Framework
 
-A production-ready test automation framework infrastructure using Playwright, RestAssured, TestNG, and AssertJ for Web UI and API testing.
+A production-ready test automation framework using Playwright, RestAssured, TestNG, and AssertJ for Web UI and API testing.
+
+## Current Implementation
+
+**MultiBank Trading Platform Test Suite** - A comprehensive test automation solution for https://trade.multibank.io/ demonstrating:
+- 38 automated test cases covering Navigation, Trading, and Content validation
+- Page Object Model with 4 page objects
+- Data-driven testing with external JSON test data
+- Cross-browser testing support (Chromium, Firefox, WebKit)
+- Professional logging, wait management, and reporting
 
 ## Framework Architecture
 
@@ -190,52 +199,180 @@ report.path=target/reports
 - **BaseWebTest** - Web UI test initialization
 - **BaseAPITest** - API test initialization
 
-## Writing Tests
+## MultiBank Test Suite Overview
 
-### Creating Web UI Tests
+### Test Coverage (38 Test Cases)
 
-1. **Create Page Objects** (extend BasePage):
+**Navigation & Layout Tests** (10 tests)
+- Navigation menu display and structure
+- Navigation items functionality
+- Page transitions and URL validation
+- Cross-browser navigation consistency
+
+**Trading Functionality Tests** (15 tests)
+- Spot trading section verification
+- Trading pairs table structure
+- Trading pair data validation
+- Market indicators (Fear Index, Top Gainers/Losers)
+- Investment opportunities visibility
+- Quick access tools validation
+
+**Content Validation Tests** (13 tests)
+- Footer section verification
+- App Store and Google Play download links
+- Marketing banners validation
+- About Us page components
+- Content loading and rendering
+- Social media links verification
+
+### Page Objects Implemented
+
+```
+src/main/java/com/automation/pages/multibank/
+├── NavigationPage.java    - Top navigation menu (10+ methods)
+├── TradingPage.java        - Trading functionality (20+ methods)
+├── FooterPage.java         - Footer and downloads (15+ methods)
+└── AboutUsPage.java        - About Us content (10+ methods)
+```
+
+### Test Data Files
+
+```
+src/test/resources/testdata/
+├── navigation-data.json    - Navigation menu items and links
+├── trading-data.json       - Trading pairs and categories
+└── content-data.json       - Download links, banners, content
+```
+
+## Writing Custom Tests
+
+### Example: Creating a New Page Object
 
 ```java
-package com.automation.pages;
+package com.automation.pages.myapp;
 
+import com.automation.pages.BasePage;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class HomePage extends BasePage {
     private final String searchInput = "#search";
     private final String searchButton = "button[type='submit']";
 
+    public HomePage() {
+        super();
+    }
+
     public HomePage searchFor(String term) {
+        waitForSelector(searchInput);
         fill(searchInput, term);
         click(searchButton);
+        log.info("Searched for: {}", term);
         return this;
     }
 
-    public boolean isDisplayed() {
-        waitForSelector(searchInput);
+    public boolean isSearchResultsDisplayed() {
+        waitForSelector(".results");
         return true;
     }
 }
 ```
 
-2. **Create Test Class** (extend BaseWebTest):
+### Example: Creating a Test Class
 
 ```java
-package com.automation.webui;
+package com.automation.myapp;
 
 import com.automation.base.BaseWebTest;
-import com.automation.pages.HomePage;
+import com.automation.pages.myapp.HomePage;
+import io.qameta.allure.*;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HomePageTests extends BaseWebTest {
+@Slf4j
+@Epic("My Application")
+@Feature("Search Functionality")
+public class SearchTests extends BaseWebTest {
 
     @Test(description = "Verify search functionality")
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Search")
     public void testSearch() {
+        log.info("Starting search test");
+
         HomePage homePage = new HomePage();
         homePage.searchFor("test query");
 
-        assertThat(homePage.getTitle())
-                .contains("Search Results");
+        assertThat(homePage.isSearchResultsDisplayed())
+                .as("Search results should be displayed")
+                .isTrue();
+
+        log.info("Search test completed successfully");
     }
+}
+```
+
+### Example: Using Data Providers
+
+```java
+package com.automation.providers;
+
+import org.testng.annotations.DataProvider;
+
+public class MyDataProviders {
+
+    @DataProvider(name = "browserProvider")
+    public Object[][] browserProvider() {
+        return new Object[][] {
+            { "chromium" },
+            { "firefox" },
+            { "webkit" }
+        };
+    }
+
+    @DataProvider(name = "searchTermsProvider")
+    public Object[][] searchTermsProvider() {
+        return new Object[][] {
+            { "test query", "Results" },
+            { "automation", "Results" },
+            { "framework", "Results" }
+        };
+    }
+}
+
+// Usage in test:
+@Test(dataProvider = "searchTermsProvider",
+      dataProviderClass = MyDataProviders.class)
+public void testSearchWithMultipleTerms(String searchTerm, String expectedText) {
+    log.info("Testing search with term: {}", searchTerm);
+    // Test implementation
+}
+```
+
+### Example: External Test Data (JSON)
+
+Create file: `src/test/resources/testdata/my-data.json`
+```json
+{
+  "expectedItems": ["Item1", "Item2", "Item3"],
+  "settings": {
+    "timeout": 30000,
+    "retryCount": 3
+  }
+}
+```
+
+Read in test:
+```java
+import com.automation.utils.TestDataReader;
+import com.fasterxml.jackson.databind.JsonNode;
+
+@BeforeMethod
+public void setup() {
+    JsonNode testData = TestDataReader.readJsonFile("my-data.json");
+    List<String> items = TestDataReader.getStringList(testData, "expectedItems");
+    int timeout = TestDataReader.getIntValue(testData, "settings", "timeout");
 }
 ```
 
@@ -410,34 +547,37 @@ public class DatabaseTests {
 
 ## Running Tests
 
-### Run tests with Maven
+### Run MultiBank Test Suite
 ```bash
-# Run all tests
-mvn clean test
+# Run all MultiBank tests (38 test cases)
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
 
 # Run specific test class
-mvn clean test -Dtest=UserAPITests
+mvn clean test -Dtest=NavigationTests
+mvn clean test -Dtest=TradingTests
+mvn clean test -Dtest=ContentValidationTests
+
+# Run with specific browser
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
+
+# Run in headless mode
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true
+
+# Run tests in parallel
+mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -DthreadCount=4
+```
+
+### Run Custom Tests
+```bash
+# Run all tests in src/test/java
+mvn clean test
 
 # Run with specific TestNG suite
 mvn clean test -DsuiteXmlFile=testng.xml
 
-# Run tests in parallel
-mvn clean test -DthreadCount=4
-
-# Run with specific browser
-mvn clean test -Dbrowser=firefox
-
-# Run in headless mode
-mvn clean test -Dheadless=true
-```
-
-### Run BDD tests
-```bash
-# Run Cucumber tests
-mvn clean test -Dtest=TestRunner
-
-# Run with specific tags
-mvn clean test -Dcucumber.filter.tags="@smoke"
+# Run BDD tests (if implemented)
+mvn clean test -Dtest=YourTestRunner
 ```
 
 ## Reporting
@@ -501,18 +641,22 @@ Separates page structure from test logic:
 | Jackson | JSON processing | 2.18.0 |
 | JavaFaker | Test data generation | 1.0.2 |
 
-## Best Practices
+## Best Practices (Demonstrated in MultiBank Suite)
 
-1. **Keep tests independent** - Each test should be able to run standalone
-2. **Use meaningful test names** - Describe what the test verifies
-3. **Follow AAA pattern** - Arrange, Act, Assert
-4. **Use page objects** - Don't use locators directly in tests
-5. **Handle waits properly** - Use explicit waits, avoid Thread.sleep
-6. **Clean up resources** - Close browsers and database connections
-7. **Use assertions library** - AssertJ for readable assertions
-8. **Group tests logically** - Use TestNG groups for test organization
-9. **Implement proper logging** - Use SLF4J with appropriate log levels
-10. **Handle test data externally** - No hard-coded test data in tests
+1. **Keep tests independent** - Each test runs standalone, no dependencies
+2. **Use meaningful test names** - Descriptive test methods (testNavigationMenuDisplayed)
+3. **Follow AAA pattern** - Arrange, Act, Assert structure
+4. **Use page objects** - All locators in page objects, never in tests
+5. **Handle waits properly** - waitForSelector(), no Thread.sleep()
+6. **External test data** - JSON files for all test data
+7. **Comprehensive logging** - SLF4J with DEBUG/INFO/WARN/ERROR levels
+8. **AssertJ assertions** - Fluent, readable assertions with custom messages
+9. **Allure annotations** - @Epic, @Feature, @Story, @Severity for reporting
+10. **Data providers** - Parameterized tests for cross-browser and data-driven testing
+11. **Proper exception handling** - Try-catch with logging, no silent failures
+12. **TestNG priorities** - Ordered test execution when needed
+13. **Page object constructors** - Initialize in @BeforeMethod for fresh state
+14. **Configurable timeouts** - All waits use config.properties timeout values
 
 ## Troubleshooting
 

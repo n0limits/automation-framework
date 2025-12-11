@@ -1,0 +1,24 @@
+{
+  "navigationMenu": {
+    "expectedItems": [
+      "Dashboard",
+      "Markets",
+      "Trade",
+      "Features",
+      "About Us",
+      "Support"
+    ],
+    "navigationLinks": {
+      "Dashboard": "/dashboard",
+      "Markets": "/markets",
+      "Trade": "/trade",
+      "Features": "/features",
+      "About Us": "/about",
+      "Support": "/support"
+    }
+  },
+  "languageSelector": {
+    "defaultLanguage": "EN",
+    "availableLanguages": ["EN", "ES", "FR", "DE", "AR", "ZH"]
+  }
+}

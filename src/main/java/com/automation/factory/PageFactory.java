@@ -17,12 +17,4 @@ public class PageFactory {
         }
     }
 
-    public static LoginPage getLoginPage() {
-        return createPage(LoginPage.class);
-    }
-
-    public static DashboardPage getDashboardPage() {
-        return createPage(DashboardPage.class);
-    }
-
 }
