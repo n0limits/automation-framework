@@ -1,0 +1,64 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Test outputs
+test-output/
+allure-results/
+allure-report/
+screenshots/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright
+playwright-report/
+test-results/
+
+# Database
+*.db
+*.sqlite
+
+# Temporary files
+.claude
+*.tmp
+*.bak
+*.swp
+*~
+
+# Environment
+.env
+.env.local
+
+# Windows reserved device names (prevent accidental creation)
+nul
+NUL
