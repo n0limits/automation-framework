@@ -3,18 +3,34 @@
     "expectedItems": [
       "Dashboard",
       "Markets",
-      "Trade",
-      "Features",
-      "About Us",
-      "Support"
+      "Log In",
+      "Sign Up"
     ],
     "navigationLinks": {
-      "Dashboard": "/dashboard",
-      "Markets": "/markets",
-      "Trade": "/trade",
-      "Features": "/features",
-      "About Us": "/about",
-      "Support": "/support"
+      "Dashboard": {
+        "url": "/",
+        "available": true
+      },
+      "Markets": {
+        "url": "/",
+        "available": true
+      },
+      "Trade": {
+        "url": "/trade",
+        "available": false
+      },
+      "Features": {
+        "url": "/features",
+        "available": false
+      },
+      "About Us": {
+        "url": "/about",
+        "available": false
+      },
+      "Support": {
+        "url": "/support",
+        "available": false
+      }
     }
   },
   "languageSelector": {

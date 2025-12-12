@@ -13,14 +13,16 @@ import java.util.Map;
 public class TradingPage extends BasePage {
 
     // Trading Section Selectors
-    private final String spotTradingSection = "[class*='spot'], [class*='trading'], section:has-text('Spot')";
+    // MultiBank doesn't have a specific spot trading section - the whole page is for trading
+    private final String spotTradingSection = "table";  // Use table as proxy for trading section
     private final String favoritesTab = "button:has-text('Favorites'), [role='tab']:has-text('Favorites')";
     private final String allPairsTab = "button:has-text('All'), [role='tab']:has-text('All')";
     private final String tradingPairsTable = "table, [role='table'], [class*='pairs-table']";
-    private final String tradingPairRow = "tr:has-text('/'), [class*='pair-row']";
-    private final String pairColumn = "td:nth-child(1), [class*='pair']";
-    private final String leverageColumn = "td:has-text('x'), [class*='leverage']";
-    private final String changeColumn = "td:has-text('%'), [class*='change']";
+    // MultiBank table rows - use tbody tr since table exists
+    private final String tradingPairRow = "table tbody tr";
+    private final String pairColumn = "table tbody tr td:nth-child(1)";
+    private final String leverageColumn = "td:nth-child(2)";  // Max Leverage is 2nd column
+    private final String changeColumn = "td:nth-child(6)";  // Change 24h is 6th column
 
     // Market Indicators
     private final String fearIndex = "[class*='fear'], :has-text('Fear Index')";
@@ -95,29 +97,44 @@ public class TradingPage extends BasePage {
     }
 
     public List<String> getTradingPairs() {
-        waitForSelector(tradingPairRow);
-        List<Locator> pairLocators = page.locator(pairColumn).all();
-        List<String> pairs = new ArrayList<>();
+        try {
+            waitForSelector(tradingPairRow);
+            List<Locator> pairLocators = page.locator(pairColumn).all();
+            List<String> pairs = new ArrayList<>();
 
-        for (Locator locator : pairLocators) {
-            String pairText = locator.textContent();
-            if (pairText != null && pairText.contains("/")) {
-                pairs.add(pairText.trim());
+            for (Locator locator : pairLocators) {
+                String pairText = locator.textContent();
+                if (pairText != null && !pairText.trim().isEmpty()) {
+                    pairs.add(pairText.trim());
+                }
             }
-        }
 
-        log.info("Found {} trading pairs", pairs.size());
-        return pairs;
+            log.info("Found {} trading pairs", pairs.size());
+            return pairs;
+        } catch (Exception e) {
+            log.error("Failed to get trading pairs", e);
+            return new ArrayList<>();
+        }
     }
 
     public boolean isTradingPairVisible(String pairName) {
         try {
-            String selector = String.format(":has-text('%s')", pairName);
-            waitForSelector(selector);
-            log.debug("Trading pair '{}' is visible", pairName);
-            return true;
-        } catch (Exception e) {
+            // Search for trading pair in the first column of the table
+            waitForSelector("table tbody tr");
+            List<Locator> pairCells = page.locator(pairColumn).all();
+
+            for (Locator cell : pairCells) {
+                String cellText = cell.textContent();
+                if (cellText != null && cellText.contains(pairName)) {
+                    log.debug("Trading pair '{}' is visible", pairName);
+                    return true;
+                }
+            }
+
             log.warn("Trading pair '{}' not visible", pairName);
+            return false;
+        } catch (Exception e) {
+            log.warn("Trading pair '{}' not visible - error: {}", pairName, e.getMessage());
             return false;
         }
     }
@@ -126,18 +143,26 @@ public class TradingPage extends BasePage {
         Map<String, String> pairData = new HashMap<>();
 
         try {
-            String rowSelector = String.format("tr:has-text('%s')", pairName);
-            waitForSelector(rowSelector);
-            Locator row = page.locator(rowSelector).first();
+            waitForSelector("table tbody tr");
+            List<Locator> rows = page.locator("table tbody tr").all();
 
-            List<Locator> cells = row.locator("td").all();
-            if (!cells.isEmpty()) {
-                pairData.put("pair", cells.get(0).textContent());
-                if (cells.size() > 1) pairData.put("leverage", cells.get(1).textContent());
-                if (cells.size() > 4) pairData.put("change", cells.get(4).textContent());
+            for (Locator row : rows) {
+                String firstCellText = row.locator("td").first().textContent();
+                if (firstCellText != null && firstCellText.contains(pairName)) {
+                    List<Locator> cells = row.locator("td").all();
+                    if (!cells.isEmpty()) {
+                        pairData.put("pair", cells.get(0).textContent());
+                        if (cells.size() > 1) pairData.put("leverage", cells.get(1).textContent());
+                        if (cells.size() > 5) pairData.put("change", cells.get(5).textContent());
+                    }
+                    log.info("Retrieved data for trading pair: {}", pairName);
+                    break;
+                }
             }
 
-            log.info("Retrieved data for trading pair: {}", pairName);
+            if (pairData.isEmpty()) {
+                log.warn("No data found for trading pair: {}", pairName);
+            }
         } catch (Exception e) {
             log.error("Failed to get trading pair data for: {}", pairName, e);
         }

@@ -1,15 +1,31 @@
 # Core Automation Framework
 
-A production-ready test automation framework using Playwright, RestAssured, TestNG, and AssertJ for Web UI and API testing.
+Production-grade web automation framework for testing the MultiBank Trading Platform using Playwright, TestNG, and Maven.
+
+## Recent Enhancements
+
+**Cross-Browser Testing (Playwright Native)**
+- Fully implemented cross-browser execution using Playwright's built-in capabilities
+- Parallel execution across Chromium, Firefox, and WebKit
+- Browser parameter support via TestNG @Parameters
+- Thread-safe browser management with ThreadLocal pattern
+
+**CI/CD Pipeline Integration**
+- GitHub Actions workflows for automated testing
+- Pull Request checks with automatic smoke tests
+- Nightly test suite execution with reporting
+- Multi-stage pipeline (smoke, cross-browser, full suite)
+- Artifact management (reports, screenshots, Allure reports)
 
 ## Current Implementation
 
-**MultiBank Trading Platform Test Suite** - A comprehensive test automation solution for https://trade.multibank.io/ demonstrating:
+**MultiBank Trading Platform Test Suite** - Comprehensive test automation solution for https://trade.multibank.io/ demonstrating:
 - 38 automated test cases covering Navigation, Trading, and Content validation
-- Page Object Model with 4 page objects
+- Page Object Model with 4 page objects (NavigationPage, TradingPage, FooterPage, AboutUsPage)
 - Data-driven testing with external JSON test data
-- Cross-browser testing support (Chromium, Firefox, WebKit)
-- Professional logging, wait management, and reporting
+- Cross-browser testing with Playwright (Chromium, Firefox, WebKit)
+- CI/CD pipelines with GitHub Actions
+- Professional logging, wait management, and Allure reporting
 
 ## Framework Architecture
 
@@ -151,53 +167,53 @@ report.path=target/reports
 
 ## Framework Features
 
-### 1. Web UI Testing Infrastructure
-- **Playwright** integration for modern browser automation
-- **Page Object Model** base class with common methods
-- **Factory Pattern** for browser and page instantiation
-- **ThreadLocal** pattern for parallel execution support
-- **WaitUtils** for explicit wait strategies
+**1. Web UI Testing Infrastructure**
+- Playwright integration for modern browser automation
+- Page Object Model base class with common methods
+- Factory Pattern for browser and page instantiation
+- ThreadLocal pattern for parallel execution support
+- WaitUtils for explicit wait strategies
 - Automatic screenshot capture on test failure
 - Cross-browser support (Chromium, Firefox, WebKit)
 
-### 2. API Testing Infrastructure
-- **RestAssured** client configuration
-- **BaseAPI** class with HTTP method wrappers (GET, POST, PUT, DELETE)
-- **ResponseValidator** with common assertion methods
+**2. API Testing Infrastructure**
+- RestAssured client configuration
+- BaseAPI class with HTTP method wrappers (GET, POST, PUT, DELETE)
+- ResponseValidator with common assertion methods
 - Request/Response logging filters
 - JSON processing support
 - Allure integration for API reporting
 
-### 3. Database Testing Support
-- **Factory Pattern** for database connections
-- Support for **MongoDB**, **MySQL**, and **PostgreSQL**
-- **QueryBuilder** for dynamic SQL construction
+**3. Database Testing Support**
+- Factory Pattern for database connections
+- Support for MongoDB, MySQL, and PostgreSQL
+- QueryBuilder for dynamic SQL construction
 - Connection pooling and thread-safe management
 - AutoCloseable connections for proper resource cleanup
 
-### 4. Test Data Management
-- **TestDataGenerator** with JavaFaker integration
+**4. Test Data Management**
+- TestDataGenerator with JavaFaker integration
 - Random data generation for emails, names, passwords, phone numbers
 - Configurable test data paths
 - External test data file support
 
-### 5. Configuration Management
-- **Singleton pattern** for configuration access
+**5. Configuration Management**
+- Singleton pattern for configuration access
 - Properties-based configuration
 - Environment-specific configuration support
 - Type-safe configuration getters
 
-### 6. Reporting & Logging
-- **Allure** integration for rich, interactive reports
-- **SLF4J + Logback** for comprehensive logging
-- **Screenshots** on test failure
-- **TestNG listeners** for custom reporting
+**6. Reporting & Logging**
+- Allure integration for rich, interactive reports
+- SLF4J + Logback for comprehensive logging
+- Screenshots on test failure
+- TestNG listeners for custom reporting
 - Retry analyzer for flaky test handling
 
-### 7. Base Test Classes
-- **BaseTest** - Suite-level setup and teardown
-- **BaseWebTest** - Web UI test initialization
-- **BaseAPITest** - API test initialization
+**7. Base Test Classes**
+- BaseTest - Suite-level setup and teardown
+- BaseWebTest - Web UI test initialization with browser parameterization
+- BaseAPITest - API test initialization
 
 ## MultiBank Test Suite Overview
 
@@ -548,25 +564,40 @@ public class DatabaseTests {
 ## Running Tests
 
 ### Run MultiBank Test Suite
+
+#### Cross-Browser Execution (Playwright)
 ```bash
-# Run all MultiBank tests (38 test cases)
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
+# Run all tests across all browsers (Chromium, Firefox, WebKit)
+mvn clean test
+
+# Run smoke tests (fast - Chromium only)
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
+
+# Run on single browser
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+
+# Run with specific browser override
+mvn clean test -Dbrowser=firefox -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+mvn clean test -Dbrowser=webkit -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
 
 # Run specific test class
 mvn clean test -Dtest=NavigationTests
 mvn clean test -Dtest=TradingTests
 mvn clean test -Dtest=ContentValidationTests
 
-# Run with specific browser
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
-
 # Run in headless mode
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true
-
-# Run tests in parallel
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -DthreadCount=4
+mvn clean test -Dheadless=true
 ```
+
+**Available TestNG Suites:**
+- `testng.xml` - Full cross-browser suite (Chromium + Firefox + WebKit)
+- `testng-smoke.xml` - Critical tests on Chromium only
+- `testng-chromium.xml` - All tests on Chromium only
+
+**Playwright Browser Support:**
+- **Chromium** - Chrome, Edge, Chromium browsers
+- **Firefox** - Mozilla Firefox
+- **WebKit** - Apple Safari engine
 
 ### Run Custom Tests
 ```bash
@@ -641,22 +672,24 @@ Separates page structure from test logic:
 | Jackson | JSON processing | 2.18.0 |
 | JavaFaker | Test data generation | 1.0.2 |
 
-## Best Practices (Demonstrated in MultiBank Suite)
+## Best Practices
 
-1. **Keep tests independent** - Each test runs standalone, no dependencies
-2. **Use meaningful test names** - Descriptive test methods (testNavigationMenuDisplayed)
-3. **Follow AAA pattern** - Arrange, Act, Assert structure
-4. **Use page objects** - All locators in page objects, never in tests
-5. **Handle waits properly** - waitForSelector(), no Thread.sleep()
-6. **External test data** - JSON files for all test data
-7. **Comprehensive logging** - SLF4J with DEBUG/INFO/WARN/ERROR levels
-8. **AssertJ assertions** - Fluent, readable assertions with custom messages
-9. **Allure annotations** - @Epic, @Feature, @Story, @Severity for reporting
-10. **Data providers** - Parameterized tests for cross-browser and data-driven testing
-11. **Proper exception handling** - Try-catch with logging, no silent failures
-12. **TestNG priorities** - Ordered test execution when needed
-13. **Page object constructors** - Initialize in @BeforeMethod for fresh state
-14. **Configurable timeouts** - All waits use config.properties timeout values
+The MultiBank test suite demonstrates these best practices:
+
+1. **Test Independence** - Each test runs standalone, no dependencies
+2. **Meaningful Test Names** - Descriptive test methods (testNavigationMenuDisplayed)
+3. **AAA Pattern** - Arrange, Act, Assert structure
+4. **Page Object Model** - All locators in page objects, never in tests
+5. **Proper Wait Strategies** - waitForSelector(), no Thread.sleep()
+6. **External Test Data** - JSON files for all test data
+7. **Comprehensive Logging** - SLF4J with DEBUG/INFO/WARN/ERROR levels
+8. **Fluent Assertions** - AssertJ assertions with custom messages
+9. **Allure Annotations** - @Epic, @Feature, @Story, @Severity for reporting
+10. **Data-Driven Testing** - TestNG DataProviders for parameterized tests
+11. **Exception Handling** - Try-catch with logging, no silent failures
+12. **Cross-Browser Support** - Browser parameterization via TestNG
+13. **Fresh Test State** - Page objects initialized in @BeforeMethod
+14. **Configurable Timeouts** - All waits use config.properties timeout values
 
 ## Troubleshooting
 
@@ -683,31 +716,38 @@ mvn clean compile test-compile
 
 ## Framework Capabilities
 
-### Cross-Browser Testing
-- Chromium (Chrome, Edge)
-- Firefox
-- WebKit (Safari)
+**Cross-Browser Testing**
+- Chromium (Chrome, Edge, Chromium browsers)
+- Firefox (Mozilla Firefox)
+- WebKit (Apple Safari engine)
+- Parallel execution across browsers
+- Browser parameter support
 
-### Parallel Execution
-- Thread-safe browser management
-- Configurable thread count
+**Parallel Execution**
+- Thread-safe browser management with ThreadLocal
+- Configurable thread count (suite and test level)
 - Independent test execution
+- Concurrent browser sessions
 
-### Wait Strategies
-- Page load waits
+**Wait Strategies**
+- Playwright auto-waiting for actionability
+- Page load waits (NETWORKIDLE, DOMCONTENTLOADED, LOAD)
 - Element visibility waits
 - Element clickability waits
 - Custom timeout configuration
 
-### Test Data
-- External configuration
-- Random data generation
+**Test Data Management**
+- External JSON configuration files
+- Random data generation with JavaFaker
 - Database-driven tests
+- Data providers for parameterization
 
-### Error Handling
-- Automatic screenshot capture
-- Detailed error logging
-- Retry mechanism for flaky tests
+**Error Handling & Reporting**
+- Automatic screenshot capture on failure
+- Detailed error logging with SLF4J
+- Retry mechanism for flaky tests (up to 2 retries)
+- Allure reporting with step-by-step execution
+- TestNG HTML reports
 
 ## Additional Resources
 

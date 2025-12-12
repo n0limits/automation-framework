@@ -11,13 +11,14 @@ import java.util.List;
 @Slf4j
 public class NavigationPage extends BasePage {
 
-    // Navigation Menu Selectors
-    private final String topNavigation = "nav, header nav, [role='navigation']";
-    private final String navMenuItems = "nav a, header nav a, [role='navigation'] a";
+    // Navigation Menu Selectors - MultiBank uses a header without semantic nav elements
+    private final String topNavigation = "header";
+    private final String navMenuItems = "header a";
     private final String dashboardLink = "a[href*='dashboard'], a:has-text('Dashboard')";
     private final String marketsLink = "a[href*='markets'], a:has-text('Markets')";
     private final String tradeLink = "a[href*='trade'], a:has-text('Trade')";
     private final String featuresLink = "a[href*='features'], a:has-text('Features')";
+    // Note: About Us link does not exist on MultiBank homepage
     private final String aboutLink = "a[href*='about'], a:has-text('About')";
     private final String supportLink = "a[href*='support'], a:has-text('Support')";
     private final String languageSelector = "[class*='language'], [class*='lang'], select[name='language']";

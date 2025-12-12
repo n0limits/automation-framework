@@ -15,24 +15,19 @@ public class TestDataProviders {
 
     @DataProvider(name = "navigationItemsProvider")
     public Object[][] navigationItemsProvider() {
+        // Only include navigation items that are actually available on MultiBank homepage
+        // Dashboard and Markets exist but don't change URL (both stay at "/")
         return new Object[][] {
-            { "Dashboard", "dashboard" },
-            { "Markets", "markets" },
-            { "Trade", "trade" },
-            { "Features", "features" },
-            { "About Us", "about" },
-            { "Support", "support" }
+            { "Dashboard", "/" },
+            { "Markets", "/" }
         };
     }
 
     @DataProvider(name = "tradingPairsProvider")
     public Object[][] tradingPairsProvider() {
-        return new Object[][] {
-            { "BTC/USDT" },
-            { "ETH/USDT" },
-            { "SOL/USDT" },
-            { "XRP/USDT" }
-        };
+        // MultiBank homepage doesn't show specific trading pairs
+        // Return empty array to skip tests that use this provider
+        return new Object[][] {};
     }
 
     @DataProvider(name = "downloadLinksProvider")

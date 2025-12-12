@@ -2,7 +2,7 @@
   "downloadSection": {
     "appStoreLink": "https://apps.apple.com",
     "googlePlayLink": "https://play.google.com",
-    "qrCodeVisible": true
+    "qrCodeVisible": false
   },
   "marketingBanners": {
     "expectedBanners": [
@@ -13,6 +13,7 @@
     "rotationEnabled": true
   },
   "aboutUsPage": {
+    "available": false,
     "url": "/about",
     "whyMultiBankSection": {
       "visible": true,

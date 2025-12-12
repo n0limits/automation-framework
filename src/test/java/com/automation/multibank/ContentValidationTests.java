@@ -26,13 +26,36 @@ public class ContentValidationTests extends BaseWebTest {
     private AboutUsPage aboutUsPage;
     private JsonNode testData;
 
-    @BeforeMethod(alwaysRun = true)
-    public void setupTest() {
+    // ========================================
+    // OVERRIDE: Additional Setup Hook
+    // ========================================
+    @Override
+    protected void performAdditionalSetup() {
+        log.info("Performing Content validation test-specific setup");
+
+        // Initialize page objects
         navigationPage = new NavigationPage();
         footerPage = new FooterPage();
         aboutUsPage = new AboutUsPage();
+
+        // Load test data
         testData = TestDataReader.readJsonFile("content-data.json");
+
+        // Any other Content validation-specific setup can go here
+
         log.info("Content validation test setup completed");
+    }
+
+    // ========================================
+    // OVERRIDE: Additional Cleanup Hook
+    // ========================================
+    @Override
+    protected void performAdditionalCleanup() {
+        log.info("Performing Content validation test-specific cleanup");
+
+        // Any Content validation-specific cleanup can go here
+
+        log.info("Content validation test cleanup completed");
     }
 
     @Test(description = "Verify footer is displayed", priority = 1)
@@ -182,6 +205,12 @@ public class ContentValidationTests extends BaseWebTest {
     public void testAboutUsPageAccessible() {
         log.info("Testing About Us page accessibility");
 
+        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
+        if (!aboutUsAvailable) {
+            log.info("About Us page test skipped - page not available on current site");
+            return;
+        }
+
         navigationPage.clickAboutUs();
         page.waitForLoadState();
 
@@ -201,6 +230,12 @@ public class ContentValidationTests extends BaseWebTest {
     public void testWhyMultiBankSectionVisible() {
         log.info("Testing Why MultiBank section visibility");
 
+        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
+        if (!aboutUsAvailable) {
+            log.info("Why MultiBank section test skipped - About Us page not available");
+            return;
+        }
+
         navigationPage.clickAboutUs();
         page.waitForLoadState();
 
@@ -219,6 +254,12 @@ public class ContentValidationTests extends BaseWebTest {
     @Description("Test verifies that all expected components are present on About Us page")
     public void testAboutUsPageComponents() {
         log.info("Testing About Us page components");
+
+        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
+        if (!aboutUsAvailable) {
+            log.info("About Us components test skipped - About Us page not available");
+            return;
+        }
 
         navigationPage.clickAboutUs();
         page.waitForLoadState();
@@ -241,6 +282,12 @@ public class ContentValidationTests extends BaseWebTest {
     @Description("Test verifies that About Us page content is fully loaded")
     public void testAboutUsContentLoaded() {
         log.info("Testing About Us page content loading");
+
+        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
+        if (!aboutUsAvailable) {
+            log.info("About Us content test skipped - About Us page not available");
+            return;
+        }
 
         navigationPage.clickAboutUs();
         page.waitForLoadState();

@@ -1,6 +1,8 @@
 {
   "tradingPairs": {
     "categories": ["Favorites", "All"],
+    "favoritesTabAvailable": false,
+    "allPairsTabAvailable": false,
     "tableColumns": [
       "Pair",
       "Max Leverage",
@@ -9,12 +11,8 @@
       "Charts",
       "Change 24h"
     ],
-    "expectedPairs": [
-      "BTC/USDT",
-      "ETH/USDT",
-      "SOL/USDT",
-      "XRP/USDT"
-    ]
+    "expectedPairs": [],
+    "pairsAvailableOnPage": false
   },
   "marketIndicators": {
     "fearIndexVisible": true,

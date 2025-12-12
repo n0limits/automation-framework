@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Smoke Test Suite - Single Browser" parallel="methods" thread-count="3">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+    </listeners>
+
+    <!-- Smoke Tests - Run only on Chromium for speed -->
+    <test name="Chromium - Smoke Tests">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <!-- Critical Navigation Tests -->
+            <class name="com.automation.multibank.NavigationTests">
+                <methods>
+                    <include name="testNavigationMenuDisplayed"/>
+                    <include name="testNavigationMenuItems"/>
+                </methods>
+            </class>
+
+            <!-- Critical Trading Tests -->
+            <class name="com.automation.multibank.TradingTests">
+                <methods>
+                    <include name="testSpotTradingSectionDisplayed"/>
+                    <include name="testTradingPairsDisplayed"/>
+                </methods>
+            </class>
+
+            <!-- Critical Content Tests -->
+            <class name="com.automation.multibank.ContentValidationTests">
+                <methods>
+                    <include name="testFooterDisplayed"/>
+                    <include name="testAppStoreLinkVisible"/>
+                    <include name="testGooglePlayLinkVisible"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

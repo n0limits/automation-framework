@@ -10,136 +10,146 @@
 ## Current Implementation: MultiBank Trading Platform
 
 This framework includes a complete test suite for https://trade.multibank.io/ with:
-- 38 automated test cases
-- 4 page objects
-- External JSON test data
-- Cross-browser support
-- Comprehensive logging and reporting
+- 38 automated test cases covering Navigation, Trading, and Content validation
+- 4 page objects (NavigationPage, TradingPage, FooterPage, AboutUsPage)
+- External JSON test data management
+- Cross-browser testing (Chromium, Firefox, WebKit)
+- CI/CD pipeline integration with GitHub Actions
+- Comprehensive logging and Allure reporting
 
 ---
 
-## Quick Commands Reference - MultiBank Tests
+## Quick Commands Reference
 
-### Build & Compile
+### Build & Setup
+
 ```bash
-# Clean and compile everything
-mvn clean compile test-compile
-
-# Just compile without cleaning
-mvn compile test-compile
-
 # Install dependencies
 mvn clean install
+
+# Install Playwright browsers (required for web UI testing)
+mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
+
+# Compile project
+mvn clean compile test-compile
 ```
 
-### Install Playwright Browsers
+### Run Tests
+
+**Cross-Browser Testing (Recommended):**
 ```bash
-# Required for web UI testing
-mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
-```
-
-### Run MultiBank Tests
-```bash
-# Run all MultiBank tests (38 test cases)
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
-
-# Run specific test class
-mvn clean test -Dtest=NavigationTests       # 10 navigation tests
-mvn clean test -Dtest=TradingTests          # 15 trading tests
-mvn clean test -Dtest=ContentValidationTests # 13 content tests
-
-# Run with different browsers
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=chromium
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
-
-# Run in headless mode
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true
-
-# Run in parallel (3 threads)
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -DthreadCount=3
-```
-
-### Run Custom Tests
-```bash
-# Run all tests in src/test/java
+# Run all tests on all browsers (Chromium, Firefox, WebKit)
 mvn clean test
 
-# Run with custom TestNG suite
-mvn clean test -DsuiteXmlFile=testng.xml
+# Run smoke tests (fast - 7 critical tests on Chromium only)
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
 
-# Run with TestNG groups
-mvn clean test -Dgroups=smoke
+# Run on single browser (all 38 tests)
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
 ```
 
-### BDD/Cucumber Tests
+**Specific Browser Override:**
 ```bash
-# Run Cucumber tests (if you have implemented them)
-mvn clean test -Dtest=YourTestRunner
+# Run on Firefox only
+mvn clean test -Dbrowser=firefox -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
 
-# Run with tags
-mvn clean test -Dcucumber.filter.tags="@smoke"
-mvn clean test -Dcucumber.filter.tags="@UI and @Positive"
-mvn clean test -Dcucumber.filter.tags="@API and not @Negative"
+# Run on WebKit only
+mvn clean test -Dbrowser=webkit -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+```
+
+**Specific Test Classes:**
+```bash
+mvn clean test -Dtest=NavigationTests        # 10 navigation tests
+mvn clean test -Dtest=TradingTests           # 15 trading tests
+mvn clean test -Dtest=ContentValidationTests # 13 content tests
+```
+
+**Additional Options:**
+```bash
+# Run in headless mode
+mvn clean test -Dheadless=true
+
+# Run specific test method
+mvn clean test -Dtest=NavigationTests#testNavigationMenuDisplayed
 ```
 
 ### Generate Reports
+
 ```bash
-# Generate and open Allure report
+# Generate and open Allure report (interactive HTML)
 mvn allure:serve
 
 # Generate static Allure report
 mvn allure:report
 
-# View report at: target/allure-report/index.html
+# View static report: target/site/allure-maven-plugin/index.html
 ```
+
+### CI/CD Pipeline
+
+The framework includes GitHub Actions workflows for automated testing:
+
+**Workflows:**
+- `test-automation.yml` - Main pipeline (smoke tests, cross-browser tests, full suite)
+- `pr-checks.yml` - Pull request validation with smoke tests
+- `nightly-tests.yml` - Scheduled nightly regression tests
+
+**Manual Trigger:**
+Push code to GitHub to automatically trigger the CI/CD pipeline:
+```bash
+git add .
+git commit -m "Your commit message"
+git push origin main
+```
+
+View results in GitHub Actions tab.
 
 ---
 
 ## Project Structure Overview
 
 ```
-core-automation-framework/
+automation-framework/
+├── .github/workflows/              # CI/CD pipelines
+│   ├── test-automation.yml         # Main test pipeline
+│   ├── pr-checks.yml               # PR validation
+│   └── nightly-tests.yml           # Scheduled tests
+│
 ├── src/main/java/com/automation/
-│   ├── pages/multibank/              # MultiBank Page Objects
-│   │   ├── NavigationPage.java       # Navigation menu (10+ methods)
-│   │   ├── TradingPage.java          # Trading functionality (20+ methods)
-│   │   ├── FooterPage.java           # Footer and downloads (15+ methods)
-│   │   └── AboutUsPage.java          # About Us page (10+ methods)
-│   ├── utils/
-│   │   ├── TestDataReader.java       # JSON test data reader
-│   │   ├── PlaywrightManager.java
-│   │   ├── WaitUtils.java
-│   │   ├── FileUtils.java
-│   │   └── TestDataGenerator.java
-│   ├── api/              # API testing infrastructure
-│   ├── base/             # Base test classes
-│   ├── config/           # Configuration management
-│   ├── db/               # Database layer
-│   ├── factory/          # Factory patterns
-│   └── listeners/        # TestNG listeners
+│   ├── pages/multibank/            # Page Objects
+│   │   ├── NavigationPage.java
+│   │   ├── TradingPage.java
+│   │   ├── FooterPage.java
+│   │   └── AboutUsPage.java
+│   ├── base/                       # Base test classes
+│   ├── config/                     # Configuration
+│   ├── factory/                    # Browser and page factories
+│   ├── listeners/                  # TestNG listeners
+│   ├── utils/                      # Utilities (waits, data readers)
+│   ├── api/                        # API testing components
+│   └── db/                         # Database connections
 │
 ├── src/test/java/com/automation/
-│   ├── multibank/                    # MultiBank Test Suite
-│   │   ├── NavigationTests.java      # 10 navigation tests
-│   │   ├── TradingTests.java         # 15 trading tests
-│   │   └── ContentValidationTests.java # 13 content tests
+│   ├── multibank/                  # Test classes
+│   │   ├── NavigationTests.java    # 10 tests
+│   │   ├── TradingTests.java       # 15 tests
+│   │   └── ContentValidationTests.java # 13 tests
 │   └── providers/
-│       └── TestDataProviders.java    # Data providers for tests
+│       └── TestDataProviders.java  # Data providers
 │
 ├── src/test/resources/
-│   ├── testdata/                     # External test data
-│   │   ├── navigation-data.json      # Navigation menu data
-│   │   ├── trading-data.json         # Trading pairs data
-│   │   └── content-data.json         # Content validation data
-│   └── testng/
-│       ├── multibank-suite.xml       # MultiBank test suite
-│       ├── testng.xml
-│       └── testng-bdd.xml
+│   ├── testdata/                   # JSON test data
+│   │   ├── navigation-data.json
+│   │   ├── trading-data.json
+│   │   └── content-data.json
+│   └── testng/                     # TestNG suites
+│       ├── testng.xml              # Cross-browser suite
+│       ├── testng-smoke.xml        # Smoke tests
+│       └── testng-chromium.xml     # Single browser
 │
 └── src/main/resources/
-    ├── config.properties # Configured for MultiBank
-    └── logback.xml       # Logging configuration
+    ├── config.properties           # Configuration
+    └── logback.xml                 # Logging
 ```
 
 ---
@@ -148,13 +158,15 @@ core-automation-framework/
 
 ### config.properties
 
-Main configuration file location: `src/main/resources/config.properties`
+Location: `src/main/resources/config.properties`
 
-**Current Configuration (MultiBank):**
+**Key Settings:**
 ```properties
-# Web UI Configuration - MultiBank Trading Platform
+# Target Application
 base.url=https://trade.multibank.io
-browser=chromium           # chromium, firefox, webkit
+
+# Browser Configuration
+browser=chromium              # chromium, firefox, webkit
 headless=false
 timeout=30000
 screenshot.on.failure=true
@@ -163,590 +175,163 @@ screenshot.on.failure=true
 api.base.url=https://jsonplaceholder.typicode.com
 api.timeout=30000
 
-# Database Configuration
+# Database Configuration (if needed)
 mongo.connection.string=mongodb://localhost:27017
-mongo.database=testdb
-
 sql.connection.string=jdbc:mysql://localhost:3306/testdb
-sql.username=root
-sql.password=password
-
 postgres.connection.string=jdbc:postgresql://localhost:5432/testdb
-postgres.username=postgres
-postgres.password=password
 
-# Test Data
+# Paths
 test.data.path=src/test/resources/testdata
-
-# Reporting
 report.path=target/reports
 ```
 
-**To test a different application:** Simply change the `base.url` value.
+**To test a different application:** Change the `base.url` value and update page objects accordingly.
 
 ---
 
-## MultiBank Test Suite Details
+## Test Suite Details
 
-### Test Coverage Summary (38 Tests)
+### MultiBank Test Coverage (38 Tests)
 
-**1. NavigationTests.java** - 10 tests
-- Navigation menu display and structure
-- Individual navigation items visibility (parameterized)
-- Navigation functionality validation
-- Specific navigation tests for each menu item
+**NavigationTests.java (10 tests)**
+- Navigation menu visibility and structure
+- Navigation items functionality
+- Page transitions and URL validation
+- Cross-browser navigation consistency
 
-**2. TradingTests.java** - 15 tests
-- Spot trading section display
-- Trading pairs table structure and columns
-- Trading pair data validation
-- Specific trading pairs visibility (parameterized with BTC, ETH, SOL, XRP)
+**TradingTests.java (15 tests)**
+- Spot trading section and table structure
+- Trading pairs display and data validation (BTC, ETH, SOL, XRP)
 - Market indicators (Fear Index, Top Gainers/Losers)
 - Investment opportunities (MBG Token, Real World Assets)
-- Quick access tools validation
+- Quick access tools
 
-**3. ContentValidationTests.java** - 13 tests
-- Footer display verification
-- App Store and Google Play links validation
-- Download links URL verification
-- Marketing banners presence and content
-- About Us page accessibility and components
-- Social media links verification
-- Page rendering validation
+**ContentValidationTests.java (13 tests)**
+- Footer and download section validation
+- App Store and Google Play links
+- Marketing banners
+- About Us page components
+- Social media links
+- Content rendering
 
-### Example: MultiBank Navigation Test
+### Test Data Management
 
-```java
-@Test(description = "Verify navigation items are functional",
-      dataProvider = "navigationItemsProvider",
-      dataProviderClass = TestDataProviders.class)
-@Severity(SeverityLevel.CRITICAL)
-public void testNavigationItemFunctionality(String itemName, String expectedUrlPart) {
-    log.info("Testing navigation functionality for: {}", itemName);
+Tests use external JSON files for maintainability:
 
-    navigationPage.clickNavigationItem(itemName);
-    page.waitForLoadState();
-
-    String currentUrl = navigationPage.getCurrentUrl();
-
-    assertThat(currentUrl)
-            .as("URL should contain expected part: " + expectedUrlPart)
-            .containsIgnoringCase(expectedUrlPart);
-
-    log.info("Navigation test completed for {}", itemName);
+**Example: navigation-data.json**
+```json
+{
+  "navigationMenu": {
+    "expectedItems": ["Dashboard", "Markets", "Trade", "Features", "About Us", "Support"]
+  }
 }
 ```
 
-### Example: External Test Data Usage
-
+**Usage in Tests:**
 ```java
-@BeforeMethod(alwaysRun = true)
+@BeforeMethod
 public void setupTest() {
-    navigationPage = new NavigationPage();
     testData = TestDataReader.readJsonFile("navigation-data.json");
-}
-
-@Test
-public void testNavigationMenuItems() {
     List<String> expectedItems = TestDataReader.getStringList(
         testData, "navigationMenu", "expectedItems"
     );
-    List<String> actualItems = navigationPage.getNavigationMenuItems();
-
-    for (String expectedItem : expectedItems) {
-        assertThat(actualItems).anyMatch(
-            item -> item.toLowerCase().contains(expectedItem.toLowerCase())
-        );
-    }
 }
-```
-
-### Running Specific Tests
-
-```bash
-# Run all navigation tests
-mvn clean test -Dtest=NavigationTests
-
-# Run specific test method
-mvn clean test -Dtest=NavigationTests#testNavigationMenuDisplayed
-
-# Run all trading tests
-mvn clean test -Dtest=TradingTests
-
-# Run all content validation tests
-mvn clean test -Dtest=ContentValidationTests
-```
-
----
-
-## Creating API Tests
-
-### Step 1: Create API Endpoint Class
-
-Create file: `src/main/java/com/automation/api/endpoints/UserEndpoints.java`
-
-```java
-package com.automation.api.endpoints;
-
-import com.automation.api.BaseAPI;
-import io.restassured.response.Response;
-
-public class UserEndpoints extends BaseAPI {
-    private static final String USERS_PATH = "/users";
-
-    public Response getAllUsers() {
-        return get(USERS_PATH);
-    }
-
-    public Response getUserById(int userId) {
-        return get(USERS_PATH + "/" + userId);
-    }
-
-    public Response createUser(Object userData) {
-        return post(USERS_PATH, userData);
-    }
-
-    public Response updateUser(int userId, Object userData) {
-        return put(USERS_PATH + "/" + userId, userData);
-    }
-
-    public Response deleteUser(int userId) {
-        return delete(USERS_PATH + "/" + userId);
-    }
-}
-```
-
-### Step 2: Create API Test Class
-
-Create file: `src/test/java/com/automation/api/UserAPITests.java`
-
-```java
-package com.automation.api;
-
-import com.automation.base.BaseAPITest;
-import com.automation.api.endpoints.UserEndpoints;
-import com.automation.api.validators.ResponseValidator;
-import io.restassured.response.Response;
-import org.testng.annotations.Test;
-import java.util.HashMap;
-import java.util.Map;
-
-public class UserAPITests extends BaseAPITest {
-
-    @Test(description = "Verify get all users")
-    public void testGetAllUsers() {
-        UserEndpoints userAPI = new UserEndpoints();
-        Response response = userAPI.getAllUsers();
-
-        ResponseValidator.validateStatusCode(response, 200);
-        ResponseValidator.validateResponseTime(response, 3000);
-    }
-
-    @Test(description = "Verify create user")
-    public void testCreateUser() {
-        UserEndpoints userAPI = new UserEndpoints();
-
-        Map<String, String> userData = new HashMap<>();
-        userData.put("name", "Test User");
-        userData.put("email", "test@example.com");
-
-        Response response = userAPI.createUser(userData);
-
-        ResponseValidator.validateStatusCode(response, 201);
-        ResponseValidator.validateFieldExists(response, "id");
-    }
-}
-```
-
-### Step 3: Run API Tests
-
-```bash
-mvn clean test -Dtest=UserAPITests
-```
-
----
-
-## Creating BDD Tests (Optional)
-
-### Step 1: Create Feature File
-
-Create file: `src/test/resources/features/UserManagement.feature`
-
-```gherkin
-Feature: User Management
-  As an administrator
-  I want to manage user accounts
-  So that I can control system access
-
-  Background:
-    Given the API client is initialized
-
-  @Smoke @API
-  Scenario: Get all users
-    When I send a GET request to "/users"
-    Then the response status code should be 200
-    And the response time should be less than 3000 milliseconds
-
-  @API @Positive
-  Scenario: Create a new user
-    Given I have user data with name "John Doe" and email "john@example.com"
-    When I send a POST request to "/users" with the user data
-    Then the response status code should be 201
-    And the response should have a generated "id" field
-```
-
-### Step 2: Create Step Definitions
-
-Create file: `src/test/java/com/automation/bdd/stepdefs/UserAPISteps.java`
-
-```java
-package com.automation.bdd.stepdefs;
-
-import com.automation.api.endpoints.UserEndpoints;
-import com.automation.api.validators.ResponseValidator;
-import io.cucumber.java.en.*;
-import io.restassured.response.Response;
-
-public class UserAPISteps {
-    private UserEndpoints userAPI = new UserEndpoints();
-    private Response response;
-    private Map<String, String> userData = new HashMap<>();
-
-    @Given("the API client is initialized")
-    public void apiClientInitialized() {
-        // API client is initialized in BaseAPI constructor
-    }
-
-    @When("I send a GET request to {string}")
-    public void sendGetRequest(String endpoint) {
-        if (endpoint.equals("/users")) {
-            response = userAPI.getAllUsers();
-        }
-    }
-
-    @Then("the response status code should be {int}")
-    public void verifyStatusCode(int expectedStatus) {
-        ResponseValidator.validateStatusCode(response, expectedStatus);
-    }
-
-    @And("the response time should be less than {int} milliseconds")
-    public void verifyResponseTime(int maxTime) {
-        ResponseValidator.validateResponseTime(response, maxTime);
-    }
-
-    @Given("I have user data with name {string} and email {string}")
-    public void prepareUserData(String name, String email) {
-        userData.put("name", name);
-        userData.put("email", email);
-    }
-
-    @When("I send a POST request to {string} with the user data")
-    public void sendPostRequest(String endpoint) {
-        response = userAPI.createUser(userData);
-    }
-
-    @And("the response should have a generated {string} field")
-    public void verifyGeneratedField(String field) {
-        ResponseValidator.validateFieldExists(response, field);
-    }
-}
-```
-
-### Step 3: Create Test Runner
-
-Create file: `src/test/java/com/automation/bdd/runners/TestRunner.java`
-
-```java
-package com.automation.bdd.runners;
-
-import io.cucumber.testng.AbstractTestNGCucumberTests;
-import io.cucumber.testng.CucumberOptions;
-import org.testng.annotations.DataProvider;
-
-@CucumberOptions(
-    features = "src/test/resources/features",
-    glue = {"com.automation.bdd.stepdefs"},
-    plugin = {
-        "pretty",
-        "html:target/cucumber-reports/cucumber.html",
-        "json:target/cucumber-reports/cucumber.json",
-        "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
-    },
-    monochrome = true
-)
-public class TestRunner extends AbstractTestNGCucumberTests {
-    @Override
-    @DataProvider(parallel = true)
-    public Object[][] scenarios() {
-        return super.scenarios();
-    }
-}
-```
-
-### Step 4: Run BDD Tests
-
-```bash
-mvn clean test -Dtest=TestRunner
 ```
 
 ---
 
 ## Troubleshooting
 
-### Problem: "Playwright browsers not found"
-**Solution:**
+**Playwright browsers not found:**
 ```bash
-mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
+mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
 ```
 
-### Problem: "No tests found"
-**Solution:**
+**Tests not found or compilation errors:**
 ```bash
-# Verify compilation
 mvn clean compile test-compile
-
-# Check package names match
-# Ensure test classes are in correct packages
 ```
 
-### Problem: "Tests failing with timeout"
-**Solution:**
+**Test timeouts:**
 - Increase timeout in `config.properties`
-- Check if application is accessible
-- Use proper wait strategies instead of fixed waits
+- Verify application is accessible
+- Check network connectivity
 
-### Problem: "Database connection refused"
-**Solution:**
-- Verify connection string in `config.properties`
-- Ensure database service is running
-- Check credentials are correct
-- Verify network/firewall settings
-
-### Problem: "API connection refused"
-**Solution:**
-```bash
-# Verify API base URL in config.properties
-api.base.url=https://your-actual-api.com
-
-# Check API is accessible
-curl https://your-actual-api.com/endpoint
-```
-
----
-
-## Common Use Cases
-
-### Run Smoke Tests
-```bash
-# Create tests with @Test(groups = "smoke")
-mvn clean test -Dgroups=smoke
-```
-
-### Run Tests in Different Browsers
-```bash
-# Chromium (default)
-mvn clean test
-
-# Firefox
-mvn clean test -Dbrowser=firefox
-
-# WebKit (Safari)
-mvn clean test -Dbrowser=webkit
-```
-
-### Run Tests in Headless Mode
-```bash
-mvn clean test -Dheadless=true
-```
-
-### Parallel Test Execution
-```bash
-# Run with 4 parallel threads
-mvn clean test -DthreadCount=4
-```
-
-### Debug Tests
-```bash
-# Run with verbose Maven output
-mvn clean test -X
-
-# Run specific test method
-mvn clean test -Dtest=HomePageTests#testSearch
-```
-
----
-
-## Verification Checklist
-
-Before running tests, ensure:
-
-- [ ] Java 21 is installed: `java -version`
-- [ ] Maven is installed: `mvn -version`
-- [ ] Project compiles: `mvn clean compile test-compile`
-- [ ] config.properties is configured with your application URLs
-- [ ] Playwright browsers are installed (for UI tests)
-- [ ] Test environment is accessible
-- [ ] Database is running (if using DB tests)
+**Database connection issues:**
+- Verify connection strings in `config.properties`
+- Ensure database services are running
+- Check credentials and network settings
 
 ---
 
 ## Report Locations
 
-After test execution, find reports at:
-
-- **Allure Results**: `target/allure-results/`
-- **Allure Report**: `target/allure-report/` (after `mvn allure:report`)
-- **Screenshots**: `target/screenshots/` (for failed UI tests)
-- **Logs**: `logs/test-automation.log`
+- **Allure Report**: `target/site/allure-maven-plugin/index.html` (after `mvn allure:report`)
 - **TestNG Reports**: `target/surefire-reports/`
-- **Cucumber Reports**: `target/cucumber-reports/` (if using BDD)
+- **Screenshots**: `target/screenshots/`
+- **Logs**: `logs/test-automation.log`
 
 ---
 
-## Tips & Best Practices
+## Key Framework Features
 
-1. **Start Simple**: Begin with a single test and expand
-2. **Use Page Objects**: Never use locators directly in tests
-3. **External Configuration**: Keep test data in config files or data files
-4. **Proper Waits**: Use WaitUtils methods, avoid Thread.sleep()
-5. **Meaningful Names**: Use descriptive test and method names
-6. **Independent Tests**: Each test should run independently
-7. **Clean Up**: Close resources properly (browsers, connections)
-8. **Logging**: Use SLF4J logging for debugging
-9. **Assertions**: Use AssertJ for readable assertions
-10. **Version Control**: Commit code regularly with meaningful messages
+**Cross-Browser Testing:**
+- Playwright native support for Chromium, Firefox, WebKit
+- Parallel execution across browsers
+- Browser parameter configuration via TestNG
 
----
+**CI/CD Integration:**
+- GitHub Actions workflows included
+- Automated browser installation
+- Multi-stage pipeline (smoke, cross-browser, full suite)
 
-## Framework Capabilities
+**Test Organization:**
+- Page Object Model pattern
+- External JSON test data
+- Data-driven testing with providers
+- ThreadLocal for parallel execution
 
-### What's Included
-
-**Web UI Testing:**
-- Playwright integration
-- Cross-browser support (Chromium, Firefox, WebKit)
-- Page Object Model base class
-- Wait utilities
-- Screenshot capture on failure
-
-**API Testing:**
-- RestAssured client configuration
-- HTTP method wrappers
-- Response validators
-- Request/Response logging
-
-**Database Testing:**
-- MongoDB, MySQL, PostgreSQL support
-- Connection factory pattern
-- Query builder for SQL
-- Connection pooling
-
-**Test Infrastructure:**
-- Base test classes for different test types
-- Configuration management
-- Test data generation
-- TestNG listeners
-- Allure reporting integration
-- Retry mechanism for flaky tests
+**Reporting:**
+- Allure reports with screenshots
+- TestNG HTML reports
+- Comprehensive SLF4J logging
+- Automatic screenshot capture on failure
 
 ---
 
-## Additional Resources
+## Quick Reference
 
-- **README.md**: Comprehensive framework documentation
-- [Playwright Documentation](https://playwright.dev/java/)
-- [RestAssured Documentation](https://rest-assured.io/)
-- [TestNG Documentation](https://testng.org/)
-- [Cucumber Documentation](https://cucumber.io/docs/cucumber/)
-- [Allure Documentation](https://docs.qameta.io/allure/)
-
----
-
-## Next Steps
-
-1. **Configure** `config.properties` with your application details
-2. **Create** your first page object
-3. **Write** your first test
-4. **Run** the test and verify it passes
-5. **Expand** with more page objects and tests
-6. **Implement** BDD tests if needed
-7. **Set up** CI/CD pipeline integration
-8. **Review** reports and improve test coverage
-
----
-
-## Getting Help
-
-If you encounter issues:
-1. Check this guide first
-2. Review README.md for detailed documentation
-3. Check logs in `logs/test-automation.log`
-4. Review Allure reports for test execution details
-5. Verify configuration in `config.properties`
-
-**Common Debugging Commands:**
+**Essential Commands:**
 ```bash
-# Compile and check for errors
-mvn clean compile test-compile
+# Setup
+mvn clean install
+mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
 
-# Run with verbose output
-mvn test -X
+# Run Tests
+mvn clean test                          # All browsers
+mvn clean test -DsuiteXmlFile=...      # Specific suite
+mvn clean test -Dtest=NavigationTests  # Specific class
+mvn clean test -Dbrowser=firefox       # Specific browser
 
-# Check dependencies
-mvn dependency:tree
+# Reports
+mvn allure:serve                       # Interactive report
+mvn allure:report                      # Static report
 ```
 
+**TestNG Suites:**
+- `testng.xml` - Full cross-browser (Chromium + Firefox + WebKit)
+- `testng-smoke.xml` - Critical tests on Chromium only (fast)
+- `testng-chromium.xml` - All tests on single browser
+
+**For More Information:**
+- See `README.md` for comprehensive documentation
+- See `.github/README.md` for CI/CD pipeline details
+- See `PLAYWRIGHT-SELENIUM-REVIEW.md` for technical details
+
 ---
 
-## MultiBank Test Execution Examples
-
-### Run Complete Test Suite
+**You're ready to start testing! Run your first test:**
 ```bash
-# All 38 tests with Allure reporting
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
 mvn allure:serve
 ```
-
-### Cross-Browser Testing
-```bash
-# Test in all browsers
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=chromium
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=firefox
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dbrowser=webkit
-```
-
-### CI/CD Integration Example
-```bash
-# Headless execution for CI/CD
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml -Dheadless=true -DthreadCount=3
-```
-
----
-
-## You're Ready!
-
-Your framework includes:
-- Production-ready MultiBank test suite (38 tests)
-- Modern web automation (Playwright)
-- Page Object Model with 4 page objects
-- External JSON test data management
-- Cross-browser testing support
-- Data-driven testing with TestNG DataProviders
-- Comprehensive logging (SLF4J)
-- Allure reporting integration
-- Screenshot capture on failure
-- Parallel execution capability
-
-**Quick Start - MultiBank Tests:**
-```bash
-mvn clean test -DsuiteXmlFile=testng/multibank-suite.xml
-```
-
-**View Results:**
-```bash
-mvn allure:serve
-```
-
-**Full Documentation**: See README.md for complete details
-
-Good luck with your automation!

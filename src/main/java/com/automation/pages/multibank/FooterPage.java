@@ -10,11 +10,11 @@ import java.util.List;
 @Slf4j
 public class FooterPage extends BasePage {
 
-    // Footer Selectors
-    private final String footerSection = "footer, [role='contentinfo']";
+    // Footer Selectors - MultiBank uses a div container instead of semantic footer
+    private final String footerSection = "[class*='app-download-container'], [class*='buttons-container']";
     private final String appStoreLink = "a[href*='apps.apple.com'], a[href*='appstore'], img[alt*='App Store']";
     private final String googlePlayLink = "a[href*='play.google.com'], a[href*='googleplay'], img[alt*='Google Play']";
-    private final String qrCode = "img[alt*='QR'], [class*='qr-code'], canvas";
+    private final String qrCode = "img[alt='qr-code'], img[alt*='qr']";
 
     // Marketing Banners
     private final String marketingBanner = "[class*='banner'], [class*='promo'], [class*='marketing']";
