@@ -8,6 +8,7 @@ import com.automation.utils.TestDataReader;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -120,13 +121,16 @@ public class TradingTests extends BaseWebTest {
         log.info("Starting test: Trading pairs display verification");
 
         boolean pairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "pairsAvailableOnPage");
+
+        if (!pairsAvailable) {
+            throw new SkipException("Trading pairs display test skipped - pairs not available on homepage");
+        }
+
         List<String> tradingPairs = tradingPage.getTradingPairs();
 
-        if (pairsAvailable) {
-            assertThat(tradingPairs)
-                    .as("Trading pairs should not be empty")
-                    .isNotEmpty();
-        }
+        assertThat(tradingPairs)
+                .as("Trading pairs should not be empty")
+                .isNotEmpty();
 
         log.info("Found {} trading pairs", tradingPairs.size());
         log.info("Test completed: Trading pairs check finished");
@@ -159,8 +163,7 @@ public class TradingTests extends BaseWebTest {
         List<String> expectedPairs = TestDataReader.getStringList(testData, "tradingPairs", "expectedPairs");
 
         if (expectedPairs == null || expectedPairs.isEmpty()) {
-            log.info("Trading pair data structure test skipped - no expected pairs configured");
-            return;
+            throw new SkipException("Trading pair data structure test skipped - no expected pairs configured");
         }
 
         for (String pairName : expectedPairs) {
@@ -185,8 +188,7 @@ public class TradingTests extends BaseWebTest {
 
         boolean favoritesAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "favoritesTabAvailable");
         if (!favoritesAvailable) {
-            log.info("Favorites tab test skipped - tab not available on current site");
-            return;
+            throw new SkipException("Favorites tab test skipped - tab not available on current site");
         }
 
         boolean isVisible = tradingPage.isFavoritesTabVisible();
@@ -207,8 +209,7 @@ public class TradingTests extends BaseWebTest {
 
         boolean allPairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "allPairsTabAvailable");
         if (!allPairsAvailable) {
-            log.info("All Pairs tab test skipped - tab not available on current site");
-            return;
+            throw new SkipException("All Pairs tab test skipped - tab not available on current site");
         }
 
         boolean isVisible = tradingPage.isAllPairsTabVisible();
@@ -229,17 +230,17 @@ public class TradingTests extends BaseWebTest {
 
         boolean fearIndexEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "fearIndexVisible");
 
-        if (fearIndexEnabled) {
-            boolean isVisible = tradingPage.isFearIndexVisible();
-
-            assertThat(isVisible)
-                    .as("Fear Index should be visible")
-                    .isTrue();
-
-            log.info("Fear Index is visible");
-        } else {
-            log.info("Fear Index test skipped - not expected to be visible");
+        if (!fearIndexEnabled) {
+            throw new SkipException("Fear Index test skipped - not expected to be visible");
         }
+
+        boolean isVisible = tradingPage.isFearIndexVisible();
+
+        assertThat(isVisible)
+                .as("Fear Index should be visible")
+                .isTrue();
+
+        log.info("Fear Index is visible");
     }
 
     @Test(description = "Verify Top Gainers section is visible", priority = 10)
@@ -251,17 +252,17 @@ public class TradingTests extends BaseWebTest {
 
         boolean topGainersEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "topGainersVisible");
 
-        if (topGainersEnabled) {
-            boolean isVisible = tradingPage.areTopGainersVisible();
-
-            assertThat(isVisible)
-                    .as("Top Gainers section should be visible")
-                    .isTrue();
-
-            log.info("Top Gainers section is visible");
-        } else {
-            log.info("Top Gainers test skipped - not expected to be visible");
+        if (!topGainersEnabled) {
+            throw new SkipException("Top Gainers test skipped - not expected to be visible");
         }
+
+        boolean isVisible = tradingPage.areTopGainersVisible();
+
+        assertThat(isVisible)
+                .as("Top Gainers section should be visible")
+                .isTrue();
+
+        log.info("Top Gainers section is visible");
     }
 
     @Test(description = "Verify Top Losers section is visible", priority = 11)
@@ -273,17 +274,17 @@ public class TradingTests extends BaseWebTest {
 
         boolean topLosersEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "topLosersVisible");
 
-        if (topLosersEnabled) {
-            boolean isVisible = tradingPage.areTopLosersVisible();
-
-            assertThat(isVisible)
-                    .as("Top Losers section should be visible")
-                    .isTrue();
-
-            log.info("Top Losers section is visible");
-        } else {
-            log.info("Top Losers test skipped - not expected to be visible");
+        if (!topLosersEnabled) {
+            throw new SkipException("Top Losers test skipped - not expected to be visible");
         }
+
+        boolean isVisible = tradingPage.areTopLosersVisible();
+
+        assertThat(isVisible)
+                .as("Top Losers section should be visible")
+                .isTrue();
+
+        log.info("Top Losers section is visible");
     }
 
     @Test(description = "Verify MBG Token section is visible", priority = 12)
@@ -345,15 +346,16 @@ public class TradingTests extends BaseWebTest {
         log.info("Testing trading pairs count");
 
         boolean pairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "pairsAvailableOnPage");
+
+        if (!pairsAvailable) {
+            throw new SkipException("Trading pairs count test skipped - pairs not available on homepage");
+        }
+
         int pairsCount = tradingPage.getTradingPairsCount();
 
-        if (pairsAvailable) {
-            assertThat(pairsCount)
-                    .as("Trading pairs count should be greater than zero")
-                    .isGreaterThan(0);
-        } else {
-            log.info("Trading pairs count check - count: {} (pairs may not be visible on homepage)", pairsCount);
-        }
+        assertThat(pairsCount)
+                .as("Trading pairs count should be greater than zero")
+                .isGreaterThan(0);
 
         log.info("Total trading pairs available: {}", pairsCount);
     }

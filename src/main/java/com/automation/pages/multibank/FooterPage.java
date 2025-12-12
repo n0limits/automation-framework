@@ -10,8 +10,14 @@ import java.util.List;
 @Slf4j
 public class FooterPage extends BasePage {
 
-    // Footer Selectors - MultiBank uses a div container instead of semantic footer
+    // ============================================================
+    // Locator Fields
+    // ============================================================
+
+    // Footer Container
     private final String footerSection = "[class*='app-download-container'], [class*='buttons-container']";
+
+    // App Download Links
     private final String appStoreLink = "a[href*='apps.apple.com'], a[href*='appstore'], img[alt*='App Store']";
     private final String googlePlayLink = "a[href*='play.google.com'], a[href*='googleplay'], img[alt*='Google Play']";
     private final String qrCode = "img[alt='qr-code'], img[alt*='qr']";
@@ -22,8 +28,10 @@ public class FooterPage extends BasePage {
     private final String cardTransferBanner = ":has-text('Card'), :has-text('Wire Transfer')";
     private final String supportBanner = ":has-text('24/7'), :has-text('Support')";
 
-    // Social Media Links
+    // Social Media
     private final String socialMediaLinks = "a[href*='facebook'], a[href*='twitter'], a[href*='linkedin'], a[href*='instagram']";
+
+    // ============================================================
 
     public FooterPage() {
         super();
@@ -149,6 +157,18 @@ public class FooterPage extends BasePage {
             return true;
         } catch (Exception e) {
             log.debug("Support banner not found");
+            return false;
+        }
+    }
+
+    public boolean isSpecificBannerVisible(String bannerText) {
+        try {
+            String selector = String.format(":has-text('%s')", bannerText);
+            waitForSelector(selector);
+            log.debug("Banner containing '{}' is visible", bannerText);
+            return true;
+        } catch (Exception e) {
+            log.debug("Banner containing '{}' not found", bannerText);
             return false;
         }
     }

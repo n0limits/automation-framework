@@ -13,7 +13,7 @@
     "rotationEnabled": true
   },
   "aboutUsPage": {
-    "available": false,
+    "available": true,
     "url": "/about",
     "whyMultiBankSection": {
       "visible": true,

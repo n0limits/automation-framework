@@ -11,23 +11,32 @@ import java.util.List;
 @Slf4j
 public class NavigationPage extends BasePage {
 
-    // Navigation Menu Selectors - MultiBank uses a header without semantic nav elements
+    // ============================================================
+    // Locator Fields
+    // ============================================================
+
+    // Main Navigation Wrapper
     private final String topNavigation = "header";
+
+    // All Menu Items
     private final String navMenuItems = "header a";
+
+    // Individual Navigation Links
     private final String dashboardLink = "a[href*='dashboard'], a:has-text('Dashboard')";
     private final String marketsLink = "a[href*='markets'], a:has-text('Markets')";
     private final String tradeLink = "a[href*='trade'], a:has-text('Trade')";
     private final String featuresLink = "a[href*='features'], a:has-text('Features')";
-    // Note: About Us link does not exist on MultiBank homepage
-    private final String aboutLink = "a[href*='about'], a:has-text('About')";
+    private final String aboutLink = "a[href*='about'], a:has-text('About')"; // Not always present
     private final String supportLink = "a[href*='support'], a:has-text('Support')";
+
+    // Language Selector
     private final String languageSelector = "[class*='language'], [class*='lang'], select[name='language']";
+
+    // ============================================================
 
     public NavigationPage() {
         super();
-        String baseUrl = TestConfig.getInstance().getBaseUrl();
-        navigateTo(baseUrl);
-        log.info("Navigated to MultiBank homepage: {}", baseUrl);
+        // Page objects should not navigate in constructor
     }
 
     public boolean isNavigationMenuDisplayed() {
@@ -131,8 +140,10 @@ public class NavigationPage extends BasePage {
         if (currentUrl.contains(expectedUrlPart)) {
             log.info("Navigation to '{}' successful. URL contains: {}", itemName, expectedUrlPart);
         } else {
-            log.warn("Navigation to '{}' may have failed. Expected URL part '{}', but got: {}",
-                    itemName, expectedUrlPart, currentUrl);
+            log.warn(
+                    "Navigation to '{}' may have failed. Expected URL part '{}', but got: {}",
+                    itemName, expectedUrlPart, currentUrl
+            );
         }
     }
 }

@@ -9,6 +9,7 @@ import com.automation.utils.TestDataReader;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -184,18 +185,13 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Testing visibility of marketing banner: {}", bannerText);
 
         footerPage.scrollToFooter();
-        boolean isInstantBuyVisible = footerPage.isInstantBuyBannerVisible();
-        boolean isCardTransferVisible = footerPage.isCardTransferBannerVisible();
-        boolean isSupportVisible = footerPage.isSupportBannerVisible();
+        boolean isBannerVisible = footerPage.isSpecificBannerVisible(bannerText);
 
-        boolean anyBannerVisible = isInstantBuyVisible || isCardTransferVisible || isSupportVisible;
-
-        assertThat(anyBannerVisible)
-                .as("At least one marketing banner should be visible")
+        assertThat(isBannerVisible)
+                .as("Marketing banner containing '" + bannerText + "' should be visible")
                 .isTrue();
 
-        log.info("Marketing banner visibility - InstantBuy: {}, CardTransfer: {}, Support: {}",
-                isInstantBuyVisible, isCardTransferVisible, isSupportVisible);
+        log.info("Marketing banner '{}' is visible", bannerText);
     }
 
     @Test(description = "Verify About Us page is accessible", priority = 8)
@@ -207,8 +203,7 @@ public class ContentValidationTests extends BaseWebTest {
 
         boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
         if (!aboutUsAvailable) {
-            log.info("About Us page test skipped - page not available on current site");
-            return;
+            throw new SkipException("About Us page test skipped - page not available on current site");
         }
 
         navigationPage.clickAboutUs();
@@ -232,8 +227,7 @@ public class ContentValidationTests extends BaseWebTest {
 
         boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
         if (!aboutUsAvailable) {
-            log.info("Why MultiBank section test skipped - About Us page not available");
-            return;
+            throw new SkipException("Why MultiBank section test skipped - About Us page not available");
         }
 
         navigationPage.clickAboutUs();
@@ -257,8 +251,7 @@ public class ContentValidationTests extends BaseWebTest {
 
         boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
         if (!aboutUsAvailable) {
-            log.info("About Us components test skipped - About Us page not available");
-            return;
+            throw new SkipException("About Us components test skipped - About Us page not available");
         }
 
         navigationPage.clickAboutUs();
@@ -285,8 +278,7 @@ public class ContentValidationTests extends BaseWebTest {
 
         boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
         if (!aboutUsAvailable) {
-            log.info("About Us content test skipped - About Us page not available");
-            return;
+            throw new SkipException("About Us content test skipped - About Us page not available");
         }
 
         navigationPage.clickAboutUs();

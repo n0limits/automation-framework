@@ -3,6 +3,7 @@
     "expectedItems": [
       "Dashboard",
       "Markets",
+      "Trade",
       "Log In",
       "Sign Up"
     ],
@@ -12,24 +13,24 @@
         "available": true
       },
       "Markets": {
-        "url": "/",
+        "url": "/markets",
         "available": true
       },
       "Trade": {
         "url": "/trade",
-        "available": false
+        "available": true
       },
       "Features": {
         "url": "/features",
-        "available": false
+        "available": true
       },
       "About Us": {
         "url": "/about",
-        "available": false
+        "available": true
       },
       "Support": {
         "url": "/support",
-        "available": false
+        "available": true
       }
     }
   },

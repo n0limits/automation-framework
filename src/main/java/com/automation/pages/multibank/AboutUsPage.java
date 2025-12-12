@@ -11,21 +11,39 @@ import java.util.List;
 @Slf4j
 public class AboutUsPage extends BasePage {
 
-    // About Us Page Selectors
-    private final String aboutUsSection = "section:has-text('About'), [class*='about']";
-    private final String whyMultiBankSection = ":has-text('Why MultiBank'), :has-text('Why MultiLink')";
-    private final String companyOverview = ":has-text('Company'), :has-text('Overview')";
-    private final String trustSecuritySection = ":has-text('Trust'), :has-text('Security')";
-    private final String globalPresenceSection = ":has-text('Global'), :has-text('Presence')";
-    private final String regulatoryComplianceSection = ":has-text('Regulatory'), :has-text('Compliance')";
+    // ===============================
+    // Locator Fields
+    // ===============================
 
-    // Page Components
-    private final String pageHeading = "h1, h2, [role='heading']";
-    private final String contentSections = "section, article, [class*='content']";
+    private final Locator aboutUsSection;
+    private final Locator whyMultiBankSection;
+    private final Locator companyOverviewSection;
+    private final Locator trustSecuritySection;
+    private final Locator globalPresenceSection;
+    private final Locator regulatoryComplianceSection;
+
+    private final Locator pageHeadings;
+    private final Locator contentSections;
 
     public AboutUsPage() {
         super();
+
+        // About Us Sections
+        this.aboutUsSection = page.locator("section:has-text('About')");
+        this.whyMultiBankSection = page.locator("section:has-text('Why MultiBank')");
+        this.companyOverviewSection = page.locator("section:has-text('Company'), section:has-text('Overview')");
+        this.trustSecuritySection = page.locator("section:has-text('Trust'), section:has-text('Security')");
+        this.globalPresenceSection = page.locator("section:has-text('Global'), section:has-text('Presence')");
+        this.regulatoryComplianceSection = page.locator("section:has-text('Regulatory'), section:has-text('Compliance')");
+
+        // Generic Page Components
+        this.pageHeadings = page.locator("role=heading");
+        this.contentSections = page.locator("section, article");
     }
+
+    // ===============================
+    // Navigation
+    // ===============================
 
     public void navigateToAboutUs() {
         String baseUrl = TestConfig.getInstance().getBaseUrl();
@@ -34,87 +52,50 @@ public class AboutUsPage extends BasePage {
         log.info("Navigated to About Us page: {}", aboutUrl);
     }
 
+    // ===============================
+    // Section Visibility Checks
+    // ===============================
+
     public boolean isAboutUsPageDisplayed() {
-        try {
-            waitForSelector(aboutUsSection);
-            log.debug("About Us page is displayed");
-            return true;
-        } catch (Exception e) {
-            log.error("About Us page not displayed", e);
-            return false;
-        }
+        return aboutUsSection.isVisible();
     }
 
     public boolean isWhyMultiBankSectionVisible() {
-        try {
-            waitForSelector(whyMultiBankSection);
-            log.debug("Why MultiBank section is visible");
-            return true;
-        } catch (Exception e) {
-            log.warn("Why MultiBank section not found");
-            return false;
-        }
+        return whyMultiBankSection.isVisible();
     }
 
     public boolean isCompanyOverviewVisible() {
-        try {
-            waitForSelector(companyOverview);
-            log.debug("Company Overview section is visible");
-            return true;
-        } catch (Exception e) {
-            log.debug("Company Overview section not found");
-            return false;
-        }
+        return companyOverviewSection.isVisible();
     }
 
     public boolean isTrustSecuritySectionVisible() {
-        try {
-            waitForSelector(trustSecuritySection);
-            log.debug("Trust & Security section is visible");
-            return true;
-        } catch (Exception e) {
-            log.debug("Trust & Security section not found");
-            return false;
-        }
+        return trustSecuritySection.isVisible();
     }
 
     public boolean isGlobalPresenceSectionVisible() {
-        try {
-            waitForSelector(globalPresenceSection);
-            log.debug("Global Presence section is visible");
-            return true;
-        } catch (Exception e) {
-            log.debug("Global Presence section not found");
-            return false;
-        }
+        return globalPresenceSection.isVisible();
     }
 
     public boolean isRegulatoryComplianceSectionVisible() {
-        try {
-            waitForSelector(regulatoryComplianceSection);
-            log.debug("Regulatory Compliance section is visible");
-            return true;
-        } catch (Exception e) {
-            log.debug("Regulatory Compliance section not found");
-            return false;
-        }
+        return regulatoryComplianceSection.isVisible();
     }
 
+    // ===============================
+    // Headings & Content Sections
+    // ===============================
+
     public String getPageHeading() {
-        waitForSelector(pageHeading);
-        String heading = page.locator(pageHeading).first().textContent();
+        String heading = pageHeadings.first().textContent().trim();
         log.info("Page heading: {}", heading);
         return heading;
     }
 
     public List<String> getAllSectionHeadings() {
         List<String> headings = new ArrayList<>();
-        try {
-            waitForSelector(pageHeading);
-            List<Locator> headingLocators = page.locator(pageHeading).all();
 
-            for (Locator locator : headingLocators) {
-                String text = locator.textContent();
+        try {
+            for (Locator heading : pageHeadings.all()) {
+                String text = heading.textContent();
                 if (text != null && !text.trim().isEmpty()) {
                     headings.add(text.trim());
                 }
@@ -129,51 +110,54 @@ public class AboutUsPage extends BasePage {
     }
 
     public int getContentSectionsCount() {
-        waitForSelector(contentSections);
-        int count = page.locator(contentSections).count();
+        int count = contentSections.count();
         log.info("Total content sections: {}", count);
         return count;
     }
+
+    public boolean isContentLoaded() {
+        try {
+            int sections = getContentSectionsCount();
+            boolean loaded = sections > 0;
+            log.info("Content loaded: {}, sections: {}", loaded, sections);
+            return loaded;
+        } catch (Exception e) {
+            log.error("Content not loaded", e);
+            return false;
+        }
+    }
+
+    // ===============================
+    // Dynamic Component Checks
+    // ===============================
 
     public boolean verifyAllExpectedComponentsPresent(List<String> expectedComponents) {
         boolean allPresent = true;
 
         for (String component : expectedComponents) {
-            try {
-                String selector = String.format(":has-text('%s')", component);
-                waitForSelector(selector);
-                log.debug("Component '{}' is present", component);
-            } catch (Exception e) {
+            Locator componentLocator = page.locator(String.format("section:has-text('%s')", component));
+
+            if (!componentLocator.isVisible()) {
                 log.warn("Component '{}' is missing", component);
                 allPresent = false;
+            } else {
+                log.debug("Component '{}' is present", component);
             }
         }
 
         return allPresent;
     }
 
+    // ===============================
+    // Section Text Retrieval
+    // ===============================
+
     public String getWhyMultiBankText() {
         try {
-            waitForSelector(whyMultiBankSection);
-            String text = page.locator(whyMultiBankSection).first().textContent();
-            log.info("Why MultiBank text: {}", text);
-            return text;
+            return whyMultiBankSection.first().textContent();
         } catch (Exception e) {
             log.error("Failed to get Why MultiBank text", e);
             return "";
-        }
-    }
-
-    public boolean isContentLoaded() {
-        try {
-            waitForSelector(contentSections);
-            int sectionsCount = getContentSectionsCount();
-            boolean loaded = sectionsCount > 0;
-            log.info("Content loaded: {}, sections count: {}", loaded, sectionsCount);
-            return loaded;
-        } catch (Exception e) {
-            log.error("Content not loaded", e);
-            return false;
         }
     }
 }
