@@ -118,7 +118,17 @@ public class TradingPage extends BasePage {
         List<String> pairs = new ArrayList<>();
         try {
             // Wait for rows to be present
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+
+            // Additional wait for data to populate - wait until first cell has content
+            Locator firstDataCell = tradingPairRows.first().locator("td").first();
+            for (int i = 0; i < 20; i++) {
+                String text = firstDataCell.textContent();
+                if (text != null && !text.trim().isEmpty()) {
+                    break;
+                }
+                page.waitForTimeout(500);
+            }
 
             List<Locator> rows = tradingPairRows.all();
 
@@ -161,6 +171,19 @@ public class TradingPage extends BasePage {
     public Map<String, String> getTradingPairData(String pairName) {
         Map<String, String> data = new HashMap<>();
         try {
+            // Wait for rows to be present and populated with data
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+
+            // Wait for data to populate - wait until first cell has content
+            Locator firstDataCell = tradingPairRows.first().locator("td").first();
+            for (int i = 0; i < 20; i++) {
+                String text = firstDataCell.textContent();
+                if (text != null && !text.trim().isEmpty()) {
+                    break;
+                }
+                page.waitForTimeout(500);
+            }
+
             List<Locator> rows = tradingPairRows.all();
 
             for (Locator row : rows) {

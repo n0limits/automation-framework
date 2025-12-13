@@ -55,4 +55,49 @@ public class TestDataProviders {
             { "All Pairs", "allPairsTabAvailable" }
         };
     }
+
+    @DataProvider(name = "allNavigationItemsProvider")
+    public Object[][] allNavigationItemsProvider() {
+        return new Object[][] {
+            { "Dashboard", "/" },
+            { "Markets", "/" },
+            { "Trade", "/trade" },
+            { "Features", "/features" },
+            { "About Us", "/about" },
+            { "Support", "/support" }
+        };
+    }
+
+    @DataProvider(name = "tradingTabsVisibilityProvider")
+    public Object[][] tradingTabsVisibilityProvider() {
+        return new Object[][] {
+            { "Favorites", "favoritesTabAvailable" },
+            { "All Pairs", "allPairsTabAvailable" }
+        };
+    }
+
+    @DataProvider(name = "marketIndicatorsProvider")
+    public Object[][] marketIndicatorsProvider() {
+        return new Object[][] {
+            { "Fear Index", "fearIndexVisible" },
+            { "Top Gainers", "topGainersVisible" },
+            { "Top Losers", "topLosersVisible" }
+        };
+    }
+
+    @DataProvider(name = "investmentSectionsProvider")
+    public Object[][] investmentSectionsProvider() {
+        // Real World Assets is a marketing banner, not a separate investment section
+        return new Object[][] {
+            { "MBG Token" }
+        };
+    }
+
+    @DataProvider(name = "downloadLinksVisibilityProvider")
+    public Object[][] downloadLinksVisibilityProvider() {
+        return new Object[][] {
+            { "App Store" },
+            { "Google Play" }
+        };
+    }
 }

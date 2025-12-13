@@ -59,6 +59,35 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Content validation test cleanup completed");
     }
 
+    // ========================================
+    // Helper Methods
+    // ========================================
+
+    /**
+     * Scrolls to footer section - common operation for footer-related tests
+     */
+    private void scrollToFooterSection() {
+        scrollToFooterSection();
+    }
+
+    /**
+     * Navigates to About Us page and waits for load - common operation for About Us tests
+     */
+    private void navigateToAboutUsPage() {
+        navigationPage.clickAboutUs();
+        page.waitForLoadState();
+    }
+
+    /**
+     * Checks if About Us page is available and skips test if not
+     */
+    private void skipIfAboutUsNotAvailable() {
+        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
+        if (!aboutUsAvailable) {
+            throw new SkipException("About Us page test skipped - page not available on current site");
+        }
+    }
+
     @Test(description = "Verify footer is displayed", priority = 1)
     @Severity(SeverityLevel.NORMAL)
     @Story("Footer Section")
@@ -66,7 +95,7 @@ public class ContentValidationTests extends BaseWebTest {
     public void testFooterDisplayed() {
         log.info("Starting test: Footer display verification");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean isDisplayed = footerPage.isFooterDisplayed();
 
         assertThat(isDisplayed)
@@ -76,48 +105,38 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Test completed: Footer is displayed");
     }
 
-    @Test(description = "Verify App Store download link is visible", priority = 2)
+    @Test(description = "Verify download links are visible", priority = 2,
+          dataProvider = "downloadLinksVisibilityProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Download Links")
-    @Description("Test verifies that App Store download link is visible")
-    public void testAppStoreLinkVisible() {
-        log.info("Testing App Store link visibility");
+    @Description("Test verifies that download links are visible")
+    public void testDownloadLinksVisible(String linkName) {
+        log.info("Testing {} link visibility", linkName);
 
-        footerPage.scrollToFooter();
-        boolean isVisible = footerPage.isAppStoreLinkVisible();
+        scrollToFooterSection();
 
-        assertThat(isVisible)
-                .as("App Store link should be visible")
-                .isTrue();
-
-        log.info("App Store link is visible");
-    }
-
-    @Test(description = "Verify Google Play download link is visible", priority = 3)
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Download Links")
-    @Description("Test verifies that Google Play download link is visible")
-    public void testGooglePlayLinkVisible() {
-        log.info("Testing Google Play link visibility");
-
-        footerPage.scrollToFooter();
-        boolean isVisible = footerPage.isGooglePlayLinkVisible();
+        boolean isVisible;
+        if (linkName.equals("App Store")) {
+            isVisible = footerPage.isAppStoreLinkVisible();
+        } else {
+            isVisible = footerPage.isGooglePlayLinkVisible();
+        }
 
         assertThat(isVisible)
-                .as("Google Play link should be visible")
+                .as(linkName + " link should be visible")
                 .isTrue();
 
-        log.info("Google Play link is visible");
+        log.info("{} link is visible", linkName);
     }
 
-    @Test(description = "Verify download links point to correct stores", priority = 4)
+    @Test(description = "Verify download links point to correct stores", priority = 3)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Download Links Validation")
     @Description("Test verifies that download links point to correct app stores")
     public void testDownloadLinksPointToCorrectStores() {
         log.info("Testing download links validation");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         String appStoreUrl = footerPage.getAppStoreUrl();
         String googlePlayUrl = footerPage.getGooglePlayUrl();
 
@@ -136,14 +155,14 @@ public class ContentValidationTests extends BaseWebTest {
                 appStoreUrl, googlePlayUrl);
     }
 
-    @Test(description = "Verify QR code is visible", priority = 5)
+    @Test(description = "Verify QR code is visible", priority = 4)
     @Severity(SeverityLevel.MINOR)
     @Story("Download Section")
     @Description("Test verifies that QR code for app download is visible")
     public void testQRCodeVisible() {
         log.info("Testing QR code visibility");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean qrCodeExpected = TestDataReader.getBooleanValue(testData, "downloadSection", "qrCodeVisible");
 
         if (qrCodeExpected) {
@@ -159,14 +178,14 @@ public class ContentValidationTests extends BaseWebTest {
         }
     }
 
-    @Test(description = "Verify marketing banners are visible", priority = 6)
+    @Test(description = "Verify marketing banners are visible", priority = 5)
     @Severity(SeverityLevel.NORMAL)
     @Story("Marketing Banners")
     @Description("Test verifies that marketing banners are displayed")
     public void testMarketingBannersVisible() {
         log.info("Testing marketing banners visibility");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean areVisible = footerPage.areMarketingBannersVisible();
 
         assertThat(areVisible)
@@ -176,7 +195,7 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Marketing banners are visible");
     }
 
-    @Test(description = "Verify specific marketing banner is visible", priority = 7,
+    @Test(description = "Verify specific marketing banner is visible", priority = 6,
           dataProvider = "marketingBannersProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.MINOR)
     @Story("Marketing Banner Content")
@@ -184,7 +203,7 @@ public class ContentValidationTests extends BaseWebTest {
     public void testSpecificMarketingBannerVisible(String bannerText) {
         log.info("Testing visibility of marketing banner: {}", bannerText);
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean isBannerVisible = footerPage.isSpecificBannerVisible(bannerText);
 
         assertThat(isBannerVisible)
@@ -194,20 +213,15 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Marketing banner '{}' is visible", bannerText);
     }
 
-    @Test(description = "Verify About Us page is accessible", priority = 8)
+    @Test(description = "Verify About Us page is accessible", priority = 7)
     @Severity(SeverityLevel.CRITICAL)
     @Story("About Us Page")
     @Description("Test verifies that About Us page is accessible and loads correctly")
     public void testAboutUsPageAccessible() {
         log.info("Testing About Us page accessibility");
 
-        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
-        if (!aboutUsAvailable) {
-            throw new SkipException("About Us page test skipped - page not available on current site");
-        }
-
-        navigationPage.clickAboutUs();
-        page.waitForLoadState();
+        skipIfAboutUsNotAvailable();
+        navigateToAboutUsPage();
 
         boolean isDisplayed = aboutUsPage.isAboutUsPageDisplayed();
 
@@ -218,20 +232,15 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("About Us page is accessible");
     }
 
-    @Test(description = "Verify Why MultiBank section is visible", priority = 9)
+    @Test(description = "Verify Why MultiBank section is visible", priority = 8)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Why MultiBank Section")
     @Description("Test verifies that Why MultiBank section is visible on About Us page")
     public void testWhyMultiBankSectionVisible() {
         log.info("Testing Why MultiBank section visibility");
 
-        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
-        if (!aboutUsAvailable) {
-            throw new SkipException("Why MultiBank section test skipped - About Us page not available");
-        }
-
-        navigationPage.clickAboutUs();
-        page.waitForLoadState();
+        skipIfAboutUsNotAvailable();
+        navigateToAboutUsPage();
 
         boolean isVisible = aboutUsPage.isWhyMultiBankSectionVisible();
 
@@ -242,20 +251,15 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Why MultiBank section is visible");
     }
 
-    @Test(description = "Verify About Us page components are present", priority = 10)
+    @Test(description = "Verify About Us page components are present", priority = 9)
     @Severity(SeverityLevel.NORMAL)
     @Story("About Us Page Components")
     @Description("Test verifies that all expected components are present on About Us page")
     public void testAboutUsPageComponents() {
         log.info("Testing About Us page components");
 
-        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
-        if (!aboutUsAvailable) {
-            throw new SkipException("About Us components test skipped - About Us page not available");
-        }
-
-        navigationPage.clickAboutUs();
-        page.waitForLoadState();
+        skipIfAboutUsNotAvailable();
+        navigateToAboutUsPage();
 
         List<String> expectedComponents = TestDataReader.getStringList(testData,
                 "aboutUsPage", "whyMultiBankSection", "expectedComponents");
@@ -269,20 +273,15 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("All expected components are present on About Us page");
     }
 
-    @Test(description = "Verify About Us page content is loaded", priority = 11)
+    @Test(description = "Verify About Us page content is loaded", priority = 10)
     @Severity(SeverityLevel.NORMAL)
     @Story("About Us Content")
     @Description("Test verifies that About Us page content is fully loaded")
     public void testAboutUsContentLoaded() {
         log.info("Testing About Us page content loading");
 
-        boolean aboutUsAvailable = TestDataReader.getBooleanValue(testData, "aboutUsPage", "available");
-        if (!aboutUsAvailable) {
-            throw new SkipException("About Us content test skipped - About Us page not available");
-        }
-
-        navigationPage.clickAboutUs();
-        page.waitForLoadState();
+        skipIfAboutUsNotAvailable();
+        navigateToAboutUsPage();
 
         boolean isLoaded = aboutUsPage.isContentLoaded();
         int sectionsCount = aboutUsPage.getContentSectionsCount();
@@ -298,14 +297,14 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("About Us page content is loaded with {} sections", sectionsCount);
     }
 
-    @Test(description = "Verify social media links are visible", priority = 12)
+    @Test(description = "Verify social media links are visible", priority = 11)
     @Severity(SeverityLevel.MINOR)
     @Story("Social Media Links")
     @Description("Test verifies that social media links are visible in footer")
     public void testSocialMediaLinksVisible() {
         log.info("Testing social media links visibility");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean areVisible = footerPage.areSocialMediaLinksVisible();
 
         if (areVisible) {
@@ -321,7 +320,7 @@ public class ContentValidationTests extends BaseWebTest {
         }
     }
 
-    @Test(description = "Verify all page elements render correctly", priority = 13)
+    @Test(description = "Verify all page elements render correctly", priority = 12)
     @Severity(SeverityLevel.NORMAL)
     @Story("Page Rendering")
     @Description("Test verifies that all major page elements render correctly")
@@ -329,7 +328,7 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("Testing page elements rendering");
 
         boolean navigationDisplayed = navigationPage.isNavigationMenuDisplayed();
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
         boolean footerDisplayed = footerPage.isFooterDisplayed();
 
         assertThat(navigationDisplayed)
@@ -343,7 +342,7 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("All major page elements rendered correctly");
     }
 
-    @Test(description = "Verify download link configuration and validity", priority = 14,
+    @Test(description = "Verify download link configuration and validity", priority = 13,
           dataProvider = "downloadLinksProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Download Links Validation")
@@ -351,7 +350,7 @@ public class ContentValidationTests extends BaseWebTest {
     public void testDownloadLinkConfiguration(String linkName, String expectedDomain) {
         log.info("Testing {} link configuration", linkName);
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
 
         String actualHref;
         boolean linkVisible;
@@ -389,14 +388,14 @@ public class ContentValidationTests extends BaseWebTest {
         log.info("{} link validated - URL: {}", linkName, actualHref);
     }
 
-    @Test(description = "Verify marketing banners content and interaction", priority = 15)
+    @Test(description = "Verify marketing banners content and interaction", priority = 14)
     @Severity(SeverityLevel.NORMAL)
     @Story("Marketing Banners Interaction")
     @Description("Test verifies that marketing banners are displayed with proper content")
     public void testMarketingBannersContent() {
         log.info("Testing marketing banners content");
 
-        footerPage.scrollToFooter();
+        scrollToFooterSection();
 
         // Verify banners are visible
         boolean bannersVisible = footerPage.areMarketingBannersVisible();

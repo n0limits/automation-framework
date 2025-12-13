@@ -44,8 +44,8 @@ public class FooterPage extends BasePage {
         this.googlePlayLink = page.locator("a[href*='play.google.com/store/apps/details?id=com.multibank.app'], a[href*='play.google.com'], img[alt='google-play']").first();
         this.qrCode = page.locator("img[alt='qr-code'], img[alt*='qr']").first();
 
-        // Marketing Banners - using actual structure: individual sections with marketing content
-        this.marketingBanner = page.locator("section:has-text('Pay Trading Fees with MBG'), section:has-text('Invest in tokenized Real World Assets'), div[class*='marketing-banner'], div[class*='mbg'], div[class*='rwa']");
+        // Marketing Banners - using simpler text matching that works with page structure
+        this.marketingBanner = page.locator(":has-text('Pay Trading Fees'), :has-text('Real World Assets'), :has-text('Coming Soon')");
         this.instantBuyBanner = page.locator("section:has-text('Quick Buy'), button:has-text('Quick Buy')").first();
         this.cardTransferBanner = page.locator("section:has-text('credit'), section:has-text('debit card')").first();
         this.supportBanner = page.locator("section:has-text('Coming Soon'), section:has-text('tokenized')").first();

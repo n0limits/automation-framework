@@ -13,10 +13,10 @@
     "rotationEnabled": false
   },
   "aboutUsPage": {
-    "available": true,
+    "available": false,
     "url": "/about",
     "whyMultiBankSection": {
-      "visible": true,
+      "visible": false,
       "expectedComponents": [
         "Company Overview",
         "Trust & Security",

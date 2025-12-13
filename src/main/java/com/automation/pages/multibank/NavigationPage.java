@@ -99,7 +99,11 @@ public class NavigationPage extends BasePage {
     }
 
     public void clickNavigationItem(String itemName) {
-        Locator itemLocator = page.locator(String.format("a:has-text('%s')", itemName)).first();
+        // Support both <a> (direct links) and <span> (dropdown triggers)
+        Locator itemLocator = page.locator(String.format(
+                "header a:has-text('%s'), header span:has-text('%s')",
+                itemName, itemName
+        )).first();
         itemLocator.waitFor();
         itemLocator.click();
         log.info("Clicked navigation item: {}", itemName);

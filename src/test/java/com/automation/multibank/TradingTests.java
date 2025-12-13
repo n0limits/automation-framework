@@ -59,6 +59,45 @@ public class TradingTests extends BaseWebTest {
         log.info("Trading test cleanup completed");
     }
 
+    // ========================================
+    // Helper Methods
+    // ========================================
+
+    /**
+     * Checks if trading tab is available and skips test if not
+     * @param tabName Name of the tab (e.g., "Favorites", "All Pairs")
+     * @param availabilityKey Configuration key to check
+     */
+    private void skipIfTabNotAvailable(String tabName, String availabilityKey) {
+        boolean tabAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", availabilityKey);
+        if (!tabAvailable) {
+            throw new SkipException(tabName + " tab test skipped - tab not available on current site");
+        }
+    }
+
+    /**
+     * Checks if trading pairs are available on page and skips test if not
+     */
+    private void skipIfTradingPairsNotAvailable() {
+        boolean pairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "pairsAvailableOnPage");
+        if (!pairsAvailable) {
+            throw new SkipException("Trading pairs test skipped - pairs not available on homepage");
+        }
+    }
+
+    /**
+     * Clicks trading tab and waits for page load
+     * @param tabName Name of the tab to click
+     */
+    private void clickTabAndWait(String tabName) {
+        if (tabName.equals("Favorites")) {
+            tradingPage.clickFavoritesTab();
+        } else if (tabName.equals("All Pairs")) {
+            tradingPage.clickAllPairsTab();
+        }
+        page.waitForLoadState();
+    }
+
     @Test(description = "Verify spot trading section is displayed", priority = 1)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Spot Trading Section")
@@ -120,11 +159,7 @@ public class TradingTests extends BaseWebTest {
     public void testTradingPairsDisplayed() {
         log.info("Starting test: Trading pairs display verification");
 
-        boolean pairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "pairsAvailableOnPage");
-
-        if (!pairsAvailable) {
-            throw new SkipException("Trading pairs display test skipped - pairs not available on homepage");
-        }
+        skipIfTradingPairsNotAvailable();
 
         List<String> tradingPairs = tradingPage.getTradingPairs();
 
@@ -179,144 +214,79 @@ public class TradingTests extends BaseWebTest {
         log.info("Test completed: Trading pair data structure is correct");
     }
 
-    @Test(description = "Verify Favorites tab is visible", priority = 7)
+    @Test(description = "Verify trading category tabs are visible", priority = 7,
+          dataProvider = "tradingTabsVisibilityProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.NORMAL)
     @Story("Trading Categories")
-    @Description("Test verifies that Favorites tab is visible")
-    public void testFavoritesTabVisible() {
-        log.info("Testing Favorites tab visibility");
+    @Description("Test verifies that trading category tabs are visible")
+    public void testTradingTabsVisible(String tabName, String availabilityKey) {
+        log.info("Testing {} tab visibility", tabName);
 
-        boolean favoritesAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "favoritesTabAvailable");
-        if (!favoritesAvailable) {
-            throw new SkipException("Favorites tab test skipped - tab not available on current site");
+        skipIfTabNotAvailable(tabName, availabilityKey);
+
+        boolean isVisible;
+        if (tabName.equals("Favorites")) {
+            isVisible = tradingPage.isFavoritesTabVisible();
+        } else {
+            isVisible = tradingPage.isAllPairsTabVisible();
         }
 
-        boolean isVisible = tradingPage.isFavoritesTabVisible();
-
         assertThat(isVisible)
-                .as("Favorites tab should be visible")
+                .as(tabName + " tab should be visible")
                 .isTrue();
 
-        log.info("Favorites tab is visible");
+        log.info("{} tab is visible", tabName);
     }
 
-    @Test(description = "Verify All Pairs tab is visible", priority = 8)
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Trading Categories")
-    @Description("Test verifies that All Pairs tab is visible")
-    public void testAllPairsTabVisible() {
-        log.info("Testing All Pairs tab visibility");
-
-        boolean allPairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "allPairsTabAvailable");
-        if (!allPairsAvailable) {
-            throw new SkipException("All Pairs tab test skipped - tab not available on current site");
-        }
-
-        boolean isVisible = tradingPage.isAllPairsTabVisible();
-
-        assertThat(isVisible)
-                .as("All Pairs tab should be visible")
-                .isTrue();
-
-        log.info("All Pairs tab is visible");
-    }
-
-    @Test(description = "Verify Fear Index market indicator is visible", priority = 9)
+    @Test(description = "Verify market indicators are visible", priority = 9,
+          dataProvider = "marketIndicatorsProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.MINOR)
     @Story("Market Indicators")
-    @Description("Test verifies that Fear Index indicator is visible")
-    public void testFearIndexVisible() {
-        log.info("Testing Fear Index visibility");
+    @Description("Test verifies that market indicators are visible when enabled")
+    public void testMarketIndicatorsVisible(String indicatorName, String visibilityKey) {
+        log.info("Testing {} visibility", indicatorName);
 
-        boolean fearIndexEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "fearIndexVisible");
+        boolean indicatorEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", visibilityKey);
 
-        if (!fearIndexEnabled) {
-            throw new SkipException("Fear Index test skipped - not expected to be visible");
+        if (!indicatorEnabled) {
+            throw new SkipException(indicatorName + " test skipped - not expected to be visible");
         }
 
-        boolean isVisible = tradingPage.isFearIndexVisible();
-
-        assertThat(isVisible)
-                .as("Fear Index should be visible")
-                .isTrue();
-
-        log.info("Fear Index is visible");
-    }
-
-    @Test(description = "Verify Top Gainers section is visible", priority = 10)
-    @Severity(SeverityLevel.MINOR)
-    @Story("Market Indicators")
-    @Description("Test verifies that Top Gainers section is visible")
-    public void testTopGainersVisible() {
-        log.info("Testing Top Gainers visibility");
-
-        boolean topGainersEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "topGainersVisible");
-
-        if (!topGainersEnabled) {
-            throw new SkipException("Top Gainers test skipped - not expected to be visible");
+        boolean isVisible;
+        switch (indicatorName) {
+            case "Fear Index" -> isVisible = tradingPage.isFearIndexVisible();
+            case "Top Gainers" -> isVisible = tradingPage.areTopGainersVisible();
+            case "Top Losers" -> isVisible = tradingPage.areTopLosersVisible();
+            default -> throw new IllegalArgumentException("Unknown indicator: " + indicatorName);
         }
 
-        boolean isVisible = tradingPage.areTopGainersVisible();
-
         assertThat(isVisible)
-                .as("Top Gainers section should be visible")
+                .as(indicatorName + " should be visible")
                 .isTrue();
 
-        log.info("Top Gainers section is visible");
+        log.info("{} is visible", indicatorName);
     }
 
-    @Test(description = "Verify Top Losers section is visible", priority = 11)
-    @Severity(SeverityLevel.MINOR)
-    @Story("Market Indicators")
-    @Description("Test verifies that Top Losers section is visible")
-    public void testTopLosersVisible() {
-        log.info("Testing Top Losers visibility");
-
-        boolean topLosersEnabled = TestDataReader.getBooleanValue(testData, "marketIndicators", "topLosersVisible");
-
-        if (!topLosersEnabled) {
-            throw new SkipException("Top Losers test skipped - not expected to be visible");
-        }
-
-        boolean isVisible = tradingPage.areTopLosersVisible();
-
-        assertThat(isVisible)
-                .as("Top Losers section should be visible")
-                .isTrue();
-
-        log.info("Top Losers section is visible");
-    }
-
-    @Test(description = "Verify MBG Token section is visible", priority = 12)
+    @Test(description = "Verify investment opportunity sections are visible", priority = 12,
+          dataProvider = "investmentSectionsProvider", dataProviderClass = TestDataProviders.class)
     @Severity(SeverityLevel.NORMAL)
     @Story("Investment Opportunities")
-    @Description("Test verifies that MBG Token promotion section is visible")
-    public void testMBGTokenSectionVisible() {
-        log.info("Testing MBG Token section visibility");
+    @Description("Test verifies that investment opportunity sections are visible")
+    public void testInvestmentSectionsVisible(String sectionName) {
+        log.info("Testing {} section visibility", sectionName);
 
-        boolean isVisible = tradingPage.isMBGTokenSectionVisible();
-
-        assertThat(isVisible)
-                .as("MBG Token section should be visible")
-                .isTrue();
-
-        log.info("MBG Token section is visible");
-    }
-
-    @Test(description = "Verify Real World Assets section is visible", priority = 13)
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Investment Opportunities")
-    @Description("Test verifies that Real World Assets section is visible")
-    public void testRealWorldAssetsSectionVisible() {
-        log.info("Testing Real World Assets section visibility");
-
-        boolean isVisible = tradingPage.isRealWorldAssetsSectionVisible();
+        boolean isVisible;
+        if (sectionName.equals("MBG Token")) {
+            isVisible = tradingPage.isMBGTokenSectionVisible();
+        } else {
+            isVisible = tradingPage.isRealWorldAssetsSectionVisible();
+        }
 
         assertThat(isVisible)
-                .as("Real World Assets section should be visible")
+                .as(sectionName + " section should be visible")
                 .isTrue();
 
-        log.info("Real World Assets section is visible");
+        log.info("{} section is visible", sectionName);
     }
 
     @Test(description = "Verify Quick Access Tools are visible", priority = 14)
@@ -345,11 +315,7 @@ public class TradingTests extends BaseWebTest {
     public void testTradingPairsCount() {
         log.info("Testing trading pairs count");
 
-        boolean pairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "pairsAvailableOnPage");
-
-        if (!pairsAvailable) {
-            throw new SkipException("Trading pairs count test skipped - pairs not available on homepage");
-        }
+        skipIfTradingPairsNotAvailable();
 
         int pairsCount = tradingPage.getTradingPairsCount();
 
@@ -368,19 +334,8 @@ public class TradingTests extends BaseWebTest {
     public void testTradingTabFunctionality(String tabName, String availabilityKey) {
         log.info("Testing {} tab functionality", tabName);
 
-        boolean tabAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", availabilityKey);
-        if (!tabAvailable) {
-            throw new SkipException(tabName + " tab test skipped - tab not available on current site");
-        }
-
-        // Click the appropriate tab based on name
-        if (tabName.equals("Favorites")) {
-            tradingPage.clickFavoritesTab();
-        } else if (tabName.equals("All Pairs")) {
-            tradingPage.clickAllPairsTab();
-        }
-
-        page.waitForLoadState();
+        skipIfTabNotAvailable(tabName, availabilityKey);
+        clickTabAndWait(tabName);
 
         // Verify trading table is still displayed after tab switch
         boolean tableDisplayed = tradingPage.isTradingPairsTableDisplayed();
@@ -421,8 +376,7 @@ public class TradingTests extends BaseWebTest {
         }
 
         // Switch to All Pairs and verify
-        tradingPage.clickAllPairsTab();
-        page.waitForLoadState();
+        clickTabAndWait("All Pairs");
         int allPairsCount = tradingPage.getTradingPairsCount();
 
         assertThat(allPairsCount)
@@ -432,8 +386,7 @@ public class TradingTests extends BaseWebTest {
         log.info("All Pairs category shows {} pairs", allPairsCount);
 
         // Switch to Favorites and verify table remains functional
-        tradingPage.clickFavoritesTab();
-        page.waitForLoadState();
+        clickTabAndWait("Favorites");
         int favoritesCount = tradingPage.getTradingPairsCount();
 
         // Favorites can be empty, verify table is still displayed
@@ -448,8 +401,7 @@ public class TradingTests extends BaseWebTest {
                 .isGreaterThanOrEqualTo(0);
 
         // Switch back to All Pairs to verify consistency
-        tradingPage.clickAllPairsTab();
-        page.waitForLoadState();
+        clickTabAndWait("All Pairs");
         int allPairsCountAfter = tradingPage.getTradingPairsCount();
 
         assertThat(allPairsCountAfter)
