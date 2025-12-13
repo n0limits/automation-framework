@@ -481,7 +481,7 @@ Or via command line:
 mvn clean test -Dheadless=true
 ```
 
-### 📊 Test Reports
+### Test Reports
 
 The framework generates comprehensive Allure HTML reports for stakeholder review.
 
@@ -507,13 +507,13 @@ mvn allure:report site
 **The report will be available at:** `reports/latest/index.html`
 
 #### What's Included in the Report
-- ✅ Test execution overview with pass/fail statistics
-- ✅ Visual charts and graphs
-- ✅ Test duration timeline
-- ✅ Detailed test results with stack traces
-- ✅ Test categorization by Epic, Feature, and Story
-- ✅ Historical trends (when running multiple times)
-- ✅ Failed test screenshots and logs (when configured)
+-  Test execution overview with pass/fail statistics
+-  Visual charts and graphs
+-  Test duration timeline
+-  Detailed test results with stack traces
+-  Test categorization by Epic, Feature, and Story
+-  Historical trends (when running multiple times)
+-  Failed test screenshots and logs (when configured)
 
 #### Sharing with Stakeholders
 The `reports/latest/` directory is committed to the repository and can be:
@@ -523,6 +523,62 @@ The `reports/latest/` directory is committed to the repository and can be:
 - Attached to pull requests or JIRA tickets
 
 **Note:** The `logs/` directory is NOT committed (contains sensitive internal logs). Only the sanitized HTML report is shared.
+
+# Test Execution Reports
+
+This directory contains the latest test execution reports for stakeholder review.
+
+##  Latest Report
+
+The latest test execution results are available in the `latest/` directory.
+
+### How to View the Report
+
+1. **Open the report locally:**
+    - Navigate to `reports/latest/` directory
+    - Open `index.html` in your web browser
+    - The report will display all test results, charts, and statistics
+
+2. **What's included:**
+    -  Test execution overview
+    -  Pass/Fail statistics with charts
+    -  Test duration timeline
+    -  Detailed test results
+    -  Failed test stack traces (if any)
+    -  Test categorization by feature
+
+##  Updating the Report
+
+To generate and update the latest report after running tests:
+
+```bash
+# Run tests
+mvn clean test
+
+# Generate the static HTML report
+mvn allure:report
+
+# Copy to reports directory
+cp -r target/allure-report/* reports/latest/
+
+# Commit the updated report
+git add reports/latest/
+git commit -m "Update test execution report"
+```
+
+##  Report Information
+
+- **Report Format:** Allure HTML Report
+- **Location:** `reports/latest/index.html`
+- **No Installation Required:** Just open in any modern web browser
+- **Offline Accessible:** All assets are bundled, works without internet
+
+##  Quick Access
+
+**Direct path to report:** `reports/latest/index.html`
+
+Simply double-click the file or open it in your browser to view the complete test execution results.
+
 
 ### Available TestNG Suites
 

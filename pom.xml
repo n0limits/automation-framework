@@ -239,7 +239,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>reports/multi-browser</outputDirectory>
+                            <outputDirectory>reports/latest</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/allure-report</directory>
