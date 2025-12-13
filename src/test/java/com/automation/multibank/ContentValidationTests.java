@@ -67,7 +67,7 @@ public class ContentValidationTests extends BaseWebTest {
      * Scrolls to footer section - common operation for footer-related tests
      */
     private void scrollToFooterSection() {
-        scrollToFooterSection();
+        footerPage.scrollToFooter();
     }
 
     /**

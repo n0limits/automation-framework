@@ -60,7 +60,7 @@ public class FooterPage extends BasePage {
 
     public boolean isFooterDisplayed() {
         try {
-            footerSection.waitFor();
+            footerSection.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Footer section is displayed");
             return true;
         } catch (Exception e) {
@@ -71,35 +71,35 @@ public class FooterPage extends BasePage {
 
     public boolean isAppStoreLinkVisible() {
         try {
-            appStoreLink.waitFor();
+            appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("App Store link is visible");
             return true;
         } catch (Exception e) {
-            log.warn("App Store link not found");
+            log.warn("App Store link not found", e);
             return false;
         }
     }
 
     public boolean isGooglePlayLinkVisible() {
         try {
-            googlePlayLink.waitFor();
+            googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Google Play link is visible");
             return true;
         } catch (Exception e) {
-            log.warn("Google Play link not found");
+            log.warn("Google Play link not found", e);
             return false;
         }
     }
 
     public String getAppStoreUrl() {
-        appStoreLink.waitFor();
+        appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
         String href = appStoreLink.getAttribute("href");
         log.info("App Store URL: {}", href);
         return href;
     }
 
     public String getGooglePlayUrl() {
-        googlePlayLink.waitFor();
+        googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
         String href = googlePlayLink.getAttribute("href");
         log.info("Google Play URL: {}", href);
         return href;
@@ -107,11 +107,11 @@ public class FooterPage extends BasePage {
 
     public boolean isQRCodeVisible() {
         try {
-            qrCode.waitFor();
+            qrCode.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("QR code is visible");
             return true;
         } catch (Exception e) {
-            log.debug("QR code not found");
+            log.debug("QR code not found", e);
             return false;
         }
     }
@@ -136,7 +136,7 @@ public class FooterPage extends BasePage {
     public List<String> getMarketingBannerTexts() {
         List<String> bannerTexts = new ArrayList<>();
         try {
-            marketingBanner.first().waitFor();
+            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
             List<Locator> banners = marketingBanner.all();
 
             for (Locator banner : banners) {
@@ -156,45 +156,49 @@ public class FooterPage extends BasePage {
 
     public boolean isInstantBuyBannerVisible() {
         try {
-            instantBuyBanner.waitFor();
+            instantBuyBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Instant Buy banner is visible");
             return true;
         } catch (Exception e) {
-            log.debug("Instant Buy banner not found");
+            log.debug("Instant Buy banner not found", e);
             return false;
         }
     }
 
     public boolean isCardTransferBannerVisible() {
         try {
-            cardTransferBanner.waitFor();
+            cardTransferBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Card/Transfer banner is visible");
             return true;
         } catch (Exception e) {
-            log.debug("Card/Transfer banner not found");
+            log.debug("Card/Transfer banner not found", e);
             return false;
         }
     }
 
     public boolean isSupportBannerVisible() {
         try {
-            supportBanner.waitFor();
+            supportBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Support banner is visible");
             return true;
         } catch (Exception e) {
-            log.debug("Support banner not found");
+            log.debug("Support banner not found", e);
             return false;
         }
     }
 
     public boolean isSpecificBannerVisible(String bannerText) {
         try {
+            // Scroll to make banners visible
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)");
+            page.waitForTimeout(1000);
+
             Locator specificBanner = page.locator(String.format(":has-text('%s')", bannerText)).first();
-            specificBanner.waitFor();
+            specificBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Banner containing '{}' is visible", bannerText);
             return true;
         } catch (Exception e) {
-            log.debug("Banner containing '{}' not found", bannerText);
+            log.debug("Banner containing '{}' not found", bannerText, e);
             return false;
         }
     }
@@ -225,7 +229,7 @@ public class FooterPage extends BasePage {
     public List<String> getSocialMediaLinks() {
         List<String> links = new ArrayList<>();
         try {
-            socialMediaLinks.first().waitFor();
+            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
             List<Locator> socialLinks = socialMediaLinks.all();
 
             for (Locator link : socialLinks) {

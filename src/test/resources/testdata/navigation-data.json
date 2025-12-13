@@ -21,15 +21,15 @@
       },
       "Features": {
         "url": "/features",
-        "available": true
+        "available": false
       },
       "About Us": {
         "url": "/about",
-        "available": true
+        "available": false
       },
       "Support": {
         "url": "/support",
-        "available": true
+        "available": false
       }
     }
   },

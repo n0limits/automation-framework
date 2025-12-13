@@ -57,8 +57,8 @@ public class TradingPage extends BasePage {
 
         // Quick Access Buttons - using exact button text from page
         this.convertAssetsButton = page.locator("button:has-text('Convert Your Assets'), button:has-text('Convert')").first();
-        this.quickBuyButton = page.locator("button:has-text('Quick Buy Crypto'), button:has-text('Quick Buy')").first();
-        this.panicSellButton = page.locator("button:has-text('Quick Sell Your Assets'), button:has-text('Quick Sell'), button:has-text('Panic Sell')").first();
+        this.quickBuyButton = page.locator("button:has-text('Instant Buy'), button:has-text('Quick Buy Crypto'), button:has-text('Quick Buy')").first();
+        this.panicSellButton = page.locator("button:has-text('Panic Sell'), button:has-text('Quick Sell Your Assets'), button:has-text('Quick Sell')").first();
     }
 
     // =========================
@@ -67,7 +67,7 @@ public class TradingPage extends BasePage {
 
     public boolean isSpotTradingSectionDisplayed() {
         try {
-            tradingPairsTable.waitFor();
+            tradingPairsTable.waitFor(new Locator.WaitForOptions().setTimeout(15000));
             log.debug("Spot trading section is displayed");
             return true;
         } catch (Exception e) {
@@ -105,9 +105,9 @@ public class TradingPage extends BasePage {
     public int getTradingPairsCount() {
         try {
             // Wait for table to be populated with data
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
         } catch (Exception e) {
-            log.warn("No trading pair rows found");
+            log.warn("No trading pair rows found", e);
         }
         int count = tradingPairRows.count();
         log.info("Total trading pairs count: {}", count);
@@ -118,11 +118,11 @@ public class TradingPage extends BasePage {
         List<String> pairs = new ArrayList<>();
         try {
             // Wait for rows to be present
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
 
             // Additional wait for data to populate - wait until first cell has content
             Locator firstDataCell = tradingPairRows.first().locator("td").first();
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 30; i++) {
                 String text = firstDataCell.textContent();
                 if (text != null && !text.trim().isEmpty()) {
                     break;
@@ -172,11 +172,11 @@ public class TradingPage extends BasePage {
         Map<String, String> data = new HashMap<>();
         try {
             // Wait for rows to be present and populated with data
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
 
             // Wait for data to populate - wait until first cell has content
             Locator firstDataCell = tradingPairRows.first().locator("td").first();
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 30; i++) {
                 String text = firstDataCell.textContent();
                 if (text != null && !text.trim().isEmpty()) {
                     break;

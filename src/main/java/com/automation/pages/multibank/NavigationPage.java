@@ -61,7 +61,7 @@ public class NavigationPage extends BasePage {
 
     public boolean isNavigationMenuDisplayed() {
         try {
-            topNavigation.waitFor();
+            topNavigation.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Navigation menu is displayed");
             return true;
         } catch (Exception e) {
@@ -71,7 +71,7 @@ public class NavigationPage extends BasePage {
     }
 
     public List<String> getNavigationMenuItems() {
-        navMenuItems.first().waitFor();
+        navMenuItems.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
         List<Locator> menuLocators = navMenuItems.all();
         List<String> menuItems = new ArrayList<>();
 
@@ -88,12 +88,12 @@ public class NavigationPage extends BasePage {
 
     public boolean isNavigationItemVisible(String itemName) {
         try {
-            Locator itemLocator = page.locator(String.format("a:has-text('%s')", itemName)).first();
-            itemLocator.waitFor();
+            Locator itemLocator = page.locator(String.format("header a:has-text('%s'), header span:has-text('%s')", itemName, itemName)).first();
+            itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Navigation item '{}' is visible", itemName);
             return true;
         } catch (Exception e) {
-            log.warn("Navigation item '{}' not visible", itemName);
+            log.warn("Navigation item '{}' not visible", itemName, e);
             return false;
         }
     }
@@ -104,7 +104,7 @@ public class NavigationPage extends BasePage {
                 "header a:has-text('%s'), header span:has-text('%s')",
                 itemName, itemName
         )).first();
-        itemLocator.waitFor();
+        itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(10000));
         itemLocator.click();
         log.info("Clicked navigation item: {}", itemName);
     }
@@ -159,11 +159,11 @@ public class NavigationPage extends BasePage {
 
     public boolean isLanguageSelectorVisible() {
         try {
-            languageSelector.waitFor();
+            languageSelector.waitFor(new Locator.WaitForOptions().setTimeout(10000));
             log.debug("Language selector is visible");
             return true;
         } catch (Exception e) {
-            log.debug("Language selector not found");
+            log.debug("Language selector not found", e);
             return false;
         }
     }
