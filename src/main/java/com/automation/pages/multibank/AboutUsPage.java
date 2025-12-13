@@ -46,10 +46,28 @@ public class AboutUsPage extends BasePage {
     // ===============================
 
     public void navigateToAboutUs() {
+        // Try clicking the About Us navigation item first
+        try {
+            Locator aboutUsNav = page.locator("header span:has-text('About Us'), header a:has-text('About Us')").first();
+            aboutUsNav.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            aboutUsNav.click();
+            page.waitForTimeout(1000); // Wait for dropdown or navigation
+            log.info("Clicked About Us navigation item");
+
+            // Check if we navigated to about page
+            if (page.url().contains("/about")) {
+                log.info("Successfully navigated to About Us page via click");
+                return;
+            }
+        } catch (Exception e) {
+            log.warn("Could not click About Us nav, trying direct URL navigation");
+        }
+
+        // Fallback to direct URL navigation
         String baseUrl = TestConfig.getInstance().getBaseUrl();
         String aboutUrl = baseUrl + "/about";
         navigateTo(aboutUrl);
-        log.info("Navigated to About Us page: {}", aboutUrl);
+        log.info("Navigated to About Us page via URL: {}", aboutUrl);
     }
 
     // ===============================

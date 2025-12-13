@@ -15,31 +15,52 @@ public class FooterPage extends BasePage {
     // ============================================================
 
     // Footer Container
-    private final String footerSection = "[class*='app-download-container'], [class*='buttons-container']";
+    private final Locator footerSection;
 
     // App Download Links
-    private final String appStoreLink = "a[href*='apps.apple.com'], a[href*='appstore'], img[alt*='App Store']";
-    private final String googlePlayLink = "a[href*='play.google.com'], a[href*='googleplay'], img[alt*='Google Play']";
-    private final String qrCode = "img[alt='qr-code'], img[alt*='qr']";
+    private final Locator appStoreLink;
+    private final Locator googlePlayLink;
+    private final Locator qrCode;
 
     // Marketing Banners
-    private final String marketingBanner = "[class*='banner'], [class*='promo'], [class*='marketing']";
-    private final String instantBuyBanner = ":has-text('Instant Buy')";
-    private final String cardTransferBanner = ":has-text('Card'), :has-text('Wire Transfer')";
-    private final String supportBanner = ":has-text('24/7'), :has-text('Support')";
+    private final Locator marketingBanner;
+    private final Locator instantBuyBanner;
+    private final Locator cardTransferBanner;
+    private final Locator supportBanner;
 
     // Social Media
-    private final String socialMediaLinks = "a[href*='facebook'], a[href*='twitter'], a[href*='linkedin'], a[href*='instagram']";
+    private final Locator socialMediaLinks;
 
     // ============================================================
 
     public FooterPage() {
         super();
+
+        // Initialize Footer Locators
+        this.footerSection = page.locator("[class*='app-download-container'], [class*='buttons-container']").first();
+
+        // App Download Links - using exact href from actual page
+        this.appStoreLink = page.locator("a[href*='apps.apple.com/ae/app/multibank-io'], a[href*='apps.apple.com'], img[alt='app-store']").first();
+        this.googlePlayLink = page.locator("a[href*='play.google.com/store/apps/details?id=com.multibank.app'], a[href*='play.google.com'], img[alt='google-play']").first();
+        this.qrCode = page.locator("img[alt='qr-code'], img[alt*='qr']").first();
+
+        // Marketing Banners - using actual structure: individual sections with marketing content
+        this.marketingBanner = page.locator("section:has-text('Pay Trading Fees with MBG'), section:has-text('Invest in tokenized Real World Assets'), div[class*='marketing-banner'], div[class*='mbg'], div[class*='rwa']");
+        this.instantBuyBanner = page.locator("section:has-text('Quick Buy'), button:has-text('Quick Buy')").first();
+        this.cardTransferBanner = page.locator("section:has-text('credit'), section:has-text('debit card')").first();
+        this.supportBanner = page.locator("section:has-text('Coming Soon'), section:has-text('tokenized')").first();
+
+        // Social Media
+        this.socialMediaLinks = page.locator("a[href*='facebook'], a[href*='twitter'], a[href*='linkedin'], a[href*='instagram']");
     }
+
+    // ============================================================
+    // Footer Methods
+    // ============================================================
 
     public boolean isFooterDisplayed() {
         try {
-            waitForSelector(footerSection);
+            footerSection.waitFor();
             log.debug("Footer section is displayed");
             return true;
         } catch (Exception e) {
@@ -50,7 +71,7 @@ public class FooterPage extends BasePage {
 
     public boolean isAppStoreLinkVisible() {
         try {
-            waitForSelector(appStoreLink);
+            appStoreLink.waitFor();
             log.debug("App Store link is visible");
             return true;
         } catch (Exception e) {
@@ -61,7 +82,7 @@ public class FooterPage extends BasePage {
 
     public boolean isGooglePlayLinkVisible() {
         try {
-            waitForSelector(googlePlayLink);
+            googlePlayLink.waitFor();
             log.debug("Google Play link is visible");
             return true;
         } catch (Exception e) {
@@ -71,22 +92,22 @@ public class FooterPage extends BasePage {
     }
 
     public String getAppStoreUrl() {
-        waitForSelector(appStoreLink);
-        String href = page.locator(appStoreLink).first().getAttribute("href");
+        appStoreLink.waitFor();
+        String href = appStoreLink.getAttribute("href");
         log.info("App Store URL: {}", href);
         return href;
     }
 
     public String getGooglePlayUrl() {
-        waitForSelector(googlePlayLink);
-        String href = page.locator(googlePlayLink).first().getAttribute("href");
+        googlePlayLink.waitFor();
+        String href = googlePlayLink.getAttribute("href");
         log.info("Google Play URL: {}", href);
         return href;
     }
 
     public boolean isQRCodeVisible() {
         try {
-            waitForSelector(qrCode);
+            qrCode.waitFor();
             log.debug("QR code is visible");
             return true;
         } catch (Exception e) {
@@ -97,8 +118,13 @@ public class FooterPage extends BasePage {
 
     public boolean areMarketingBannersVisible() {
         try {
-            waitForSelector(marketingBanner);
-            int count = page.locator(marketingBanner).count();
+            // Scroll to make banners visible
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)");
+            page.waitForTimeout(500);
+
+            // Wait for at least one banner with explicit timeout
+            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            int count = marketingBanner.count();
             log.info("Found {} marketing banners", count);
             return count > 0;
         } catch (Exception e) {
@@ -110,8 +136,8 @@ public class FooterPage extends BasePage {
     public List<String> getMarketingBannerTexts() {
         List<String> bannerTexts = new ArrayList<>();
         try {
-            waitForSelector(marketingBanner);
-            List<Locator> banners = page.locator(marketingBanner).all();
+            marketingBanner.first().waitFor();
+            List<Locator> banners = marketingBanner.all();
 
             for (Locator banner : banners) {
                 String text = banner.textContent();
@@ -130,7 +156,7 @@ public class FooterPage extends BasePage {
 
     public boolean isInstantBuyBannerVisible() {
         try {
-            waitForSelector(instantBuyBanner);
+            instantBuyBanner.waitFor();
             log.debug("Instant Buy banner is visible");
             return true;
         } catch (Exception e) {
@@ -141,7 +167,7 @@ public class FooterPage extends BasePage {
 
     public boolean isCardTransferBannerVisible() {
         try {
-            waitForSelector(cardTransferBanner);
+            cardTransferBanner.waitFor();
             log.debug("Card/Transfer banner is visible");
             return true;
         } catch (Exception e) {
@@ -152,7 +178,7 @@ public class FooterPage extends BasePage {
 
     public boolean isSupportBannerVisible() {
         try {
-            waitForSelector(supportBanner);
+            supportBanner.waitFor();
             log.debug("Support banner is visible");
             return true;
         } catch (Exception e) {
@@ -163,8 +189,8 @@ public class FooterPage extends BasePage {
 
     public boolean isSpecificBannerVisible(String bannerText) {
         try {
-            String selector = String.format(":has-text('%s')", bannerText);
-            waitForSelector(selector);
+            Locator specificBanner = page.locator(String.format(":has-text('%s')", bannerText)).first();
+            specificBanner.waitFor();
             log.debug("Banner containing '{}' is visible", bannerText);
             return true;
         } catch (Exception e) {
@@ -174,19 +200,20 @@ public class FooterPage extends BasePage {
     }
 
     public void clickAppStoreLink() {
-        click(appStoreLink);
+        appStoreLink.click();
         log.info("Clicked App Store link");
     }
 
     public void clickGooglePlayLink() {
-        click(googlePlayLink);
+        googlePlayLink.click();
         log.info("Clicked Google Play link");
     }
 
     public boolean areSocialMediaLinksVisible() {
         try {
-            waitForSelector(socialMediaLinks);
-            int count = page.locator(socialMediaLinks).count();
+            // Use shorter timeout since these might not exist
+            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(3000));
+            int count = socialMediaLinks.count();
             log.info("Found {} social media links", count);
             return count > 0;
         } catch (Exception e) {
@@ -198,8 +225,8 @@ public class FooterPage extends BasePage {
     public List<String> getSocialMediaLinks() {
         List<String> links = new ArrayList<>();
         try {
-            waitForSelector(socialMediaLinks);
-            List<Locator> socialLinks = page.locator(socialMediaLinks).all();
+            socialMediaLinks.first().waitFor();
+            List<Locator> socialLinks = socialMediaLinks.all();
 
             for (Locator link : socialLinks) {
                 String href = link.getAttribute("href");

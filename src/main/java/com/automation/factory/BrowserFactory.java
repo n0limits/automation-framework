@@ -9,12 +9,25 @@ import lombok.extern.slf4j.Slf4j;
 public class BrowserFactory {
     private static final TestConfig config = TestConfig.getInstance();
 
-    public static void launchBrowser(String browserType) {
+    /**
+     * Launch browser from string parameter (for TestNG parameter compatibility)
+     * @param browserTypeString Browser type as string (chromium, firefox, webkit)
+     */
+    public static void launchBrowser(String browserTypeString) {
+        com.automation.enums.BrowserType browserType = com.automation.enums.BrowserType.fromString(browserTypeString);
+        launchBrowser(browserType);
+    }
+
+    /**
+     * Launch browser using type-safe enum
+     * @param browserType BrowserType enum value
+     */
+    public static void launchBrowser(com.automation.enums.BrowserType browserType) {
         Playwright playwright = PlaywrightManager.getPlaywright();
         Browser browser;
 
         // Launch browser with window size arguments for maximized window
-        BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
+        com.microsoft.playwright.BrowserType.LaunchOptions options = new com.microsoft.playwright.BrowserType.LaunchOptions()
                 .setHeadless(config.isHeadless());
 
         // Add args to start maximized (works best with headed mode)
@@ -22,19 +35,12 @@ public class BrowserFactory {
             options.setArgs(java.util.List.of("--start-maximized"));
         }
 
-        browser = switch (browserType.toLowerCase()) {
-            case "firefox" -> {
-                log.info("Launching Firefox browser");
-                yield playwright.firefox().launch(options);
-            }
-            case "webkit" -> {
-                log.info("Launching WebKit browser");
-                yield playwright.webkit().launch(options);
-            }
-            default -> {
-                log.info("Launching Chromium browser");
-                yield playwright.chromium().launch(options);
-            }
+        log.info("Launching {} browser", browserType.getDisplayName());
+
+        browser = switch (browserType) {
+            case FIREFOX -> playwright.firefox().launch(options);
+            case WEBKIT -> playwright.webkit().launch(options);
+            case CHROMIUM -> playwright.chromium().launch(options);
         };
 
         PlaywrightManager.setBrowser(browser);
@@ -53,7 +59,7 @@ public class BrowserFactory {
         Page page = context.newPage();
         PlaywrightManager.setPage(page);
 
-        log.info("Browser launched successfully: {} with maximized window", browserType);
+        log.info("Browser launched successfully: {} with maximized window", browserType.getBrowserName());
     }
 
 }

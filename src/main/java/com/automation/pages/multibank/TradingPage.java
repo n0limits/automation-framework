@@ -37,28 +37,28 @@ public class TradingPage extends BasePage {
     public TradingPage() {
         super();
 
-        // Trading Tabs
-        this.spotTab = page.locator("role=tab >> text=Spot");
-        this.favoritesTab = page.locator("role=tab >> text=Favorites");
-        this.allPairsTab = page.locator("role=tab >> text=All");
+        // Trading Tabs - using exact text from page
+        this.spotTab = page.locator(":has-text('Spot'):not(:has-text('Favorites')):not(:has-text('All'))").first();
+        this.favoritesTab = page.locator(":has-text('Favorites')").first();
+        this.allPairsTab = page.locator(":has-text('All'):not(:has-text('Favorites'))").first();
 
-        // Trading Table
-        this.tradingPairsTable = page.locator("role=grid");
-        this.tradingPairRows = tradingPairsTable.locator("role=row >> :not(role=columnheader)");
+        // Trading Table - standard HTML table with specific columns
+        this.tradingPairsTable = page.locator("table").first();
+        this.tradingPairRows = tradingPairsTable.locator("tbody tr, tr:has(td)");
 
-        // Market Indicators
-        this.fearIndex = page.locator("section:has-text('Fear Index')");
-        this.topGainers = page.locator("section:has-text('Top Gainers')");
-        this.topLosers = page.locator("section:has-text('Top Losers')");
+        // Market Indicators - using exact text from actual page
+        this.fearIndex = page.locator(":has-text('Fear Index')").first();
+        this.topGainers = page.locator(":has-text('Top Gainers')").first();
+        this.topLosers = page.locator(":has-text('Top Losers')").first();
 
-        // Investment Opportunities
-        this.mbgTokenSection = page.locator("section:has-text('MBG')");
-        this.realWorldAssetsSection = page.locator("section:has-text('Real World Assets')");
+        // Investment Opportunities - using exact structure from page
+        this.mbgTokenSection = page.locator("section[class*='investment'], div[class*='mbg']:has-text('Pay Trading Fees'), div:has-text('Backed by $29B'), section:has-text('Pay Trading Fees with MBG')").first();
+        this.realWorldAssetsSection = page.locator("section[class*='investment'], div[class*='rwa']:has-text('Real World Assets'), section:has-text('Invest in tokenized Real World Assets')").first();
 
-        // Quick Access Buttons
-        this.convertAssetsButton = page.locator("button:has-text('Convert')");
-        this.quickBuyButton = page.locator("button:has-text('Quick Buy')");
-        this.panicSellButton = page.locator("button:has-text('Panic Sell')");
+        // Quick Access Buttons - using exact button text from page
+        this.convertAssetsButton = page.locator("button:has-text('Convert Your Assets'), button:has-text('Convert')").first();
+        this.quickBuyButton = page.locator("button:has-text('Quick Buy Crypto'), button:has-text('Quick Buy')").first();
+        this.panicSellButton = page.locator("button:has-text('Quick Sell Your Assets'), button:has-text('Quick Sell'), button:has-text('Panic Sell')").first();
     }
 
     // =========================
@@ -103,6 +103,12 @@ public class TradingPage extends BasePage {
     }
 
     public int getTradingPairsCount() {
+        try {
+            // Wait for table to be populated with data
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        } catch (Exception e) {
+            log.warn("No trading pair rows found");
+        }
         int count = tradingPairRows.count();
         log.info("Total trading pairs count: {}", count);
         return count;
@@ -111,12 +117,18 @@ public class TradingPage extends BasePage {
     public List<String> getTradingPairs() {
         List<String> pairs = new ArrayList<>();
         try {
+            // Wait for rows to be present
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+
             List<Locator> rows = tradingPairRows.all();
 
             for (Locator row : rows) {
-                String pair = row.locator("role=cell").nth(0).textContent().trim();
-                if (!pair.isEmpty()) {
-                    pairs.add(pair);
+                Locator firstCell = row.locator("td").first();
+                if (firstCell.count() > 0) {
+                    String pair = firstCell.textContent().trim();
+                    if (!pair.isEmpty()) {
+                        pairs.add(pair);
+                    }
                 }
             }
 
@@ -131,9 +143,12 @@ public class TradingPage extends BasePage {
         try {
             List<Locator> rows = tradingPairRows.all();
             for (Locator row : rows) {
-                String firstCell = row.locator("role=cell").nth(0).textContent();
-                if (firstCell != null && firstCell.contains(pairName)) {
-                    return true;
+                Locator firstCell = row.locator("td").first();
+                if (firstCell.count() > 0) {
+                    String firstCellText = firstCell.textContent();
+                    if (firstCellText != null && firstCellText.contains(pairName)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -149,17 +164,22 @@ public class TradingPage extends BasePage {
             List<Locator> rows = tradingPairRows.all();
 
             for (Locator row : rows) {
-                String firstCell = row.locator("role=cell").nth(0).textContent();
+                Locator firstCell = row.locator("td").first();
 
-                if (firstCell != null && firstCell.contains(pairName)) {
-                    List<Locator> cells = row.locator("role=cell").all();
+                if (firstCell.count() > 0) {
+                    String firstCellText = firstCell.textContent();
 
-                    data.put("pair", cells.get(0).textContent());
-                    if (cells.size() > 1) data.put("leverage", cells.get(1).textContent());
-                    if (cells.size() > 5) data.put("change", cells.get(5).textContent());
+                    if (firstCellText != null && firstCellText.contains(pairName)) {
+                        List<Locator> cells = row.locator("td").all();
 
-                    log.info("Retrieved trading pair data for {}", pairName);
-                    break;
+                        // Columns: Pair, Max Leverage, Short, Long, Charts, Change 24h
+                        if (cells.size() > 0) data.put("pair", cells.get(0).textContent());
+                        if (cells.size() > 1) data.put("leverage", cells.get(1).textContent());
+                        if (cells.size() > 5) data.put("change", cells.get(5).textContent());
+
+                        log.info("Retrieved trading pair data for {}", pairName);
+                        break;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -171,7 +191,8 @@ public class TradingPage extends BasePage {
     public List<String> getTableColumns() {
         List<String> columns = new ArrayList<>();
         try {
-            Locator headers = tradingPairsTable.locator("role=columnheader");
+            // Target: Pair, Max Leverage, Short, Long, Charts, Change 24h
+            Locator headers = tradingPairsTable.locator("thead th, thead td, th");
 
             for (Locator h : headers.all()) {
                 String text = h.textContent();
@@ -209,11 +230,29 @@ public class TradingPage extends BasePage {
     // =========================
 
     public boolean isMBGTokenSectionVisible() {
-        return mbgTokenSection.isVisible();
+        try {
+            // Scroll down to make section visible
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.6)");
+            page.waitForTimeout(500);
+            mbgTokenSection.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            return mbgTokenSection.isVisible();
+        } catch (Exception e) {
+            log.warn("MBG Token section not found");
+            return false;
+        }
     }
 
     public boolean isRealWorldAssetsSectionVisible() {
-        return realWorldAssetsSection.isVisible();
+        try {
+            // Scroll down to make section visible
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.7)");
+            page.waitForTimeout(500);
+            realWorldAssetsSection.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            return realWorldAssetsSection.isVisible();
+        } catch (Exception e) {
+            log.warn("Real World Assets section not found");
+            return false;
+        }
     }
 
     // =========================

@@ -2,29 +2,17 @@
 
 Production-grade web automation framework for testing the MultiBank Trading Platform using Playwright, TestNG, and Maven.
 
-## Recent Enhancements
+**Created by:** Victor Grozev
 
-**Cross-Browser Testing (Playwright Native)**
-- Fully implemented cross-browser execution using Playwright's built-in capabilities
-- Parallel execution across Chromium, Firefox, and WebKit
-- Browser parameter support via TestNG @Parameters
-- Thread-safe browser management with ThreadLocal pattern
+## Overview
 
-**CI/CD Pipeline Integration**
-- GitHub Actions workflows for automated testing
-- Pull Request checks with automatic smoke tests
-- Nightly test suite execution with reporting
-- Multi-stage pipeline (smoke, cross-browser, full suite)
-- Artifact management (reports, screenshots, Allure reports)
-
-## Current Implementation
-
-**MultiBank Trading Platform Test Suite** - Comprehensive test automation solution for https://trade.multibank.io/ demonstrating:
+Comprehensive test automation solution for https://trade.multibank.io/ featuring:
 - 38 automated test cases covering Navigation, Trading, and Content validation
 - Page Object Model with 4 page objects (NavigationPage, TradingPage, FooterPage, AboutUsPage)
 - Data-driven testing with external JSON test data
 - Cross-browser testing with Playwright (Chromium, Firefox, WebKit)
-- CI/CD pipelines with GitHub Actions
+- Type-safe browser selection using BrowserType enum
+- Automatic retry mechanism for flaky tests
 - Professional logging, wait management, and Allure reporting
 
 ## Framework Architecture
@@ -68,16 +56,28 @@ core-automation-framework/
 │   │   │   │   ├── SQLConnection.java
 │   │   │   │   └── QueryBuilder.java
 │   │   │   │
+│   │   │   ├── enums/                  # Type-safe enumerations
+│   │   │   │   └── BrowserType.java    # Browser type enum (Chromium, Firefox, WebKit)
+│   │   │   │
 │   │   │   ├── factory/                # Factory classes
 │   │   │   │   ├── BrowserFactory.java
 │   │   │   │   └── PageFactory.java
 │   │   │   │
 │   │   │   ├── listeners/              # TestNG listeners
 │   │   │   │   ├── TestListener.java
-│   │   │   │   └── RetryAnalyzer.java
+│   │   │   │   ├── RetryAnalyzer.java
+│   │   │   │   └── RetryListener.java  # Auto-attaches retry to all tests
 │   │   │   │
 │   │   │   ├── pages/                  # Page Object base class
-│   │   │   │   └── BasePage.java       # Generic page methods
+│   │   │   │   ├── BasePage.java       # Generic page methods
+│   │   │   │   └── multibank/          # MultiBank page objects
+│   │   │   │       ├── NavigationPage.java
+│   │   │   │       ├── TradingPage.java
+│   │   │   │       ├── FooterPage.java
+│   │   │   │       └── AboutUsPage.java
+│   │   │   │
+│   │   │   ├── providers/              # TestNG data providers
+│   │   │   │   └── TestDataProviders.java
 │   │   │   │
 │   │   │   └── utils/                  # Utility classes
 │   │   │       ├── PlaywrightManager.java
@@ -90,17 +90,27 @@ core-automation-framework/
 │   │       └── logback.xml             # Logging configuration
 │   │
 │   └── test/
-│       ├── java/com/automation/        # Your test classes go here
+│       ├── java/com/automation/
+│       │   └── multibank/              # MultiBank test classes
+│       │       ├── NavigationTests.java
+│       │       ├── TradingTests.java
+│       │       └── ContentValidationTests.java
 │       │
 │       └── resources/
 │           ├── cucumber.properties     # Cucumber configuration
-│           └── testng/
-│               ├── testng.xml          # TestNG suite configuration
+│           ├── testdata/               # Test data JSON files
+│           │   ├── navigation-data.json
+│           │   ├── trading-data.json
+│           │   └── content-data.json
+│           │
+│           └── testng/                 # TestNG suite configurations
+│               ├── testng.xml          # Cross-browser suite (default)
+│               ├── testng-chromium.xml # Single browser suite
+│               ├── testng-smoke.xml    # Smoke test suite
 │               └── testng-bdd.xml      # BDD suite configuration
 │
 ├── pom.xml                             # Maven dependencies
 ├── README.md                           # This file
-├── QUICK-START-GUIDE.md                # Quick reference guide
 └── .gitignore                          # Git exclusions
 ```
 
@@ -136,7 +146,7 @@ Edit `src/main/resources/config.properties`:
 
 ```properties
 # Web UI Configuration
-base.url=https://your-app-url.com
+base.url=https://trade.multibank.io
 browser=chromium           # chromium, firefox, webkit
 headless=false
 timeout=30000
@@ -172,9 +182,10 @@ report.path=target/reports
 - Page Object Model base class with common methods
 - Factory Pattern for browser and page instantiation
 - ThreadLocal pattern for parallel execution support
-- WaitUtils for explicit wait strategies
+- Explicit wait strategies with Playwright auto-waiting
 - Automatic screenshot capture on test failure
 - Cross-browser support (Chromium, Firefox, WebKit)
+- Type-safe browser selection using BrowserType enum
 
 **2. API Testing Infrastructure**
 - RestAssured client configuration
@@ -194,26 +205,34 @@ report.path=target/reports
 **4. Test Data Management**
 - TestDataGenerator with JavaFaker integration
 - Random data generation for emails, names, passwords, phone numbers
-- Configurable test data paths
-- External test data file support
+- External JSON test data files
+- Centralized TestDataProviders for parameterized tests
+- Type-safe data reading utilities
 
 **5. Configuration Management**
 - Singleton pattern for configuration access
 - Properties-based configuration
 - Environment-specific configuration support
 - Type-safe configuration getters
+- Maven property overrides for CI/CD
 
 **6. Reporting & Logging**
 - Allure integration for rich, interactive reports
 - SLF4J + Logback for comprehensive logging
 - Screenshots on test failure
 - TestNG listeners for custom reporting
-- Retry analyzer for flaky test handling
+- Automatic retry analyzer for flaky tests (up to 2 retries)
 
 **7. Base Test Classes**
 - BaseTest - Suite-level setup and teardown
 - BaseWebTest - Web UI test initialization with browser parameterization
 - BaseAPITest - API test initialization
+
+**8. Type-Safe Browser Management**
+- BrowserType enum for compile-time browser validation
+- String-to-enum conversion with error handling
+- Support for browser aliases (chrome → chromium, safari → webkit)
+- Clean integration with BrowserFactory
 
 ## MultiBank Test Suite Overview
 
@@ -225,17 +244,19 @@ report.path=target/reports
 - Page transitions and URL validation
 - Cross-browser navigation consistency
 
-**Trading Functionality Tests** (15 tests)
+**Trading Functionality Tests** (17 tests)
 - Spot trading section verification
 - Trading pairs table structure
 - Trading pair data validation
+- Trading category switching (Favorites, All Pairs)
 - Market indicators (Fear Index, Top Gainers/Losers)
 - Investment opportunities visibility
 - Quick access tools validation
 
-**Content Validation Tests** (13 tests)
+**Content Validation Tests** (15 tests)
 - Footer section verification
 - App Store and Google Play download links
+- Download link configuration validation
 - Marketing banners validation
 - About Us page components
 - Content loading and rendering
@@ -251,6 +272,13 @@ src/main/java/com/automation/pages/multibank/
 └── AboutUsPage.java        - About Us content (10+ methods)
 ```
 
+**Key Features:**
+- Locator-based selectors using Playwright Locator API
+- Explicit waits for dynamic content
+- Scrolling support for elements below the fold
+- Smart navigation with fallback strategies
+- Comprehensive logging for debugging
+
 ### Test Data Files
 
 ```
@@ -260,6 +288,246 @@ src/test/resources/testdata/
 └── content-data.json       - Download links, banners, content
 ```
 
+### Data Providers
+
+```
+src/main/java/com/automation/providers/TestDataProviders.java
+├── browserProvider         - Browser types (chromium, firefox, webkit)
+├── navigationItemsProvider - Navigation menu items
+├── tradingPairsProvider    - Trading pair names
+├── downloadLinksProvider   - App store download links
+├── marketingBannersProvider- Marketing banner text
+└── tradingTabsProvider     - Trading category tabs
+```
+
+## Running Tests
+
+### Multi-Browser Testing
+
+The framework supports multiple approaches for browser testing. Choose the approach that best fits your needs.
+
+#### Supported Browsers
+
+The framework supports three browsers via Playwright:
+- **Chromium** (Google Chrome/Edge)
+- **Firefox** (Mozilla Firefox)
+- **WebKit** (Safari engine)
+
+Browser selection is type-safe using the `BrowserType` enum:
+```java
+import com.automation.enums.BrowserType;
+
+BrowserType.CHROMIUM
+BrowserType.FIREFOX
+BrowserType.WEBKIT
+```
+
+### Execution Approaches
+
+#### Approach 1: TestNG XML Suite (RECOMMENDED)
+
+**Best for:** Running all tests across multiple browsers in parallel
+
+**How it works:**
+- Each browser runs as a separate TestNG `<test>` block
+- All browsers execute in parallel (configurable via `thread-count`)
+- Each test method runs in parallel within its browser
+
+**Default Configuration:** `testng.xml`
+```xml
+<suite name="Cross Browser Suite" parallel="tests" thread-count="3">
+    <test name="Chromium Tests">
+        <parameter name="browser" value="chromium"/>
+        <packages><package name="com.automation.multibank"/></packages>
+    </test>
+    <test name="Firefox Tests">
+        <parameter name="browser" value="firefox"/>
+        <packages><package name="com.automation.multibank"/></packages>
+    </test>
+    <test name="WebKit Tests">
+        <parameter name="browser" value="webkit"/>
+        <packages><package name="com.automation.multibank"/></packages>
+    </test>
+</suite>
+```
+
+**Execution:**
+```bash
+# Default: Runs on all 3 browsers in parallel
+mvn clean test
+
+# Or explicitly specify the suite
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng.xml
+```
+
+**Advantages:**
+- Fastest parallel execution across browsers
+- Clear separation of browser runs in reports
+- Easy to enable/disable specific browsers
+- No code changes required
+
+#### Approach 2: Single Browser Suite
+
+**Best for:** Quick testing on one browser, debugging, CI/CD pipelines with browser-specific jobs
+
+**Execution:**
+```bash
+# Chromium only
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+
+# Smoke tests
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
+```
+
+**Advantages:**
+- Faster test feedback (1 browser instead of 3)
+- Better for local development
+- Ideal for browser-specific debugging
+
+#### Approach 3: DataProvider Parametrization (OPTIONAL)
+
+**Best for:** Running specific test methods across browsers sequentially
+
+**How it works:**
+- Use TestNG `@DataProvider` to parametrize individual test methods
+- Each test method runs once per browser
+- Tests execute sequentially (browser1, browser2, browser3)
+
+**Example Implementation:**
+
+TestDataProviders.java:
+```java
+@DataProvider(name = "browserProvider")
+public Object[][] browserProvider() {
+    return new Object[][] {
+        { "chromium" },
+        { "firefox" },
+        { "webkit" }
+    };
+}
+```
+
+Test Class:
+```java
+@Test(description = "Verify homepage loads",
+      dataProvider = "browserProvider",
+      dataProviderClass = TestDataProviders.class)
+public void testHomepageLoad(String browser) {
+    // Test will run 3 times (once per browser)
+    log.info("Testing on browser: {}", browser);
+
+    // Browser is already set up by BaseWebTest @BeforeMethod
+    // from TestNG XML parameter or @Optional default
+
+    // Your test logic here
+    assertThat(homePage.isLoaded()).isTrue();
+}
+```
+
+**Important Notes:**
+- DataProvider approach requires separate test execution per browser
+- Use TestNG XML `<parameter name="browser" value="..."/>` to set the browser
+- DataProvider parametrization is additional to the XML browser parameter
+- This approach is less efficient than TestNG XML parallel execution
+
+**When to use:**
+- You need fine-grained control over which tests run on which browsers
+- You want to test browser-specific behavior in a single test method
+- You're running individual test methods (not full suites)
+
+**Advantages:**
+- Fine-grained browser control per test method
+- Good for testing browser-specific features
+- Test method explicitly receives browser parameter
+
+**Disadvantages:**
+- Slower than XML parallel execution
+- Requires changes to test method signatures
+- Can lead to duplicate test execution if not configured correctly
+
+### Common Execution Commands
+
+#### Local Development (Single Browser)
+```bash
+mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+```
+
+#### CI/CD Pipeline (All Browsers)
+```bash
+mvn clean test
+```
+
+#### Specific Browser Override
+```bash
+mvn clean test -Dbrowser=firefox
+```
+
+#### Test Class Execution
+```bash
+# Run specific test class
+mvn clean test -Dtest=NavigationTests
+mvn clean test -Dtest=TradingTests
+mvn clean test -Dtest=ContentValidationTests
+```
+
+#### Headless Mode
+Edit `config.properties`:
+```properties
+headless=true
+```
+
+Or via command line:
+```bash
+mvn clean test -Dheadless=true
+```
+
+### Available TestNG Suites
+
+- `testng.xml` - Full cross-browser suite (Chromium + Firefox + WebKit in parallel)
+- `testng-smoke.xml` - Critical tests on Chromium only
+- `testng-chromium.xml` - All tests on Chromium only
+
+### Browser Initialization Architecture
+
+**Browser Initialization Flow:**
+```
+TestNG XML Parameter
+    ↓
+BaseWebTest.setupBrowser(@Parameters("browser"))
+    ↓
+BrowserFactory.launchBrowser(String)
+    ↓
+BrowserType.fromString(String) → Enum
+    ↓
+BrowserFactory.launchBrowser(BrowserType)
+    ↓
+Playwright.chromium|firefox|webkit().launch()
+    ↓
+PlaywrightManager.setPage(page)
+```
+
+**Thread Safety:**
+- Each test thread has its own isolated browser instance
+- `PlaywrightManager` uses `ThreadLocal<Browser>`, `ThreadLocal<Page>`, etc.
+- Parallel execution is fully supported
+
+### Multi-Browser Testing Best Practices
+
+1. Use TestNG XML for full suite execution (Approach 1)
+2. Use single-browser suite for local development (Approach 2)
+3. Use DataProvider only for browser-specific test logic (Approach 3)
+4. Enable headless mode in CI/CD pipelines (`headless=true`)
+5. Let RetryListener handle flaky tests (no manual retry configuration needed)
+
+### Related Files
+
+- **BrowserType Enum:** `src/main/java/com/automation/enums/BrowserType.java`
+- **BrowserFactory:** `src/main/java/com/automation/factory/BrowserFactory.java`
+- **BaseWebTest:** `src/main/java/com/automation/base/BaseWebTest.java`
+- **RetryAnalyzer:** `src/main/java/com/automation/listeners/RetryAnalyzer.java`
+- **RetryListener:** `src/main/java/com/automation/listeners/RetryListener.java`
+- **TestNG Suites:** `src/test/resources/testng/`
+
 ## Writing Custom Tests
 
 ### Example: Creating a New Page Object
@@ -268,28 +536,31 @@ src/test/resources/testdata/
 package com.automation.pages.myapp;
 
 import com.automation.pages.BasePage;
+import com.microsoft.playwright.Locator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HomePage extends BasePage {
-    private final String searchInput = "#search";
-    private final String searchButton = "button[type='submit']";
+    private final Locator searchInput;
+    private final Locator searchButton;
+    private final Locator searchResults;
 
     public HomePage() {
         super();
+        this.searchInput = page.locator("#search");
+        this.searchButton = page.locator("button[type='submit']");
+        this.searchResults = page.locator(".results");
     }
 
     public HomePage searchFor(String term) {
-        waitForSelector(searchInput);
-        fill(searchInput, term);
-        click(searchButton);
+        searchInput.fill(term);
+        searchButton.click();
         log.info("Searched for: {}", term);
         return this;
     }
 
     public boolean isSearchResultsDisplayed() {
-        waitForSelector(".results");
-        return true;
+        return searchResults.isVisible();
     }
 }
 ```
@@ -311,13 +582,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Feature("Search Functionality")
 public class SearchTests extends BaseWebTest {
 
+    private HomePage homePage;
+
+    @Override
+    protected void performAdditionalSetup() {
+        homePage = new HomePage();
+    }
+
     @Test(description = "Verify search functionality")
     @Severity(SeverityLevel.CRITICAL)
     @Story("Search")
     public void testSearch() {
         log.info("Starting search test");
 
-        HomePage homePage = new HomePage();
         homePage.searchFor("test query");
 
         assertThat(homePage.isSearchResultsDisplayed())
@@ -338,15 +615,6 @@ import org.testng.annotations.DataProvider;
 
 public class MyDataProviders {
 
-    @DataProvider(name = "browserProvider")
-    public Object[][] browserProvider() {
-        return new Object[][] {
-            { "chromium" },
-            { "firefox" },
-            { "webkit" }
-        };
-    }
-
     @DataProvider(name = "searchTermsProvider")
     public Object[][] searchTermsProvider() {
         return new Object[][] {
@@ -358,11 +626,13 @@ public class MyDataProviders {
 }
 
 // Usage in test:
-@Test(dataProvider = "searchTermsProvider",
+@Test(description = "Test search with multiple terms",
+      dataProvider = "searchTermsProvider",
       dataProviderClass = MyDataProviders.class)
 public void testSearchWithMultipleTerms(String searchTerm, String expectedText) {
     log.info("Testing search with term: {}", searchTerm);
-    // Test implementation
+    homePage.searchFor(searchTerm);
+    assertThat(homePage.isSearchResultsDisplayed()).isTrue();
 }
 ```
 
@@ -384,12 +654,29 @@ Read in test:
 import com.automation.utils.TestDataReader;
 import com.fasterxml.jackson.databind.JsonNode;
 
-@BeforeMethod
-public void setup() {
+@Override
+protected void performAdditionalSetup() {
     JsonNode testData = TestDataReader.readJsonFile("my-data.json");
     List<String> items = TestDataReader.getStringList(testData, "expectedItems");
     int timeout = TestDataReader.getIntValue(testData, "settings", "timeout");
 }
+```
+
+### Example: Type-Safe Browser Selection
+
+```java
+import com.automation.enums.BrowserType;
+import com.automation.factory.BrowserFactory;
+
+// Using enum directly (compile-time safety)
+BrowserFactory.launchBrowser(BrowserType.FIREFOX);
+
+// Converting from string (runtime validation)
+BrowserType browser = BrowserType.fromString("chromium");
+BrowserFactory.launchBrowser(browser);
+
+// Get display name
+String displayName = BrowserType.WEBKIT.getDisplayName(); // "Apple WebKit (Safari)"
 ```
 
 ### Creating API Tests
@@ -437,6 +724,8 @@ import com.automation.api.endpoints.UserEndpoints;
 import com.automation.api.validators.ResponseValidator;
 import io.restassured.response.Response;
 import org.testng.annotations.Test;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserAPITests extends BaseAPITest {
 
@@ -452,78 +741,6 @@ public class UserAPITests extends BaseAPITest {
 
         ResponseValidator.validateStatusCode(response, 201);
         ResponseValidator.validateFieldExists(response, "id");
-    }
-}
-```
-
-### Creating BDD Tests (Optional)
-
-1. **Create Feature File** in `src/test/resources/features/`:
-
-```gherkin
-Feature: User Management
-  As a user
-  I want to manage user accounts
-  So that I can control access to the system
-
-  Scenario: Create a new user
-    Given the API client is initialized
-    When I send a POST request to "/users" with user data
-    Then the response status code should be 201
-    And the response should contain user details
-```
-
-2. **Create Step Definitions**:
-
-```java
-package com.automation.bdd.stepdefs;
-
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.When;
-import io.cucumber.java.en.Then;
-
-public class UserSteps {
-
-    @Given("the API client is initialized")
-    public void apiClientInitialized() {
-        // Initialize API client
-    }
-
-    @When("I send a POST request to {string} with user data")
-    public void sendPostRequest(String endpoint) {
-        // Send POST request
-    }
-
-    @Then("the response status code should be {int}")
-    public void verifyStatusCode(int statusCode) {
-        // Verify status code
-    }
-}
-```
-
-3. **Create Cucumber Test Runner**:
-
-```java
-package com.automation.bdd.runners;
-
-import io.cucumber.testng.AbstractTestNGCucumberTests;
-import io.cucumber.testng.CucumberOptions;
-import org.testng.annotations.DataProvider;
-
-@CucumberOptions(
-    features = "src/test/resources/features",
-    glue = {"com.automation.bdd.stepdefs"},
-    plugin = {
-        "pretty",
-        "html:target/cucumber-reports/cucumber.html",
-        "json:target/cucumber-reports/cucumber.json"
-    }
-)
-public class TestRunner extends AbstractTestNGCucumberTests {
-    @Override
-    @DataProvider(parallel = true)
-    public Object[][] scenarios() {
-        return super.scenarios();
     }
 }
 ```
@@ -561,56 +778,6 @@ public class DatabaseTests {
 }
 ```
 
-## Running Tests
-
-### Run MultiBank Test Suite
-
-#### Cross-Browser Execution (Playwright)
-```bash
-# Run all tests across all browsers (Chromium, Firefox, WebKit)
-mvn clean test
-
-# Run smoke tests (fast - Chromium only)
-mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
-
-# Run on single browser
-mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
-
-# Run with specific browser override
-mvn clean test -Dbrowser=firefox -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
-mvn clean test -Dbrowser=webkit -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
-
-# Run specific test class
-mvn clean test -Dtest=NavigationTests
-mvn clean test -Dtest=TradingTests
-mvn clean test -Dtest=ContentValidationTests
-
-# Run in headless mode
-mvn clean test -Dheadless=true
-```
-
-**Available TestNG Suites:**
-- `testng.xml` - Full cross-browser suite (Chromium + Firefox + WebKit)
-- `testng-smoke.xml` - Critical tests on Chromium only
-- `testng-chromium.xml` - All tests on Chromium only
-
-**Playwright Browser Support:**
-- **Chromium** - Chrome, Edge, Chromium browsers
-- **Firefox** - Mozilla Firefox
-- **WebKit** - Apple Safari engine
-
-### Run Custom Tests
-```bash
-# Run all tests in src/test/java
-mvn clean test
-
-# Run with specific TestNG suite
-mvn clean test -DsuiteXmlFile=testng.xml
-
-# Run BDD tests (if implemented)
-mvn clean test -Dtest=YourTestRunner
-```
-
 ## Reporting
 
 ### Generate Allure Report
@@ -633,14 +800,14 @@ mvn allure:report
 - **Screenshots**: `target/screenshots/`
 - **Logs**: `logs/test-automation.log`
 - **TestNG Reports**: `target/surefire-reports/`
-- **Cucumber Reports**: `target/cucumber-reports/`
 
 ## Design Patterns Used
 
 ### 1. Page Object Model (POM)
 Separates page structure from test logic:
-- `BasePage` - Common page methods (click, fill, getText, waitForSelector)
+- `BasePage` - Common page methods (navigateTo, getTitle)
 - Extend BasePage for application-specific page objects
+- Locator-based selectors using Playwright Locator API
 
 ### 2. Factory Pattern
 - `BrowserFactory` - Creates browser instances with proper configuration
@@ -653,6 +820,34 @@ Separates page structure from test logic:
 ### 4. Singleton Pattern
 - `TestConfig` - Single configuration instance with thread-safe access
 - `PlaywrightManager` - ThreadLocal-based browser management
+
+### 5. Enum Pattern
+- `BrowserType` - Type-safe browser selection
+- `DatabaseType` - Type-safe database selection
+
+## Retry Mechanism
+
+All tests automatically retry up to 2 times on failure via the `RetryListener`.
+
+**Configuration:**
+- `RetryAnalyzer` - Implements retry logic (MAX_RETRY_COUNT = 2)
+- `RetryListener` - Automatically attaches RetryAnalyzer to all test methods
+- No manual `@Test(retryAnalyzer = ...)` annotation required
+
+**How it works:**
+```
+Test fails → RetryAnalyzer.retry() called
+  ↓
+  If retryCount < 2 → Retry test
+  ↓
+  If retryCount >= 2 → Mark as failed
+```
+
+**Logs Example:**
+```
+[WARN] Retrying test 'testHomepageLoad' - Attempt 1 of 2
+[WARN] Retrying test 'testHomepageLoad' - Attempt 2 of 2
+```
 
 ## Tech Stack
 
@@ -674,13 +869,13 @@ Separates page structure from test logic:
 
 ## Best Practices
 
-The MultiBank test suite demonstrates these best practices:
+The framework demonstrates these best practices:
 
 1. **Test Independence** - Each test runs standalone, no dependencies
 2. **Meaningful Test Names** - Descriptive test methods (testNavigationMenuDisplayed)
 3. **AAA Pattern** - Arrange, Act, Assert structure
 4. **Page Object Model** - All locators in page objects, never in tests
-5. **Proper Wait Strategies** - waitForSelector(), no Thread.sleep()
+5. **Proper Wait Strategies** - Explicit waits with Playwright auto-waiting
 6. **External Test Data** - JSON files for all test data
 7. **Comprehensive Logging** - SLF4J with DEBUG/INFO/WARN/ERROR levels
 8. **Fluent Assertions** - AssertJ assertions with custom messages
@@ -688,15 +883,29 @@ The MultiBank test suite demonstrates these best practices:
 10. **Data-Driven Testing** - TestNG DataProviders for parameterized tests
 11. **Exception Handling** - Try-catch with logging, no silent failures
 12. **Cross-Browser Support** - Browser parameterization via TestNG
-13. **Fresh Test State** - Page objects initialized in @BeforeMethod
+13. **Fresh Test State** - Page objects initialized in @BeforeMethod hooks
 14. **Configurable Timeouts** - All waits use config.properties timeout values
+15. **Type-Safe Enums** - BrowserType enum for compile-time browser validation
+16. **Automatic Retry** - RetryListener for handling flaky tests
 
 ## Troubleshooting
 
-### Playwright browsers not found
+### Browser not launching
+- Check `config.properties` has correct browser value
+- Verify Playwright browsers are installed:
 ```bash
 mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
 ```
+
+### Tests not running on multiple browsers
+- Verify you're using `testng.xml` (not `testng-chromium.xml`)
+- Check `pom.xml` has `<suiteXmlFile>src/test/resources/testng/testng.xml</suiteXmlFile>`
+- Ensure browser parameters are correctly defined in TestNG XML suite
+
+### RetryAnalyzer not working
+- Verify `RetryListener` is in TestNG suite `<listeners>` section
+- Check logs for "RetryAnalyzer attached to test" messages (DEBUG level)
+- Ensure `RetryListener` is properly registered in all TestNG suite files
 
 ### Database connection issues
 - Verify connection strings in `config.properties`
@@ -708,11 +917,18 @@ mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="in
 - Ensure thread safety in shared resources
 - Use ThreadLocal for browser instances (already implemented)
 - Avoid shared test data
+- Check thread-count configuration in TestNG suite files
 
 ### Compilation errors
 ```bash
 mvn clean compile test-compile
 ```
+
+### Browser-specific test failures
+- Some tests may behave differently across browsers (expected)
+- Use browser-specific logic when necessary
+- Check Playwright documentation for browser-specific limitations
+- Consider using conditional test execution for browser-specific features
 
 ## Framework Capabilities
 
@@ -721,7 +937,8 @@ mvn clean compile test-compile
 - Firefox (Mozilla Firefox)
 - WebKit (Apple Safari engine)
 - Parallel execution across browsers
-- Browser parameter support
+- Type-safe browser selection with BrowserType enum
+- Browser parameter support via TestNG
 
 **Parallel Execution**
 - Thread-safe browser management with ThreadLocal
@@ -732,7 +949,7 @@ mvn clean compile test-compile
 **Wait Strategies**
 - Playwright auto-waiting for actionability
 - Page load waits (NETWORKIDLE, DOMCONTENTLOADED, LOAD)
-- Element visibility waits
+- Element visibility waits with explicit timeouts
 - Element clickability waits
 - Custom timeout configuration
 
@@ -740,12 +957,13 @@ mvn clean compile test-compile
 - External JSON configuration files
 - Random data generation with JavaFaker
 - Database-driven tests
-- Data providers for parameterization
+- Centralized data providers for parameterization
+- Type-safe data reading utilities
 
 **Error Handling & Reporting**
 - Automatic screenshot capture on failure
 - Detailed error logging with SLF4J
-- Retry mechanism for flaky tests (up to 2 retries)
+- Automatic retry mechanism for flaky tests (up to 2 retries)
 - Allure reporting with step-by-step execution
 - TestNG HTML reports
 
@@ -769,6 +987,12 @@ mvn clean compile test-compile
 ## License
 
 This project is licensed under the MIT License.
+
+## Author
+
+**Victor Grozev**
+- Role: Creator & Lead Developer
+- Framework: Core Automation Framework
 
 ## Contact
 

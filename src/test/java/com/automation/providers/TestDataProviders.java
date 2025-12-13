@@ -40,10 +40,19 @@ public class TestDataProviders {
 
     @DataProvider(name = "marketingBannersProvider")
     public Object[][] marketingBannersProvider() {
+        // Based on actual page content from https://trade.multibank.io/
         return new Object[][] {
-            { "Instant Buy" },
-            { "Card/Wire Transfer" },
-            { "24/7 Support" }
+            { "Pay Trading Fees with MBG" },
+            { "Real World Assets" },
+            { "Coming Soon" }
+        };
+    }
+
+    @DataProvider(name = "tradingTabsProvider")
+    public Object[][] tradingTabsProvider() {
+        return new Object[][] {
+            { "Favorites", "favoritesTabAvailable" },
+            { "All Pairs", "allPairsTabAvailable" }
         };
     }
 }

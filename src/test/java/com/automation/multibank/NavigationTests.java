@@ -325,4 +325,35 @@ public class NavigationTests extends BaseWebTest {
 
         log.info("Support navigation successful - URL: {}", currentUrl);
     }
+
+    // ========================================
+    // OPTIONAL: DataProvider Browser Parametrization Example
+    // ========================================
+    // This approach runs the same test on multiple browsers sequentially
+    // NOTE: The current TestNG XML approach (testng.xml) is RECOMMENDED
+    // for better parallel execution across browsers
+    //
+    // Uncomment to use browserProvider parametrization:
+    //
+    // @Test(description = "Example: Test navigation on multiple browsers using DataProvider",
+    //       priority = 100,
+    //       dataProvider = "browserProvider",
+    //       dataProviderClass = TestDataProviders.class,
+    //       enabled = false)  // Disabled by default to avoid duplicate test execution
+    // @Severity(SeverityLevel.NORMAL)
+    // @Story("Cross-Browser Navigation Example")
+    // public void testNavigationOnMultipleBrowsers(String browserName) {
+    //     log.info("Testing navigation on browser: {}", browserName);
+    //
+    //     // Browser is already initialized by BaseWebTest.setupBrowser()
+    //     // The browser parameter from TestNG XML or @Optional takes precedence
+    //
+    //     boolean isDisplayed = navigationPage.isNavigationMenuDisplayed();
+    //
+    //     assertThat(isDisplayed)
+    //             .as("Navigation menu should be displayed on " + browserName)
+    //             .isTrue();
+    //
+    //     log.info("Navigation test passed on browser: {}", browserName);
+    // }
 }

@@ -16,32 +16,52 @@ public class NavigationPage extends BasePage {
     // ============================================================
 
     // Main Navigation Wrapper
-    private final String topNavigation = "header";
+    private final Locator topNavigation;
 
     // All Menu Items
-    private final String navMenuItems = "header a";
+    private final Locator navMenuItems;
 
     // Individual Navigation Links
-    private final String dashboardLink = "a[href*='dashboard'], a:has-text('Dashboard')";
-    private final String marketsLink = "a[href*='markets'], a:has-text('Markets')";
-    private final String tradeLink = "a[href*='trade'], a:has-text('Trade')";
-    private final String featuresLink = "a[href*='features'], a:has-text('Features')";
-    private final String aboutLink = "a[href*='about'], a:has-text('About')"; // Not always present
-    private final String supportLink = "a[href*='support'], a:has-text('Support')";
+    private final Locator dashboardLink;
+    private final Locator marketsLink;
+    private final Locator tradeLink;
+    private final Locator featuresLink;
+    private final Locator aboutLink;
+    private final Locator supportLink;
 
     // Language Selector
-    private final String languageSelector = "[class*='language'], [class*='lang'], select[name='language']";
+    private final Locator languageSelector;
 
     // ============================================================
 
     public NavigationPage() {
         super();
-        // Page objects should not navigate in constructor
+
+        // Initialize Navigation Locators
+        this.topNavigation = page.locator("header");
+        this.navMenuItems = page.locator("header nav a, header a");
+
+        // Individual Navigation Links - using exact text matching from actual page
+        this.dashboardLink = page.locator("header a:has-text('Dashboard')").first();
+        this.marketsLink = page.locator("header a[href='/markets'], header a:has-text('Markets')").first();
+
+        // These are span elements (dropdown triggers), not direct links
+        this.tradeLink = page.locator("header span:has-text('Trade'), header a:has-text('Trade')").first();
+        this.featuresLink = page.locator("header span:has-text('Features'), header a:has-text('Features')").first();
+        this.aboutLink = page.locator("header span:has-text('About Us'), header a:has-text('About Us')").first();
+        this.supportLink = page.locator("header span:has-text('Support'), header a:has-text('Support')").first();
+
+        // Language Selector - looking for "EN" text
+        this.languageSelector = page.locator(":has-text('EN'), [class*='language'], [class*='lang']").first();
     }
+
+    // ============================================================
+    // Navigation Methods
+    // ============================================================
 
     public boolean isNavigationMenuDisplayed() {
         try {
-            waitForSelector(topNavigation);
+            topNavigation.waitFor();
             log.debug("Navigation menu is displayed");
             return true;
         } catch (Exception e) {
@@ -51,8 +71,8 @@ public class NavigationPage extends BasePage {
     }
 
     public List<String> getNavigationMenuItems() {
-        waitForSelector(navMenuItems);
-        List<Locator> menuLocators = page.locator(navMenuItems).all();
+        navMenuItems.first().waitFor();
+        List<Locator> menuLocators = navMenuItems.all();
         List<String> menuItems = new ArrayList<>();
 
         for (Locator locator : menuLocators) {
@@ -68,8 +88,8 @@ public class NavigationPage extends BasePage {
 
     public boolean isNavigationItemVisible(String itemName) {
         try {
-            String selector = String.format("a:has-text('%s')", itemName);
-            waitForSelector(selector);
+            Locator itemLocator = page.locator(String.format("a:has-text('%s')", itemName)).first();
+            itemLocator.waitFor();
             log.debug("Navigation item '{}' is visible", itemName);
             return true;
         } catch (Exception e) {
@@ -79,40 +99,52 @@ public class NavigationPage extends BasePage {
     }
 
     public void clickNavigationItem(String itemName) {
-        String selector = String.format("a:has-text('%s')", itemName);
-        waitForSelector(selector);
-        click(selector);
+        Locator itemLocator = page.locator(String.format("a:has-text('%s')", itemName)).first();
+        itemLocator.waitFor();
+        itemLocator.click();
         log.info("Clicked navigation item: {}", itemName);
     }
 
     public void clickDashboard() {
-        click(dashboardLink);
+        dashboardLink.click();
         log.info("Clicked Dashboard link");
     }
 
     public void clickMarkets() {
-        click(marketsLink);
+        marketsLink.click();
         log.info("Clicked Markets link");
     }
 
     public void clickTrade() {
-        click(tradeLink);
-        log.info("Clicked Trade link");
+        // Trade might be a dropdown trigger - click and wait for any navigation
+        tradeLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        tradeLink.click();
+        page.waitForTimeout(500); // Wait for dropdown or navigation
+        log.info("Clicked Trade link/dropdown");
     }
 
     public void clickFeatures() {
-        click(featuresLink);
-        log.info("Clicked Features link");
+        // Features might be a dropdown trigger - click and wait for any navigation
+        featuresLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        featuresLink.click();
+        page.waitForTimeout(500); // Wait for dropdown or navigation
+        log.info("Clicked Features link/dropdown");
     }
 
     public void clickAboutUs() {
-        click(aboutLink);
-        log.info("Clicked About Us link");
+        // About Us might be a dropdown trigger - click and wait for any navigation
+        aboutLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        aboutLink.click();
+        page.waitForTimeout(500); // Wait for dropdown or navigation
+        log.info("Clicked About Us link/dropdown");
     }
 
     public void clickSupport() {
-        click(supportLink);
-        log.info("Clicked Support link");
+        // Support might be a dropdown trigger - click and wait for any navigation
+        supportLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        supportLink.click();
+        page.waitForTimeout(500); // Wait for dropdown or navigation
+        log.info("Clicked Support link/dropdown");
     }
 
     public String getCurrentUrl() {
@@ -123,7 +155,7 @@ public class NavigationPage extends BasePage {
 
     public boolean isLanguageSelectorVisible() {
         try {
-            waitForSelector(languageSelector);
+            languageSelector.waitFor();
             log.debug("Language selector is visible");
             return true;
         } catch (Exception e) {

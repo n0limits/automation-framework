@@ -342,4 +342,77 @@ public class ContentValidationTests extends BaseWebTest {
 
         log.info("All major page elements rendered correctly");
     }
+
+    @Test(description = "Verify download link configuration and validity", priority = 14,
+          dataProvider = "downloadLinksProvider", dataProviderClass = TestDataProviders.class)
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Download Links Validation")
+    @Description("Test verifies download links are properly configured with correct href, visibility, and domain")
+    public void testDownloadLinkConfiguration(String linkName, String expectedDomain) {
+        log.info("Testing {} link configuration", linkName);
+
+        footerPage.scrollToFooter();
+
+        String actualHref;
+        boolean linkVisible;
+
+        // Get link details based on link name
+        if (linkName.equals("App Store")) {
+            actualHref = footerPage.getAppStoreUrl();
+            linkVisible = footerPage.isAppStoreLinkVisible();
+        } else {
+            actualHref = footerPage.getGooglePlayUrl();
+            linkVisible = footerPage.isGooglePlayLinkVisible();
+        }
+
+        // Verify link is visible and clickable
+        assertThat(linkVisible)
+                .as(linkName + " link should be visible")
+                .isTrue();
+
+        // Verify href is not null or empty
+        assertThat(actualHref)
+                .as(linkName + " URL should not be null or empty")
+                .isNotNull()
+                .isNotEmpty();
+
+        // Verify URL is properly formed (starts with http/https)
+        assertThat(actualHref)
+                .as(linkName + " URL should be a valid HTTP(S) URL")
+                .matches("^https?://.+");
+
+        // Verify link points to correct domain
+        assertThat(actualHref)
+                .as(linkName + " link should point to " + expectedDomain)
+                .containsIgnoringCase(expectedDomain);
+
+        log.info("{} link validated - URL: {}", linkName, actualHref);
+    }
+
+    @Test(description = "Verify marketing banners content and interaction", priority = 15)
+    @Severity(SeverityLevel.NORMAL)
+    @Story("Marketing Banners Interaction")
+    @Description("Test verifies that marketing banners are displayed with proper content")
+    public void testMarketingBannersContent() {
+        log.info("Testing marketing banners content");
+
+        footerPage.scrollToFooter();
+
+        // Verify banners are visible
+        boolean bannersVisible = footerPage.areMarketingBannersVisible();
+
+        assertThat(bannersVisible)
+                .as("Marketing banners should be visible")
+                .isTrue();
+
+        // Get all banner texts to verify content is loaded
+        List<String> bannerTexts = footerPage.getMarketingBannerTexts();
+
+        assertThat(bannerTexts)
+                .as("Marketing banners should have text content")
+                .isNotEmpty();
+
+        log.info("Marketing banners verified - {} banners with content: {}",
+                bannerTexts.size(), bannerTexts);
+    }
 }

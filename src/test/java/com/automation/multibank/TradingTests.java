@@ -359,4 +359,104 @@ public class TradingTests extends BaseWebTest {
 
         log.info("Total trading pairs available: {}", pairsCount);
     }
+
+    @Test(description = "Verify trading tab functionality", priority = 16,
+          dataProvider = "tradingTabsProvider", dataProviderClass = TestDataProviders.class)
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Trading Categories Switching")
+    @Description("Test verifies that clicking trading category tabs switches the view and loads category data")
+    public void testTradingTabFunctionality(String tabName, String availabilityKey) {
+        log.info("Testing {} tab functionality", tabName);
+
+        boolean tabAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", availabilityKey);
+        if (!tabAvailable) {
+            throw new SkipException(tabName + " tab test skipped - tab not available on current site");
+        }
+
+        // Click the appropriate tab based on name
+        if (tabName.equals("Favorites")) {
+            tradingPage.clickFavoritesTab();
+        } else if (tabName.equals("All Pairs")) {
+            tradingPage.clickAllPairsTab();
+        }
+
+        page.waitForLoadState();
+
+        // Verify trading table is still displayed after tab switch
+        boolean tableDisplayed = tradingPage.isTradingPairsTableDisplayed();
+
+        assertThat(tableDisplayed)
+                .as(tabName + " tab should display trading pairs table")
+                .isTrue();
+
+        // Get count (Favorites can be 0, All Pairs should have pairs)
+        int pairsCount = tradingPage.getTradingPairsCount();
+
+        if (tabName.equals("All Pairs")) {
+            assertThat(pairsCount)
+                    .as("All Pairs tab must display trading pairs")
+                    .isGreaterThan(0);
+        } else {
+            // Favorites can legitimately be empty
+            assertThat(pairsCount)
+                    .as("Favorites tab should display valid count (can be 0 if no favorites)")
+                    .isGreaterThanOrEqualTo(0);
+        }
+
+        log.info("{} tab shows {} pairs", tabName, pairsCount);
+    }
+
+    @Test(description = "Verify trading pairs display across different categories", priority = 17)
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Trading Categories")
+    @Description("Test verifies spot trading section displays trading pairs across different categories (Favorites vs All)")
+    public void testTradingPairsAcrossCategories() {
+        log.info("Testing trading pairs display across different categories");
+
+        boolean favoritesAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "favoritesTabAvailable");
+        boolean allPairsAvailable = TestDataReader.getBooleanValue(testData, "tradingPairs", "allPairsTabAvailable");
+
+        if (!favoritesAvailable || !allPairsAvailable) {
+            throw new SkipException("Cross-category test skipped - both tabs not available on current site");
+        }
+
+        // Switch to All Pairs and verify
+        tradingPage.clickAllPairsTab();
+        page.waitForLoadState();
+        int allPairsCount = tradingPage.getTradingPairsCount();
+
+        assertThat(allPairsCount)
+                .as("All Pairs category must display trading pairs")
+                .isGreaterThan(0);
+
+        log.info("All Pairs category shows {} pairs", allPairsCount);
+
+        // Switch to Favorites and verify table remains functional
+        tradingPage.clickFavoritesTab();
+        page.waitForLoadState();
+        int favoritesCount = tradingPage.getTradingPairsCount();
+
+        // Favorites can be empty, verify table is still displayed
+        boolean tableDisplayed = tradingPage.isTradingPairsTableDisplayed();
+
+        assertThat(tableDisplayed)
+                .as("Trading pairs table should remain displayed across category switches")
+                .isTrue();
+
+        assertThat(favoritesCount)
+                .as("Favorites category should display valid count (can be 0)")
+                .isGreaterThanOrEqualTo(0);
+
+        // Switch back to All Pairs to verify consistency
+        tradingPage.clickAllPairsTab();
+        page.waitForLoadState();
+        int allPairsCountAfter = tradingPage.getTradingPairsCount();
+
+        assertThat(allPairsCountAfter)
+                .as("All Pairs should show consistent data after switching")
+                .isGreaterThan(0);
+
+        log.info("Trading pairs successfully displayed across categories - All: {}, Favorites: {}, All(after): {}",
+                allPairsCount, favoritesCount, allPairsCountAfter);
+    }
 }

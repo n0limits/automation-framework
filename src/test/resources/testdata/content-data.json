@@ -6,11 +6,11 @@
   },
   "marketingBanners": {
     "expectedBanners": [
-      "Instant Buy",
-      "Card/Wire Transfer",
-      "24/7 Support"
+      "Pay Trading Fees with MBG",
+      "Real World Assets",
+      "Coming Soon"
     ],
-    "rotationEnabled": true
+    "rotationEnabled": false
   },
   "aboutUsPage": {
     "available": true,

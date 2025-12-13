@@ -13,6 +13,17 @@
     <name>Core Automation Framework</name>
     <description>Web UI and API test automation framework using Playwright, RestAssured, and TestNG</description>
 
+    <developers>
+        <developer>
+            <id>vgrozev</id>
+            <name>Victor Grozev</name>
+            <roles>
+                <role>Creator</role>
+                <role>Lead Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -21,7 +32,15 @@
 
         <!-- Test Configuration -->
         <browser>chromium</browser>
+
+        <!-- Multi-Browser Execution Configuration -->
+        <!-- Default: Cross-browser suite (runs tests on Chromium, Firefox, and WebKit in parallel) -->
         <suiteXmlFile>src/test/resources/testng/testng.xml</suiteXmlFile>
+
+        <!-- Single-Browser Execution Options: -->
+        <!-- For Chromium only: -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml -->
+        <!-- For Smoke tests: -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml -->
+        <!-- For BDD tests: -DsuiteXmlFile=src/test/resources/testng/testng-bdd.xml -->
 
         <!-- Dependency Versions -->
         <playwright.version>1.48.0</playwright.version>
