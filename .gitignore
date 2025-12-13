@@ -27,11 +27,13 @@ bin/
 .vscode/
 
 # Logs
-
+logs/
+*.log
 
 # Test outputs
 test-output/
-
+allure-results/
+allure-report/
 screenshots/
 
 # OS
