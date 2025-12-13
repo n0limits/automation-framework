@@ -2,11 +2,13 @@ package com.automation.listeners;
 
 import com.automation.utils.FileUtils;
 import com.automation.utils.PlaywrightManager;
-import io.qameta.allure.Attachment;
+import io.qameta.allure.Allure;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+
+import java.io.ByteArrayInputStream;
 
 @Slf4j
 public class TestListener implements ITestListener {
@@ -28,8 +30,14 @@ public class TestListener implements ITestListener {
 
         try {
             if (PlaywrightManager.getPage() != null) {
+                // Save screenshot to file system
                 FileUtils.takeScreenshot(PlaywrightManager.getPage(), result.getName());
-                attachScreenshot();
+
+                // Attach screenshot to Allure report
+                byte[] screenshotBytes = PlaywrightManager.getPage().screenshot();
+                Allure.addAttachment("Screenshot on Failure", "image/png",
+                    new ByteArrayInputStream(screenshotBytes), "png");
+                log.info("Screenshot attached to Allure report");
             }
         } catch (Exception e) {
             log.error("Failed to capture screenshot", e);
@@ -52,15 +60,5 @@ public class TestListener implements ITestListener {
         log.info("Passed tests: {}", context.getPassedTests().size());
         log.info("Failed tests: {}", context.getFailedTests().size());
         log.info("Skipped tests: {}", context.getSkippedTests().size());
-    }
-
-    @Attachment(value = "Screenshot", type = "image/png")
-    public byte[] attachScreenshot() {
-        try {
-            return PlaywrightManager.getPage().screenshot();
-        } catch (Exception e) {
-            log.error("Failed to attach screenshot to Allure", e);
-            return new byte[0];
-        }
     }
 }

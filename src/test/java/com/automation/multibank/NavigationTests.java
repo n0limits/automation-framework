@@ -71,6 +71,9 @@ public class NavigationTests extends BaseWebTest {
             if (!itemAvailable) {
                 throw new SkipException(itemName + " navigation test skipped - link not available on current site");
             }
+        } catch (SkipException e) {
+            // Rethrow SkipException to properly skip the test
+            throw e;
         } catch (Exception e) {
             // Item availability check not configured, assume available
             log.debug("Availability check not configured for {}, assuming available", itemName);

@@ -195,6 +195,8 @@ public class TradingTests extends BaseWebTest {
     public void testTradingPairDataStructure() {
         log.info("Starting test: Trading pair data structure verification");
 
+        skipIfTradingPairsNotAvailable();
+
         List<String> expectedPairs = TestDataReader.getStringList(testData, "tradingPairs", "expectedPairs");
 
         if (expectedPairs == null || expectedPairs.isEmpty()) {

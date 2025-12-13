@@ -481,6 +481,49 @@ Or via command line:
 mvn clean test -Dheadless=true
 ```
 
+### 📊 Test Reports
+
+The framework generates comprehensive Allure HTML reports for stakeholder review.
+
+#### View Report Interactively (Local Development)
+```bash
+# Run tests and open interactive report in browser
+mvn clean test
+mvn allure:serve
+```
+
+#### Generate Stakeholder Report (for Commit/Sharing)
+```bash
+# Run tests
+mvn clean test
+
+# Generate static HTML report
+mvn allure:report
+
+# Copy to reports directory (for git commit)
+mvn allure:report site
+```
+
+**The report will be available at:** `reports/latest/index.html`
+
+#### What's Included in the Report
+- ✅ Test execution overview with pass/fail statistics
+- ✅ Visual charts and graphs
+- ✅ Test duration timeline
+- ✅ Detailed test results with stack traces
+- ✅ Test categorization by Epic, Feature, and Story
+- ✅ Historical trends (when running multiple times)
+- ✅ Failed test screenshots and logs (when configured)
+
+#### Sharing with Stakeholders
+The `reports/latest/` directory is committed to the repository and can be:
+- Opened directly in any browser (no installation required)
+- Shared via email or file sharing
+- Viewed offline (all assets bundled)
+- Attached to pull requests or JIRA tickets
+
+**Note:** The `logs/` directory is NOT committed (contains sensitive internal logs). Only the sanitized HTML report is shared.
+
 ### Available TestNG Suites
 
 - `testng.xml` - Full cross-browser suite (Chromium + Firefox + WebKit in parallel)

@@ -36,6 +36,9 @@ allure-results/
 allure-report/
 screenshots/
 
+# Reports for stakeholders (not ignored - committed to repo)
+!reports/
+
 # OS
 .DS_Store
 Thumbs.db
