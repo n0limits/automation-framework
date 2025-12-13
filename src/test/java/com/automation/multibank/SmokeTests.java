@@ -20,6 +20,7 @@ public class SmokeTests extends BaseWebTest {
     @Severity(SeverityLevel.BLOCKER)
     @Story("Homepage Accessibility")
     @Description("Validates that the MultiBank.io homepage loads successfully and displays expected content")
+    // configured to run through multiple browsers (chromium, webkit) if executed via the testng-multi-browser-smoke.xml
     public void smokeTestHomepageLoads() {
         log.info("Starting smoke test: Homepage load verification");
 

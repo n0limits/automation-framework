@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MultiBank Trading Platform Test Suite" parallel="methods" thread-count="3" verbose="1">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+
+    <!-- Chromium Browser Test -->
+    <test name="All Tests with Chromium" preserve-order="true">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.automation.multibank.ContentValidationTests"/>
+            <class name="com.automation.multibank.NavigationTests"/>
+            <class name="com.automation.multibank.PerformanceTests"/>
+            <class name="com.automation.multibank.ScreenshotDemoTest"/>
+            <class name="com.automation.multibank.SmokeTests"/>
+            <class name="com.automation.multibank.TradingTests"/>
+        </classes>
+    </test>
+
+    <!-- Firefox Browser Test -->
+    <test name="All Tests with FireFox" preserve-order="true">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.automation.multibank.ContentValidationTests"/>
+            <class name="com.automation.multibank.NavigationTests"/>
+            <class name="com.automation.multibank.PerformanceTests"/>
+            <class name="com.automation.multibank.ScreenshotDemoTest"/>
+            <class name="com.automation.multibank.SmokeTests"/>
+            <class name="com.automation.multibank.TradingTests"/>
+        </classes>
+    </test>
+
+    <!-- WebKit Browser Test -->
+    <test name="All Tests with WebKit" preserve-order="true">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.automation.multibank.ContentValidationTests"/>
+            <class name="com.automation.multibank.NavigationTests"/>
+            <class name="com.automation.multibank.PerformanceTests"/>
+            <class name="com.automation.multibank.ScreenshotDemoTest"/>
+            <class name="com.automation.multibank.SmokeTests"/>
+            <class name="com.automation.multibank.TradingTests"/>
+        </classes>
+    </test>
+
+</suite>

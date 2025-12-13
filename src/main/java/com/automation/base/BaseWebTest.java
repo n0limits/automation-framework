@@ -4,10 +4,9 @@ import com.automation.factory.BrowserFactory;
 import com.automation.utils.PlaywrightManager;
 import com.microsoft.playwright.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Parameters;
 
 import java.nio.file.Paths;
 
@@ -21,10 +20,18 @@ public class BaseWebTest extends BaseTest {
     // BEFORE METHOD - Browser Setup + Common Operations
     // ========================================
     @BeforeMethod
-    @Parameters({"browser"})
-    public void setupBrowser(@Optional("chromium") String browser) {
+    public void setupBrowser(ITestContext context) {
+        // Extract browser parameter from TestNG context (thread-safe for parallel execution)
+        String browser = context.getCurrentXmlTest().getParameter("browser");
+
+        // Fallback to chromium if no browser parameter is defined in XML
+        if (browser == null || browser.trim().isEmpty()) {
+            browser = "chromium";
+            log.debug("No browser parameter found in test context, defaulting to chromium");
+        }
+
         this.currentBrowser = browser;
-        log.info("Setting up {} browser for web test", browser);
+        log.info("Setting up {} browser for web test (from context: {})", browser, context.getCurrentXmlTest().getName());
 
         // 1. Initialize Playwright and launch browser
         PlaywrightManager.initPlaywright();

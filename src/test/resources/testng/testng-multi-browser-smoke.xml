@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Multi-Browser Smoke Test Suite" parallel="tests" thread-count="3">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+
+    <!-- Chromium Browser Test -->
+    <test name="Chromium - Homepage Smoke Test">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.automation.multibank.SmokeTests">
+                <methods>
+                    <include name="smokeTestHomepageLoads"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Firefox Browser Test -->
+    <test name="Firefox - Homepage Smoke Test">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.automation.multibank.SmokeTests">
+                <methods>
+                    <include name="smokeTestHomepageLoads"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- WebKit Browser Test -->
+    <test name="WebKit - Homepage Smoke Test">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.automation.multibank.SmokeTests">
+                <methods>
+                    <include name="smokeTestHomepageLoads"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
