@@ -490,16 +490,39 @@ mvn allure:serve
 ```
 
 #### Generate Stakeholder Report (for Commit/Sharing)
+
+**Approach 1: Single Command (RECOMMENDED)**
+
 ```bash
-# Run tests
+# Run tests, generate report, and copy to reports/latest in one step
+mvn clean test allure:report && mvn site
+```
+
+**Benefits:**
+- Guaranteed sequential execution (no race conditions)
+- Single command for complete workflow
+- Reliable report generation
+- Works consistently in CI/CD pipelines
+
+**Approach 2: Step-by-Step Execution**
+
+```bash
+# Step 1: Run tests
 mvn clean test
 
-# Generate static HTML report
+# Step 2: Generate static HTML report
 mvn allure:report
 
-# Copy to reports directory (for git commit)
-mvn allure:report site
+# Step 3: Copy to reports directory (for git commit)
+mvn site
 ```
+
+**Benefits:**
+- Easier to debug individual steps
+- Can skip test execution if tests already ran
+- Clear visibility into each phase
+
+**Note:** Running `mvn allure:report site` (both goals together) may cause a race condition where the site phase tries to copy files before allure:report finishes generating them. Use sequential execution (`&&` or separate commands) to ensure reliability.
 
 **The report will be available at:** `reports/latest/index.html`
 
