@@ -7,13 +7,15 @@ Production-grade web automation framework for testing the MultiBank Trading Plat
 ## Overview
 
 Comprehensive test automation solution for https://trade.multibank.io/ featuring:
-- 38 automated test cases covering Navigation, Trading, and Content validation
+- 50 automated test cases covering Navigation, Trading, Content validation, Smoke, and Performance testing
 - Page Object Model with 4 page objects (NavigationPage, TradingPage, FooterPage, AboutUsPage)
 - Data-driven testing with external JSON test data
 - Cross-browser testing with Playwright (Chromium, Firefox, WebKit)
 - Type-safe browser selection using BrowserType enum
 - Automatic retry mechanism for flaky tests
-- Professional logging, wait management, and Allure reporting
+- Professional logging, wait management, and Allure reporting with screenshot capture
+- Character frequency utility for string analysis
+- CI/CD integration with GitHub Actions workflows
 
 ## Framework Architecture
 
@@ -28,7 +30,7 @@ This framework follows industry-standard design patterns and provides a solid fo
 ## Project Structure
 
 ```
-core-automation-framework/
+automation-framework/
 │
 ├── src/
 │   ├── main/
@@ -83,7 +85,8 @@ core-automation-framework/
 │   │   │       ├── PlaywrightManager.java
 │   │   │       ├── WaitUtils.java
 │   │   │       ├── FileUtils.java
-│   │   │       └── TestDataGenerator.java
+│   │   │       ├── TestDataGenerator.java
+│   │   │       └── CharacterFrequencyUtil.java
 │   │   │
 │   │   └── resources/
 │   │       ├── config.properties       # Main configuration file
@@ -91,10 +94,16 @@ core-automation-framework/
 │   │
 │   └── test/
 │       ├── java/com/automation/
-│       │   └── multibank/              # MultiBank test classes
-│       │       ├── NavigationTests.java
-│       │       ├── TradingTests.java
-│       │       └── ContentValidationTests.java
+│       │   ├── multibank/              # MultiBank test classes
+│       │   │   ├── NavigationTests.java
+│       │   │   ├── TradingTests.java
+│       │   │   ├── ContentValidationTests.java
+│       │   │   ├── SmokeTests.java
+│       │   │   ├── PerformanceTests.java
+│       │   │   └── ScreenshotDemoTest.java
+│       │   │
+│       │   └── utils/                  # Utility test classes
+│       │       └── CharacterFrequencyUtilTests.java
 │       │
 │       └── resources/
 │           ├── cucumber.properties     # Cucumber configuration
@@ -107,7 +116,23 @@ core-automation-framework/
 │               ├── testng.xml          # Cross-browser suite (default)
 │               ├── testng-chromium.xml # Single browser suite
 │               ├── testng-smoke.xml    # Smoke test suite
-│               └── testng-bdd.xml      # BDD suite configuration
+│               ├── testng-multi-browser-smoke.xml
+│               ├── testng-bdd.xml      # BDD suite configuration
+│               ├── multibank-suite.xml
+│               └── run-all-tests-in-paralel-multi-browsers.xml
+│
+├── .github/
+│   └── workflows/                      # GitHub Actions CI/CD pipelines
+│       ├── test-automation.yml         # Main test automation workflow
+│       ├── pr-checks.yml               # Pull request validation
+│       └── nightly-tests.yml           # Scheduled nightly tests
+│
+├── docs/                               # Additional documentation
+│   ├── character-frequency-utility.md
+│   └── task2-requirements-coverage.md
+│
+├── reports/                            # Stakeholder test reports
+│   └── latest/                         # Latest Allure HTML report
 │
 ├── pom.xml                             # Maven dependencies
 ├── README.md                           # This file
@@ -127,7 +152,7 @@ core-automation-framework/
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd core-automation-framework
+cd automation-framework
 ```
 
 2. **Install dependencies**
@@ -183,9 +208,10 @@ report.path=target/reports
 - Factory Pattern for browser and page instantiation
 - ThreadLocal pattern for parallel execution support
 - Explicit wait strategies with Playwright auto-waiting
-- Automatic screenshot capture on test failure
+- Automatic screenshot capture on test failure with Allure integration
 - Cross-browser support (Chromium, Firefox, WebKit)
 - Type-safe browser selection using BrowserType enum
+- ITestContext-based browser parameterization for thread-safe parallel execution
 
 **2. API Testing Infrastructure**
 - RestAssured client configuration
@@ -219,24 +245,38 @@ report.path=target/reports
 **6. Reporting & Logging**
 - Allure integration for rich, interactive reports
 - SLF4J + Logback for comprehensive logging
-- Screenshots on test failure
+- Automatic screenshot capture on test failure
+- Screenshots embedded in Allure reports via Allure.addAttachment API
 - TestNG listeners for custom reporting
 - Automatic retry analyzer for flaky tests (up to 2 retries)
 
 **7. Base Test Classes**
 - BaseTest - Suite-level setup and teardown
-- BaseWebTest - Web UI test initialization with browser parameterization
+- BaseWebTest - Web UI test initialization with ITestContext browser parameterization
 - BaseAPITest - API test initialization
 
 **8. Type-Safe Browser Management**
 - BrowserType enum for compile-time browser validation
 - String-to-enum conversion with error handling
-- Support for browser aliases (chrome → chromium, safari → webkit)
+- Support for browser aliases (chrome to chromium, safari to webkit)
 - Clean integration with BrowserFactory
+
+**9. String Analysis Utility**
+- CharacterFrequencyUtil for counting character occurrences
+- Preserves order of first appearance using LinkedHashMap
+- Case-insensitive, ignores spaces and special characters
+- O(n) time complexity, O(k) space complexity
+- Comprehensive test coverage with 12 test cases
+
+**10. CI/CD Integration**
+- GitHub Actions workflows for automated testing
+- Pull request validation with smoke tests
+- Scheduled nightly full test suite execution
+- Automatic test result reporting and artifact upload
 
 ## MultiBank Test Suite Overview
 
-### Test Coverage (38 Test Cases)
+### Test Coverage (50 Test Cases)
 
 **Navigation & Layout Tests** (10 tests)
 - Navigation menu display and structure
@@ -262,6 +302,21 @@ report.path=target/reports
 - Content loading and rendering
 - Social media links verification
 
+**Smoke Tests** (3 tests)
+- Homepage load validation
+- Critical page elements verification
+- JavaScript error detection
+
+**Performance Tests** (4 tests)
+- Homepage load time measurement
+- Page navigation performance
+- DOM content loaded timing
+- Network idle state verification
+
+**Screenshot Demo Test** (1 test)
+- Demonstrates automatic screenshot capture on failure
+- Shows Allure report integration with failure evidence
+
 ### Page Objects Implemented
 
 ```
@@ -274,7 +329,7 @@ src/main/java/com/automation/pages/multibank/
 
 **Key Features:**
 - Locator-based selectors using Playwright Locator API
-- Explicit waits for dynamic content
+- Explicit waits for dynamic content (10-15 second timeouts)
 - Scrolling support for elements below the fold
 - Smart navigation with fallback strategies
 - Comprehensive logging for debugging
@@ -332,6 +387,7 @@ BrowserType.WEBKIT
 - Each browser runs as a separate TestNG `<test>` block
 - All browsers execute in parallel (configurable via `thread-count`)
 - Each test method runs in parallel within its browser
+- Browser parameter extracted via ITestContext for thread safety
 
 **Default Configuration:** `testng.xml`
 ```xml
@@ -384,67 +440,6 @@ mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng-smoke.xml
 - Better for local development
 - Ideal for browser-specific debugging
 
-#### Approach 3: DataProvider Parametrization (OPTIONAL)
-
-**Best for:** Running specific test methods across browsers sequentially
-
-**How it works:**
-- Use TestNG `@DataProvider` to parametrize individual test methods
-- Each test method runs once per browser
-- Tests execute sequentially (browser1, browser2, browser3)
-
-**Example Implementation:**
-
-TestDataProviders.java:
-```java
-@DataProvider(name = "browserProvider")
-public Object[][] browserProvider() {
-    return new Object[][] {
-        { "chromium" },
-        { "firefox" },
-        { "webkit" }
-    };
-}
-```
-
-Test Class:
-```java
-@Test(description = "Verify homepage loads",
-      dataProvider = "browserProvider",
-      dataProviderClass = TestDataProviders.class)
-public void testHomepageLoad(String browser) {
-    // Test will run 3 times (once per browser)
-    log.info("Testing on browser: {}", browser);
-
-    // Browser is already set up by BaseWebTest @BeforeMethod
-    // from TestNG XML parameter or @Optional default
-
-    // Your test logic here
-    assertThat(homePage.isLoaded()).isTrue();
-}
-```
-
-**Important Notes:**
-- DataProvider approach requires separate test execution per browser
-- Use TestNG XML `<parameter name="browser" value="..."/>` to set the browser
-- DataProvider parametrization is additional to the XML browser parameter
-- This approach is less efficient than TestNG XML parallel execution
-
-**When to use:**
-- You need fine-grained control over which tests run on which browsers
-- You want to test browser-specific behavior in a single test method
-- You're running individual test methods (not full suites)
-
-**Advantages:**
-- Fine-grained browser control per test method
-- Good for testing browser-specific features
-- Test method explicitly receives browser parameter
-
-**Disadvantages:**
-- Slower than XML parallel execution
-- Requires changes to test method signatures
-- Can lead to duplicate test execution if not configured correctly
-
 ### Common Execution Commands
 
 #### Local Development (Single Browser)
@@ -468,6 +463,8 @@ mvn clean test -Dbrowser=firefox
 mvn clean test -Dtest=NavigationTests
 mvn clean test -Dtest=TradingTests
 mvn clean test -Dtest=ContentValidationTests
+mvn clean test -Dtest=SmokeTests
+mvn clean test -Dtest=PerformanceTests
 ```
 
 #### Headless Mode
@@ -507,13 +504,14 @@ mvn allure:report site
 **The report will be available at:** `reports/latest/index.html`
 
 #### What's Included in the Report
--  Test execution overview with pass/fail statistics
--  Visual charts and graphs
--  Test duration timeline
--  Detailed test results with stack traces
--  Test categorization by Epic, Feature, and Story
--  Historical trends (when running multiple times)
--  Failed test screenshots and logs (when configured)
+- Test execution overview with pass/fail statistics
+- Visual charts and graphs
+- Test duration timeline
+- Detailed test results with stack traces
+- Test categorization by Epic, Feature, and Story
+- Historical trends (when running multiple times)
+- Failed test screenshots automatically attached and embedded
+- Comprehensive failure diagnostics
 
 #### Sharing with Stakeholders
 The `reports/latest/` directory is committed to the repository and can be:
@@ -524,67 +522,15 @@ The `reports/latest/` directory is committed to the repository and can be:
 
 **Note:** The `logs/` directory is NOT committed (contains sensitive internal logs). Only the sanitized HTML report is shared.
 
-# Test Execution Reports
-
-This directory contains the latest test execution reports for stakeholder review.
-
-##  Latest Report
-
-The latest test execution results are available in the `latest/` directory.
-
-### How to View the Report
-
-1. **Open the report locally:**
-    - Navigate to `reports/latest/` directory
-    - Open `index.html` in your web browser
-    - The report will display all test results, charts, and statistics
-
-2. **What's included:**
-    -  Test execution overview
-    -  Pass/Fail statistics with charts
-    -  Test duration timeline
-    -  Detailed test results
-    -  Failed test stack traces (if any)
-    -  Test categorization by feature
-
-##  Updating the Report
-
-To generate and update the latest report after running tests:
-
-```bash
-# Run tests
-mvn clean test
-
-# Generate the static HTML report
-mvn allure:report
-
-# Copy to reports directory
-cp -r target/allure-report/* reports/latest/
-
-# Commit the updated report
-git add reports/latest/
-git commit -m "Update test execution report"
-```
-
-##  Report Information
-
-- **Report Format:** Allure HTML Report
-- **Location:** `reports/latest/index.html`
-- **No Installation Required:** Just open in any modern web browser
-- **Offline Accessible:** All assets are bundled, works without internet
-
-##  Quick Access
-
-**Direct path to report:** `reports/latest/index.html`
-
-Simply double-click the file or open it in your browser to view the complete test execution results.
-
-
 ### Available TestNG Suites
 
 - `testng.xml` - Full cross-browser suite (Chromium + Firefox + WebKit in parallel)
-- `testng-smoke.xml` - Critical tests on Chromium only
 - `testng-chromium.xml` - All tests on Chromium only
+- `testng-smoke.xml` - Smoke tests on Chromium only
+- `testng-multi-browser-smoke.xml` - Smoke tests on all 3 browsers
+- `testng-bdd.xml` - BDD/Cucumber tests
+- `multibank-suite.xml` - Comprehensive suite with specific test methods
+- `run-all-tests-in-paralel-multi-browsers.xml` - All tests on all browsers
 
 ### Browser Initialization Architecture
 
@@ -592,7 +538,9 @@ Simply double-click the file or open it in your browser to view the complete tes
 ```
 TestNG XML Parameter
     ↓
-BaseWebTest.setupBrowser(@Parameters("browser"))
+BaseWebTest.setupBrowser(ITestContext context)
+    ↓
+Extract browser: context.getCurrentXmlTest().getParameter("browser")
     ↓
 BrowserFactory.launchBrowser(String)
     ↓
@@ -608,13 +556,14 @@ PlaywrightManager.setPage(page)
 **Thread Safety:**
 - Each test thread has its own isolated browser instance
 - `PlaywrightManager` uses `ThreadLocal<Browser>`, `ThreadLocal<Page>`, etc.
-- Parallel execution is fully supported
+- `ITestContext` provides thread-safe parameter extraction
+- Parallel execution is fully supported without parameter conflicts
 
 ### Multi-Browser Testing Best Practices
 
 1. Use TestNG XML for full suite execution (Approach 1)
 2. Use single-browser suite for local development (Approach 2)
-3. Use DataProvider only for browser-specific test logic (Approach 3)
+3. Use ITestContext for browser parameterization (already implemented in BaseWebTest)
 4. Enable headless mode in CI/CD pipelines (`headless=true`)
 5. Let RetryListener handle flaky tests (no manual retry configuration needed)
 
@@ -625,7 +574,98 @@ PlaywrightManager.setPage(page)
 - **BaseWebTest:** `src/main/java/com/automation/base/BaseWebTest.java`
 - **RetryAnalyzer:** `src/main/java/com/automation/listeners/RetryAnalyzer.java`
 - **RetryListener:** `src/main/java/com/automation/listeners/RetryListener.java`
+- **TestListener:** `src/main/java/com/automation/listeners/TestListener.java`
 - **TestNG Suites:** `src/test/resources/testng/`
+
+## CI/CD Integration
+
+### GitHub Actions Workflows
+
+The framework includes three automated CI/CD workflows:
+
+#### 1. test-automation.yml
+**Purpose:** Main test automation workflow
+**Triggers:** Push to main/develop, pull requests, manual dispatch
+**Jobs:**
+- Smoke Tests (Chromium) - Fast feedback on critical functionality
+- Cross-Browser Tests (3 browsers in parallel) - Full test coverage
+- Full Suite (on main branch only) - Complete test execution
+
+**Features:**
+- Automatic Playwright browser installation
+- Test result artifact upload (retained for 7-30 days)
+- Allure report generation and upload
+- Screenshot capture on failure
+- Test result publishing
+
+#### 2. pr-checks.yml
+**Purpose:** Pull request validation
+**Triggers:** Pull requests to main/develop
+**Jobs:**
+- Quick smoke test execution on Chromium
+- Automatic PR comment with test results
+- Fast feedback for code review
+
+**Features:**
+- 10-minute timeout for quick feedback
+- Automatic GitHub comment with pass/fail status
+- Test result artifact upload
+
+#### 3. nightly-tests.yml
+**Purpose:** Scheduled comprehensive testing
+**Triggers:** Daily at 2 AM UTC, manual dispatch
+**Jobs:**
+- Full cross-browser test suite execution
+- Extended timeout (90 minutes)
+- Automatic issue creation on failure
+
+**Features:**
+- Complete test coverage across all browsers
+- Extended test result retention (30 days)
+- Automatic GitHub issue creation for failures
+- Comprehensive artifact upload (results + screenshots)
+
+### Running Tests in CI/CD
+
+Tests run automatically on:
+- Every push to main or develop branches
+- Every pull request to main or develop
+- Scheduled daily at 2 AM UTC
+- Manual workflow dispatch via GitHub Actions UI
+
+## Character Frequency Utility
+
+### Overview
+A utility class for counting character occurrences in strings while following specific rules.
+
+### Location
+- **Utility Class:** `src/main/java/com/automation/utils/CharacterFrequencyUtil.java`
+- **Test Class:** `src/test/java/com/automation/utils/CharacterFrequencyUtilTests.java`
+- **Documentation:** `docs/character-frequency-utility.md`
+
+### Rules Applied
+- Case-insensitive (A and a are treated as the same)
+- Ignores spaces and whitespace
+- Ignores punctuation and special characters
+- Only counts letters and digits
+- Preserves order of first appearance
+
+### Usage Example
+```java
+Map<Character, Integer> result =
+    CharacterFrequencyUtil.getCharFrequency("Hello, World!");
+
+String formatted =
+    CharacterFrequencyUtil.formatFrequency(result);
+
+System.out.println(formatted);
+// Output: h:1, e:1, l:3, o:2, w:1, r:1, d:1
+```
+
+### Test Coverage
+- 12 comprehensive test cases covering all edge cases
+- 100% pass rate
+- O(n) time complexity, O(k) space complexity
 
 ## Writing Custom Tests
 
@@ -778,128 +818,6 @@ BrowserFactory.launchBrowser(browser);
 String displayName = BrowserType.WEBKIT.getDisplayName(); // "Apple WebKit (Safari)"
 ```
 
-### Creating API Tests
-
-1. **Create API Endpoint Class** (extend BaseAPI):
-
-```java
-package com.automation.api.endpoints;
-
-import com.automation.api.BaseAPI;
-import io.restassured.response.Response;
-
-public class UserEndpoints extends BaseAPI {
-    private static final String USERS_PATH = "/users";
-
-    public Response getAllUsers() {
-        return get(USERS_PATH);
-    }
-
-    public Response getUserById(int userId) {
-        return get(USERS_PATH + "/" + userId);
-    }
-
-    public Response createUser(Object userData) {
-        return post(USERS_PATH, userData);
-    }
-
-    public Response updateUser(int userId, Object userData) {
-        return put(USERS_PATH + "/" + userId, userData);
-    }
-
-    public Response deleteUser(int userId) {
-        return delete(USERS_PATH + "/" + userId);
-    }
-}
-```
-
-2. **Create Test Class** (extend BaseAPITest):
-
-```java
-package com.automation.api;
-
-import com.automation.base.BaseAPITest;
-import com.automation.api.endpoints.UserEndpoints;
-import com.automation.api.validators.ResponseValidator;
-import io.restassured.response.Response;
-import org.testng.annotations.Test;
-import java.util.HashMap;
-import java.util.Map;
-
-public class UserAPITests extends BaseAPITest {
-
-    @Test(description = "Verify user creation")
-    public void testCreateUser() {
-        UserEndpoints userAPI = new UserEndpoints();
-
-        Map<String, String> userData = new HashMap<>();
-        userData.put("name", "Test User");
-        userData.put("email", "test@example.com");
-
-        Response response = userAPI.createUser(userData);
-
-        ResponseValidator.validateStatusCode(response, 201);
-        ResponseValidator.validateFieldExists(response, "id");
-    }
-}
-```
-
-### Creating Database Tests
-
-```java
-package com.automation.db;
-
-import com.automation.db.DatabaseConnectionFactory;
-import com.automation.db.DatabaseType;
-import com.automation.db.SQLConnection;
-import com.automation.db.QueryBuilder;
-import org.testng.annotations.Test;
-
-public class DatabaseTests {
-
-    @Test
-    public void testDatabaseQuery() {
-        SQLConnection connection = (SQLConnection)
-            DatabaseConnectionFactory.getConnection(DatabaseType.MYSQL);
-
-        try {
-            String query = QueryBuilder.select("id", "name", "email")
-                .from("users")
-                .where("status = 'active'")
-                .build();
-
-            Object result = connection.executeQuery(query);
-            // Perform assertions
-        } finally {
-            connection.disconnect();
-        }
-    }
-}
-```
-
-## Reporting
-
-### Generate Allure Report
-
-```bash
-# Run tests
-mvn clean test
-
-# Generate and serve report
-mvn allure:serve
-
-# Generate static report
-mvn allure:report
-```
-
-### Report Locations
-
-- **Allure Results**: `target/allure-results/`
-- **Allure Report**: `target/allure-report/`
-- **Screenshots**: `target/screenshots/`
-- **Logs**: `logs/test-automation.log`
-- **TestNG Reports**: `target/surefire-reports/`
-
 ## Design Patterns Used
 
 ### 1. Page Object Model (POM)
@@ -974,18 +892,19 @@ The framework demonstrates these best practices:
 2. **Meaningful Test Names** - Descriptive test methods (testNavigationMenuDisplayed)
 3. **AAA Pattern** - Arrange, Act, Assert structure
 4. **Page Object Model** - All locators in page objects, never in tests
-5. **Proper Wait Strategies** - Explicit waits with Playwright auto-waiting
+5. **Proper Wait Strategies** - Explicit waits with Playwright auto-waiting, no fixed sleeps
 6. **External Test Data** - JSON files for all test data
 7. **Comprehensive Logging** - SLF4J with DEBUG/INFO/WARN/ERROR levels
 8. **Fluent Assertions** - AssertJ assertions with custom messages
 9. **Allure Annotations** - @Epic, @Feature, @Story, @Severity for reporting
 10. **Data-Driven Testing** - TestNG DataProviders for parameterized tests
 11. **Exception Handling** - Try-catch with logging, no silent failures
-12. **Cross-Browser Support** - Browser parameterization via TestNG
+12. **Cross-Browser Support** - Browser parameterization via TestNG with ITestContext
 13. **Fresh Test State** - Page objects initialized in @BeforeMethod hooks
 14. **Configurable Timeouts** - All waits use config.properties timeout values
 15. **Type-Safe Enums** - BrowserType enum for compile-time browser validation
 16. **Automatic Retry** - RetryListener for handling flaky tests
+17. **Screenshot on Failure** - Automatic capture and Allure attachment
 
 ## Troubleshooting
 
@@ -1000,11 +919,18 @@ mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="in
 - Verify you're using `testng.xml` (not `testng-chromium.xml`)
 - Check `pom.xml` has `<suiteXmlFile>src/test/resources/testng/testng.xml</suiteXmlFile>`
 - Ensure browser parameters are correctly defined in TestNG XML suite
+- Verify ITestContext is properly extracting browser parameter
 
 ### RetryAnalyzer not working
 - Verify `RetryListener` is in TestNG suite `<listeners>` section
 - Check logs for "RetryAnalyzer attached to test" messages (DEBUG level)
 - Ensure `RetryListener` is properly registered in all TestNG suite files
+
+### Screenshots not appearing in Allure report
+- Verify TestListener is registered in pom.xml and TestNG suite
+- Check that tests are actually failing (screenshots only on failure)
+- Ensure Allure.addAttachment is being called (check TestListener.java)
+- Verify allure-results directory has screenshot attachments
 
 ### Database connection issues
 - Verify connection strings in `config.properties`
@@ -1037,7 +963,7 @@ mvn clean compile test-compile
 - WebKit (Apple Safari engine)
 - Parallel execution across browsers
 - Type-safe browser selection with BrowserType enum
-- Browser parameter support via TestNG
+- ITestContext-based thread-safe browser parameterization
 
 **Parallel Execution**
 - Thread-safe browser management with ThreadLocal
@@ -1048,7 +974,7 @@ mvn clean compile test-compile
 **Wait Strategies**
 - Playwright auto-waiting for actionability
 - Page load waits (NETWORKIDLE, DOMCONTENTLOADED, LOAD)
-- Element visibility waits with explicit timeouts
+- Element visibility waits with explicit timeouts (10-15 seconds)
 - Element clickability waits
 - Custom timeout configuration
 
@@ -1061,6 +987,7 @@ mvn clean compile test-compile
 
 **Error Handling & Reporting**
 - Automatic screenshot capture on failure
+- Screenshots embedded in Allure reports
 - Detailed error logging with SLF4J
 - Automatic retry mechanism for flaky tests (up to 2 retries)
 - Allure reporting with step-by-step execution
