@@ -1,6 +1,7 @@
 package com.automation.factory;
 
 import com.automation.config.TestConfig;
+import com.automation.enums.DeviceType;
 import com.automation.utils.PlaywrightManager;
 import com.microsoft.playwright.*;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,63 @@ public class BrowserFactory {
         PlaywrightManager.setPage(page);
 
         log.info("Browser launched successfully: {} with maximized window", browserType.getBrowserName());
+    }
+
+    /**
+     * Launch browser with mobile device emulation
+     * @param deviceType Device to emulate
+     */
+    public static void launchBrowserWithDevice(DeviceType deviceType) {
+        Playwright playwright = PlaywrightManager.getPlaywright();
+        Browser browser;
+
+        // Launch browser
+        com.microsoft.playwright.BrowserType.LaunchOptions options = new com.microsoft.playwright.BrowserType.LaunchOptions()
+                .setHeadless(config.isHeadless());
+
+        log.info("Launching browser with device emulation: {}", deviceType.getDeviceName());
+
+        // Use appropriate browser based on device platform
+        if (deviceType.isIOS()) {
+            browser = playwright.webkit().launch(options);
+            log.info("Using WebKit for iOS device emulation");
+        } else if (deviceType.isAndroid()) {
+            browser = playwright.chromium().launch(options);
+            log.info("Using Chromium for Android device emulation");
+        } else {
+            browser = playwright.chromium().launch(options);
+            log.info("Using Chromium for desktop");
+        }
+
+        PlaywrightManager.setBrowser(browser);
+
+        // Configure browser context with device emulation
+        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
+                .setViewportSize(deviceType.getViewportWidth(), deviceType.getViewportHeight())
+                .setDeviceScaleFactor(deviceType.getDeviceScaleFactor())
+                .setIsMobile(deviceType.isMobile())
+                .setHasTouch(deviceType.isMobile())
+                .setUserAgent(deviceType.getUserAgent());
+
+        BrowserContext context = browser.newContext(contextOptions);
+        PlaywrightManager.setContext(context);
+        Page page = context.newPage();
+        PlaywrightManager.setPage(page);
+
+        log.info("Browser launched successfully with device: {} ({}x{}, scale: {})",
+                deviceType.getDeviceName(),
+                deviceType.getViewportWidth(),
+                deviceType.getViewportHeight(),
+                deviceType.getDeviceScaleFactor());
+    }
+
+    /**
+     * Launch browser with mobile device from string parameter
+     * @param deviceString Device name as string
+     */
+    public static void launchBrowserWithDevice(String deviceString) {
+        DeviceType deviceType = DeviceType.fromString(deviceString);
+        launchBrowserWithDevice(deviceType);
     }
 
 }

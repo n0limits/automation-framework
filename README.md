@@ -34,6 +34,7 @@ The Core Automation Framework is a production-ready test automation solution tha
 
 **Multi-Layer Testing Support:**
 - Web UI Testing (Playwright with Page Object Model)
+- Mobile Web Testing (iOS and Android device emulation)
 - REST API Testing (RestAssured)
 - Database Testing (MongoDB, MySQL, PostgreSQL)
 - Performance & Load Testing
@@ -41,6 +42,8 @@ The Core Automation Framework is a production-ready test automation solution tha
 
 **Advanced Features:**
 - Multi-browser support (Chromium, Firefox, WebKit)
+- Mobile device emulation (8 popular devices: iPhone, iPad, Android)
+- Cloud testing integration (BrowserStack, Sauce Labs)
 - Sequential and parallel test execution
 - Fluent assertion APIs
 - Realistic test data generation
@@ -267,7 +270,173 @@ The framework follows enterprise-grade design patterns and SOLID principles to e
 - Browser parameterization via TestNG
 - Headless mode support for CI/CD
 
-### 8. Test Reliability Features
+### 8. Mobile Web Testing
+
+**Device Emulation Support:**
+The framework supports mobile web testing through Playwright device emulation, allowing you to test responsive web applications on various mobile devices without physical hardware.
+
+**Supported Mobile Devices:**
+
+iOS Devices:
+- iPhone 13 (390x844, 3x scale)
+- iPhone 13 Pro Max (428x926, 3x scale)
+- iPhone 15 (393x852, 3x scale)
+- iPad Pro 11 (834x1194, 2x scale)
+
+Android Devices:
+- Samsung Galaxy S21 (360x800, 3x scale)
+- Samsung Galaxy S22 (360x780, 3x scale)
+- Google Pixel 7 (412x915, 2.625x scale)
+- Google Pixel 7 Pro (412x892, 3.5x scale)
+
+**Mobile Testing Features:**
+- Accurate viewport dimensions and pixel ratios
+- Touch event emulation
+- Mobile user agents (iOS Safari, Android Chrome)
+- Platform-specific browser engines (WebKit for iOS, Chromium for Android)
+- Portrait and landscape orientation support
+- Mobile-specific test suites
+
+**Mobile Test Execution:**
+```bash
+# iOS device testing
+mvn clean test -DsuiteXmlFile=testng-mobile-ios.xml
+
+# Android device testing
+mvn clean test -DsuiteXmlFile=testng-mobile-android.xml
+
+# Multi-device testing (iOS + Android)
+mvn clean test -DsuiteXmlFile=testng-mobile-multi-device.xml
+
+# Test on specific device
+mvn clean test -DsuiteXmlFile=testng-mobile-ios.xml -Dmobile.device=iphone_13
+```
+
+**Mobile Gesture Support:**
+
+The framework includes comprehensive mobile gesture and interaction support through the MobileUtils class and enhanced BasePage:
+
+Swipe Gestures:
+- swipeUp() - Scroll down
+- swipeDown() - Scroll up
+- swipeLeft() - Swipe left
+- swipeRight() - Swipe right
+- swipeOnElement() - Swipe on specific container
+
+Tap Gestures:
+- tap() - Mobile-friendly click
+- doubleTap() - Double tap for zoom or select
+- longPress() - Long press with configurable duration
+- tapAt() - Tap at specific coordinates
+
+Scrolling:
+- scrollToTop() - Scroll to page top
+- scrollToBottom() - Scroll to page bottom
+- scrollToElement() - Scroll element into view
+- scrollBy() - Scroll by pixels
+
+Advanced Gestures:
+- pinchZoomIn() - Pinch to zoom in
+- pinchZoomOut() - Pinch to zoom out
+- hideKeyboard() - Dismiss mobile keyboard
+- setPortraitOrientation() - Switch to portrait
+- setLandscapeOrientation() - Switch to landscape
+
+**Mobile Gesture Usage Example:**
+```java
+import com.automation.utils.MobileUtils;
+
+@Test
+public void testMobileGestures() {
+    // Swipe gestures
+    MobileUtils.swipeUp(page);
+    MobileUtils.swipeDown(page);
+
+    // Tap gestures
+    MobileUtils.tap(page.locator(".button"));
+    MobileUtils.longPress(page.locator(".item"), 1000);
+
+    // Orientation switching
+    MobileUtils.setLandscapeOrientation(page, 390, 844);
+
+    // Scroll operations
+    MobileUtils.scrollToBottom(page);
+    MobileUtils.hideKeyboard(page);
+}
+```
+
+**Network Throttling:**
+
+Simulate various network conditions for mobile testing:
+- WIFI - 30 Mbps down / 15 Mbps up / 20ms latency
+- FAST_4G - 4 Mbps / 3 Mbps / 20ms
+- REGULAR_4G - 2 Mbps / 1.75 Mbps / 30ms
+- REGULAR_3G - 750 Kbps / 250 Kbps / 100ms
+- SLOW_3G - 400 Kbps / 400 Kbps / 400ms
+- SLOW_2G - 250 Kbps / 50 Kbps / 2000ms
+- OFFLINE - No connectivity
+- NONE - No throttling (default)
+
+### 9. Cloud Testing Integration
+
+**Supported Cloud Providers:**
+- BrowserStack - Real device and browser testing
+- Sauce Labs - Cross-browser and mobile testing
+- Local - Standard local execution (default)
+
+**Cloud Testing Capabilities:**
+- Real mobile devices (iOS and Android)
+- Desktop browsers on multiple OS versions
+- Parallel test execution across devices
+- Video recording and screenshots
+- Network logs and debugging
+- Geolocation testing
+
+**BrowserStack Integration:**
+```bash
+# Set credentials (recommended: use environment variables)
+export CLOUD_USERNAME="your_browserstack_username"
+export CLOUD_ACCESS_KEY="your_browserstack_access_key"
+
+# Run tests on BrowserStack
+mvn clean test -Dcloud.provider=browserstack -DsuiteXmlFile=testng-ui.xml
+
+# Run mobile tests on real iOS devices
+mvn clean test -Dcloud.provider=browserstack -DsuiteXmlFile=testng-mobile-ios.xml
+
+# Run mobile tests on real Android devices
+mvn clean test -Dcloud.provider=browserstack -DsuiteXmlFile=testng-mobile-android.xml
+```
+
+**Sauce Labs Integration:**
+```bash
+# Set credentials
+export CLOUD_USERNAME="your_saucelabs_username"
+export CLOUD_ACCESS_KEY="your_saucelabs_access_key"
+
+# Run tests on Sauce Labs
+mvn clean test -Dcloud.provider=saucelabs -DsuiteXmlFile=testng-ui.xml
+```
+
+**Cloud Configuration:**
+Configure in application.properties:
+```properties
+# Cloud provider: local, browserstack, saucelabs
+cloud.provider=browserstack
+cloud.username=your_username
+cloud.access.key=your_access_key
+
+# BrowserStack settings
+browserstack.local=false
+browserstack.debug=true
+browserstack.console=errors
+
+# Sauce Labs settings
+saucelabs.region=us-west-1
+saucelabs.tunnel=false
+```
+
+### 10. Test Reliability Features
 
 **Automatic Retry Mechanism:**
 - RetryAnalyzer for automatic test retries
@@ -329,10 +498,13 @@ core-automation-framework/
 │   │   │
 │   │   ├── enums/                        # Type-Safe Enums
 │   │   │   ├── BrowserType.java          # Browser enum
+│   │   │   ├── DeviceType.java           # Mobile device enum
+│   │   │   ├── CloudProvider.java        # Cloud provider enum
 │   │   │   └── DatabaseType.java         # Database enum
 │   │   │
 │   │   ├── factory/                      # Factory Classes
-│   │   │   ├── BrowserFactory.java       # Browser creation
+│   │   │   ├── BrowserFactory.java       # Browser/device creation
+│   │   │   ├── CloudBrowserFactory.java  # Cloud provider integration
 │   │   │   └── PageFactory.java          # Page object creation
 │   │   │
 │   │   ├── listeners/                    # TestNG Listeners
@@ -373,6 +545,7 @@ core-automation-framework/
 │   │   │
 │   │   └── utils/                        # Utility Classes
 │   │       ├── PlaywrightManager.java    # ThreadLocal browser management
+│   │       ├── MobileUtils.java          # Mobile gestures (20+ methods)
 │   │       ├── WaitUtils.java            # Wait utilities
 │   │       ├── FileUtils.java            # File operations
 │   │       └── TestDataGenerator.java    # Data generation
@@ -399,6 +572,9 @@ core-automation-framework/
 │   │   │   ├── SmokeTests.java
 │   │   │   └── PerformanceTests.java
 │   │   │
+│   │   ├── mobile/                       # Mobile Tests
+│   │   │   └── MobileGesturesExampleTests.java # Mobile gesture examples (8 tests)
+│   │   │
 │   │   ├── performance/                  # Performance Tests
 │   │   │   └── APIPerformanceTests.java  # API performance tests (8 tests)
 │   │   │
@@ -420,6 +596,9 @@ core-automation-framework/
 │       ├── testng-api-parallel.xml        # Parallel API suite
 │       ├── testng-database.xml            # Database test suite
 │       ├── testng-performance.xml         # Performance test suite
+│       ├── testng-mobile-ios.xml          # iOS mobile test suite
+│       ├── testng-mobile-android.xml      # Android mobile test suite
+│       ├── testng-mobile-multi-device.xml # Multi-device mobile suite
 │       └── testdata/                      # Test data files
 │           ├── navigation-data.json
 │           ├── trading-data.json
@@ -707,6 +886,9 @@ mvn test -Dtest=DataIntegrityTests
 
 # Performance Tests
 mvn test -Dtest=APIPerformanceTests
+
+# Mobile Tests
+mvn test -Dtest=MobileGesturesExampleTests
 
 # MultiBank Tests
 mvn test -Dtest=NavigationTests
@@ -1306,11 +1488,15 @@ Consider adjusting performance thresholds in PerformanceTestBase if expectations
 
 **Version 1.0 Deliverables:**
 
-- **Production Classes:** 58 files
-- **Test Classes:** 21 files
-- **Total Test Cases:** 74+ comprehensive tests
-- **Utility Methods:** 350+ reusable methods
-- **Lines of Code:** 7,500+ lines of production code
+- **Production Classes:** 63 files
+- **Test Classes:** 22 files
+- **Mobile Device Profiles:** 9 devices (8 mobile + desktop)
+- **Cloud Providers:** 3 (Local, BrowserStack, Sauce Labs)
+- **TestNG Test Suites:** 11 suites
+- **Total Test Cases:** 82+ comprehensive tests
+- **Utility Methods:** 370+ reusable methods
+- **Mobile Gesture Methods:** 20+ mobile-specific methods
+- **Lines of Code:** 9,000+ lines of production code
 - **Documentation:** 6 comprehensive guides
 
 **Test Coverage by Layer:**
@@ -1318,6 +1504,7 @@ Consider adjusting performance thresholds in PerformanceTestBase if expectations
 | Layer | Test Files | Test Cases |
 |-------|------------|------------|
 | UI Testing | 3 files | 44 tests |
+| Mobile Testing | 1 file | 8 gesture examples |
 | API Testing | 1 file | Multiple endpoints |
 | Database Testing | 2 files | 22 tests |
 | Performance Testing | 1 file | 8 tests |

@@ -1,0 +1,74 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+    iOS Mobile Test Suite
+    Runs UI tests on iOS device emulation (iPhone and iPad)
+
+    Usage:
+    Local device emulation: mvn clean test -DsuiteXmlFile=testng-mobile-ios.xml
+    BrowserStack: mvn clean test -DsuiteXmlFile=testng-mobile-ios.xml -Dcloud.provider=browserstack
+    Sauce Labs: mvn clean test -DsuiteXmlFile=testng-mobile-ios.xml -Dcloud.provider=saucelabs
+-->
+<suite name="iOS Mobile Test Suite" verbose="1">
+
+    <listeners>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+        <listener class-name="com.automation.reporting.EnhancedAllureListener"/>
+    </listeners>
+
+    <!-- ========== iPhone 13 TESTS ========== -->
+    <test name="iPhone 13 - Login UI Tests" preserve-order="true">
+        <parameter name="device" value="iphone_13"/>
+        <classes>
+            <class name="com.automation.ui.LoginUITests">
+                <methods>
+                    <include name="testSuccessfulLogin"/>
+                    <include name="testLoginPageUIElements"/>
+                    <include name="testLoginWithInvalidUsername"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="iPhone 13 - Trading Dashboard UI Tests" preserve-order="true">
+        <parameter name="device" value="iphone_13"/>
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests">
+                <methods>
+                    <include name="testDashboardLoadsSuccessfully"/>
+                    <include name="testTradingPairSelection"/>
+                    <include name="testPriceInformationDisplay"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- ========== iPhone 15 TESTS ========== -->
+    <test name="iPhone 15 - Login UI Tests" preserve-order="true">
+        <parameter name="device" value="iphone_15"/>
+        <classes>
+            <class name="com.automation.ui.LoginUITests">
+                <methods>
+                    <include name="testSuccessfulLogin"/>
+                    <include name="testLoginPageUIElements"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- ========== iPad Pro TESTS ========== -->
+    <test name="iPad Pro - Trading Dashboard UI Tests" preserve-order="true">
+        <parameter name="device" value="ipad_pro"/>
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests">
+                <methods>
+                    <include name="testDashboardLoadsSuccessfully"/>
+                    <include name="testTradingPairSelection"/>
+                    <include name="testPriceInformationDisplay"/>
+                    <include name="testPlaceBuyOrder"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

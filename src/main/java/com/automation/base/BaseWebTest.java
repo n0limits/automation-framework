@@ -21,21 +21,35 @@ public class BaseWebTest extends BaseTest {
     // ========================================
     @BeforeMethod
     public void setupBrowser(ITestContext context) {
-        // Extract browser parameter from TestNG context (thread-safe for parallel execution)
-        String browser = context.getCurrentXmlTest().getParameter("browser");
+        // Check for device parameter first (for mobile testing)
+        String device = context.getCurrentXmlTest().getParameter("device");
 
-        // Fallback to chromium if no browser parameter is defined in XML
-        if (browser == null || browser.trim().isEmpty()) {
-            browser = "chromium";
-            log.debug("No browser parameter found in test context, defaulting to chromium");
+        // 1. Initialize Playwright
+        PlaywrightManager.initPlaywright();
+
+        if (device != null && !device.trim().isEmpty() && !device.equalsIgnoreCase("desktop")) {
+            // Mobile device emulation
+            log.info("Setting up mobile device emulation: {} (from context: {})",
+                    device, context.getCurrentXmlTest().getName());
+            BrowserFactory.launchBrowserWithDevice(device);
+            this.currentBrowser = device;
+        } else {
+            // Desktop browser testing
+            String browser = context.getCurrentXmlTest().getParameter("browser");
+
+            // Fallback to chromium if no browser parameter is defined in XML
+            if (browser == null || browser.trim().isEmpty()) {
+                browser = "chromium";
+                log.debug("No browser parameter found in test context, defaulting to chromium");
+            }
+
+            this.currentBrowser = browser;
+            log.info("Setting up {} browser for web test (from context: {})",
+                    browser, context.getCurrentXmlTest().getName());
+
+            BrowserFactory.launchBrowser(browser);
         }
 
-        this.currentBrowser = browser;
-        log.info("Setting up {} browser for web test (from context: {})", browser, context.getCurrentXmlTest().getName());
-
-        // 1. Initialize Playwright and launch browser
-        PlaywrightManager.initPlaywright();
-        BrowserFactory.launchBrowser(browser);
         page = PlaywrightManager.getPage();
 
         // 2. Navigate to base URL (home page)
@@ -44,7 +58,7 @@ public class BaseWebTest extends BaseTest {
         // 3. Wait for page to be fully loaded
         waitForPageLoad();
 
-        log.info("Browser {} setup completed. Navigated to: {}", browser, config.getBaseUrl());
+        log.info("Browser/Device {} setup completed. Navigated to: {}", currentBrowser, config.getBaseUrl());
 
         // 4. Call hook for additional setup (can be overridden by test classes)
         performAdditionalSetup();

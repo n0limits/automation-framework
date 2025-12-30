@@ -51,6 +51,28 @@ public class TestConfig {
     // ========== Reporting ==========
     private final String reportPath = ConfigReader.getProperty("report.path", "target/reports");
 
+    // ========== Mobile Testing Configuration ==========
+    private final boolean mobileEnabled = ConfigReader.getBooleanProperty("mobile.enabled", false);
+    private final String mobileDevice = ConfigReader.getProperty("mobile.device", "desktop");
+    private final String mobileOrientation = ConfigReader.getProperty("mobile.orientation", "portrait");
+
+    // ========== Cloud Testing Configuration ==========
+    private final String cloudProvider = ConfigReader.getProperty("cloud.provider", "local");
+    private final String cloudUsername = ConfigReader.getProperty("cloud.username",
+            System.getenv("CLOUD_USERNAME"));
+    private final String cloudAccessKey = ConfigReader.getProperty("cloud.access.key",
+            System.getenv("CLOUD_ACCESS_KEY"));
+
+    // BrowserStack Configuration
+    private final boolean browserstackLocal = ConfigReader.getBooleanProperty("browserstack.local", false);
+    private final boolean browserstackDebug = ConfigReader.getBooleanProperty("browserstack.debug", true);
+    private final String browserstackConsole = ConfigReader.getProperty("browserstack.console", "errors");
+    private final boolean browserstackNetworkLogs = ConfigReader.getBooleanProperty("browserstack.network.logs", false);
+
+    // Sauce Labs Configuration
+    private final String saucelabsRegion = ConfigReader.getProperty("saucelabs.region", "us-west-1");
+    private final boolean saucelabsTunnel = ConfigReader.getBooleanProperty("saucelabs.tunnel", false);
+
     // ========== Singleton Instance ==========
     private static volatile TestConfig instance;
 
