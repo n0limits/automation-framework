@@ -1,0 +1,26 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="AWS Step Functions Test Suite" parallel="false" verbose="1">
+    <parameter name="env" value="local"/>
+
+    <test name="AWS Step Functions Tests">
+        <classes>
+            <class name="com.automation.aws.StepFunctionsWorkflowTests">
+                <methods>
+                    <include name="testBasicWorkflowExecution"/>
+                    <include name="testWorkflowWithComplexInput"/>
+                    <include name="testRetrieveExecutionDetails"/>
+                    <include name="testStopExecution"/>
+                    <include name="testGetStateMachineDetails"/>
+                    <!-- Parallel execution test is disabled by default -->
+                    <!-- <include name="testParallelExecutions"/> -->
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+</suite>

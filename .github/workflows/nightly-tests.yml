@@ -5,12 +5,27 @@ on:
     # Run every night at 2 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - local
+          - staging
+          - prod
 
 jobs:
-  nightly-full-suite:
-    name: Nightly Cross-Browser Tests
+  # ========================================
+  # Job 1: API Tests (Fast Feedback)
+  # ========================================
+  api-tests:
+    name: API Tests - ${{ github.event.inputs.environment || 'staging' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 15
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
 
     steps:
       - name: Checkout code
@@ -23,12 +38,136 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Install all Playwright browsers
-        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
-
-      - name: Run full cross-browser test suite
-        run: mvn clean test -DsuiteXmlFile=src/test/resources/testng/testng.xml
+      - name: Run API tests
+        run: mvn clean test -Denv=${{ env.TEST_ENV }} -DsuiteXmlFile=src/test/resources/testng/testng-api.xml
         continue-on-error: true
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 30
+
+      - name: Generate Allure Report
+        if: always()
+        run: mvn allure:report
+
+      - name: Upload Allure Report (API)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-report-${{ github.run_number }}
+          path: target/site/allure-maven-plugin/
+          retention-days: 30
+
+  # ========================================
+  # Job 2: AWS Step Functions Tests
+  # ========================================
+  aws-tests:
+    name: AWS Step Functions Tests - ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: api-tests
+    if: always()
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run AWS Step Functions tests
+        run: mvn clean test -Denv=${{ env.TEST_ENV }} -DsuiteXmlFile=src/test/resources/testng/testng-aws.xml
+        continue-on-error: true
+
+      - name: Upload AWS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-test-results-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 30
+
+      - name: Generate Allure Report
+        if: always()
+        run: mvn allure:report
+
+      - name: Upload Allure Report (AWS)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-allure-report-${{ github.run_number }}
+          path: target/site/allure-maven-plugin/
+          retention-days: 30
+
+  # ========================================
+  # Job 3: Cross-Browser UI Tests
+  # ========================================
+  ui-tests:
+    name: Cross-Browser UI Tests - ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: [api-tests, aws-tests]
+    if: always()
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install Playwright browsers
+        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps ${{ matrix.browser }}"
+
+      - name: Run UI tests on ${{ matrix.browser }}
+        run: mvn clean test -Denv=${{ env.TEST_ENV }} -Dbrowser=${{ matrix.browser }} -DsuiteXmlFile=src/test/resources/testng/testng-chromium.xml
+        continue-on-error: true
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.browser }}-screenshots-${{ github.run_number }}
+          path: target/screenshots/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.browser }}-test-results-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 30
 
       - name: Generate Allure Report
         if: always()
@@ -38,40 +177,239 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nightly-allure-report-${{ github.run_number }}
+          name: ${{ matrix.browser }}-allure-report-${{ github.run_number }}
           path: target/site/allure-maven-plugin/
           retention-days: 30
 
-      - name: Upload test results
+  # ========================================
+  # Job 4: Integration Tests (UI + API + AWS)
+  # ========================================
+  integration-tests:
+    name: Integration Tests - ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [api-tests, aws-tests, ui-tests]
+    if: always()
+    env:
+      TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install Playwright browsers
+        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps chromium"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run integration tests
+        run: mvn clean test -Denv=${{ env.TEST_ENV }} -DsuiteXmlFile=src/test/resources/testng/testng-integration.xml
+        continue-on-error: true
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Upload integration test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nightly-test-results-${{ github.run_number }}
-          path: |
-            target/surefire-reports/
-            target/test-output/
-            target/screenshots/
+          name: integration-test-results-${{ github.run_number }}
+          path: target/surefire-reports/
           retention-days: 30
 
-      - name: Publish Test Report
+      - name: Generate Allure Report
         if: always()
+        run: mvn allure:report
+
+      - name: Upload Allure Report (Integration)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-allure-report-${{ github.run_number }}
+          path: target/site/allure-maven-plugin/
+          retention-days: 30
+
+  # ========================================
+  # Job 5: Test Report Summary & Notification
+  # ========================================
+  test-summary:
+    name: Test Summary & Notification
+    runs-on: ubuntu-latest
+    needs: [api-tests, aws-tests, ui-tests, integration-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-test-results-${{ github.run_number }}'
+          path: test-results
+          merge-multiple: true
+
+      - name: Publish consolidated test report
         uses: dorny/test-reporter@v1
         with:
-          name: Nightly Test Results
-          path: target/surefire-reports/TEST-*.xml
+          name: Nightly Test Results Summary
+          path: test-results/**/TEST-*.xml
           reporter: java-junit
           fail-on-error: false
 
-      - name: Send notification on failure
-        if: failure()
+      - name: Calculate test statistics
+        id: stats
+        run: |
+          total_tests=$(find test-results -name "TEST-*.xml" | xargs grep -h "tests=" | sed 's/.*tests="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+          total_failures=$(find test-results -name "TEST-*.xml" | xargs grep -h "failures=" | sed 's/.*failures="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+          total_errors=$(find test-results -name "TEST-*.xml" | xargs grep -h "errors=" | sed 's/.*errors="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+          total_skipped=$(find test-results -name "TEST-*.xml" | xargs grep -h "skipped=" | sed 's/.*skipped="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+
+          echo "total_tests=$total_tests" >> $GITHUB_OUTPUT
+          echo "total_failures=$total_failures" >> $GITHUB_OUTPUT
+          echo "total_errors=$total_errors" >> $GITHUB_OUTPUT
+          echo "total_skipped=$total_skipped" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification on failure
+        if: failure() || needs.api-tests.result == 'failure' || needs.aws-tests.result == 'failure' || needs.ui-tests.result == 'failure' || needs.integration-tests.result == 'failure'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ Nightly Tests Failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ Nightly Test Suite Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\n${{ github.event.inputs.environment || 'staging' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Date:*\n${{ github.event.repository.updated_at }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Total Tests:*\n${{ steps.stats.outputs.total_tests }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Failures:*\n${{ steps.stats.outputs.total_failures }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Test Results>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Create GitHub issue on failure
+        if: failure() || needs.api-tests.result == 'failure' || needs.aws-tests.result == 'failure' || needs.ui-tests.result == 'failure' || needs.integration-tests.result == 'failure'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const date = new Date().toISOString().split('T')[0];
+            const environment = '${{ github.event.inputs.environment || 'staging' }}';
+
+            const body = `
+            ## ❌ Nightly Test Suite Failed
+
+            **Environment:** ${environment}
+            **Date:** ${date}
+            **Run:** [View Results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ### Test Statistics
+            - **Total Tests:** ${{ steps.stats.outputs.total_tests }}
+            - **Failures:** ${{ steps.stats.outputs.total_failures }}
+            - **Errors:** ${{ steps.stats.outputs.total_errors }}
+            - **Skipped:** ${{ steps.stats.outputs.total_skipped }}
+
+            ### Failed Jobs
+            - API Tests: ${{ needs.api-tests.result }}
+            - AWS Tests: ${{ needs.aws-tests.result }}
+            - UI Tests: ${{ needs.ui-tests.result }}
+            - Integration Tests: ${{ needs.integration-tests.result }}
+
+            ### Next Steps
+            1. Review test results and logs
+            2. Check for infrastructure issues
+            3. Verify environment configuration
+            4. Fix failing tests
+            5. Re-run tests to verify fixes
+
+            **Artifacts:**
+            - Allure Reports (API, AWS, UI, Integration)
+            - Test Results (JUnit XML)
+            - Screenshots (UI failures)
+            `;
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `❌ Nightly Tests Failed - ${new Date().toISOString().split('T')[0]}`,
-              body: `The nightly test suite failed. Please review the test results.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              labels: ['test-failure', 'nightly-build']
+              title: `❌ Nightly Tests Failed - ${environment} - ${date}`,
+              body: body,
+              labels: ['test-failure', 'nightly-build', `env:${environment}`]
             });
+
+      - name: Send success notification
+        if: success() && needs.api-tests.result == 'success' && needs.aws-tests.result == 'success' && needs.ui-tests.result == 'success' && needs.integration-tests.result == 'success'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ Nightly Tests Passed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "✅ Nightly Test Suite Passed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\n${{ github.event.inputs.environment || 'staging' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Total Tests:*\n${{ steps.stats.outputs.total_tests }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

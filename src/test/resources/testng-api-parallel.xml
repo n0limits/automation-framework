@@ -1,0 +1,95 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+    Parallel API Test Suite
+    Runs API tests in parallel for maximum performance
+
+    Usage: mvn clean test -DsuiteXmlFile=testng-api-parallel.xml
+
+    Parallel Execution Strategy:
+    - Tests run in parallel (thread-count=5)
+    - Each test is thread-safe and independent
+    - Maximizes test execution speed
+-->
+<suite name="Parallel API Test Suite" parallel="tests" thread-count="5" verbose="1">
+
+    <listeners>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+        <listener class-name="com.automation.reporting.EnhancedAllureListener"/>
+    </listeners>
+
+    <!-- ========== TRADING API TESTS (Parallel) ========== -->
+    <test name="Trading API - GET Endpoints" preserve-order="false">
+        <packages>
+            <package name="com.automation.api"/>
+        </packages>
+        <classes>
+            <class name="com.automation.api.TradingAPITests">
+                <methods>
+                    <include name="testGetTradingPairs"/>
+                    <include name="testGetTradingPairBTCUSD"/>
+                    <include name="testGetTickerPrice"/>
+                    <include name="testGetMarketDepth"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Trading API - Validation Tests" preserve-order="false">
+        <classes>
+            <class name="com.automation.api.TradingAPITests">
+                <methods>
+                    <include name="testGetTradingPairInvalidSymbol"/>
+                    <include name="testAPIResponseTime"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- ========== AWS STEP FUNCTIONS TESTS (Parallel) ========== -->
+    <test name="AWS Step Functions - Execution Tests" preserve-order="false">
+        <classes>
+            <class name="com.automation.aws.StepFunctionsTests">
+                <methods>
+                    <include name="testStartExecution"/>
+                    <include name="testGetExecutionStatus"/>
+                    <include name="testListExecutions"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- ========== INTEGRATION TESTS (Parallel) ========== -->
+    <test name="Integration - API to Step Functions" preserve-order="false">
+        <classes>
+            <class name="com.automation.integration.TradingWorkflowIntegrationTests">
+                <methods>
+                    <include name="testAPItoStepFunctionsIntegration"/>
+                    <include name="testParallelAPIAndWorkflowExecution"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Integration - Error Handling" preserve-order="false">
+        <classes>
+            <class name="com.automation.integration.TradingWorkflowIntegrationTests">
+                <methods>
+                    <include name="testAPIErrorHandlingInWorkflow"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Integration - Complete Workflow" preserve-order="false">
+        <classes>
+            <class name="com.automation.integration.TradingWorkflowIntegrationTests">
+                <methods>
+                    <include name="testCompleteTradingWorkflow"/>
+                    <include name="testIntegrationPerformance"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

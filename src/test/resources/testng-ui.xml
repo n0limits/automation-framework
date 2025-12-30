@@ -1,0 +1,85 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="UI Test Suite" parallel="tests" thread-count="3" verbose="1">
+    <parameter name="browser" value="chromium"/>
+
+    <listeners>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+
+    <!-- Login UI Tests -->
+    <test name="Login UI Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.ui.LoginUITests">
+                <methods>
+                    <include name="testSuccessfulLogin"/>
+                    <include name="testLoginWithInvalidUsername"/>
+                    <include name="testLoginWithInvalidPassword"/>
+                    <include name="testLoginWithEmptyCredentials"/>
+                    <include name="testLoginPageUIElements"/>
+                    <include name="testLoginSessionPersistence"/>
+                    <include name="testLoginWithSpecialCharactersInUsername"/>
+                    <include name="testMultipleFailedLoginAttempts"/>
+                    <include name="testLoginFormAccessibility"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Trading Dashboard UI Tests -->
+    <test name="Trading Dashboard UI Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests">
+                <methods>
+                    <include name="testDashboardLoadsSuccessfully"/>
+                    <include name="testTradingPairSelection"/>
+                    <include name="testAvailableTradingPairs"/>
+                    <include name="testSearchTradingPair"/>
+                    <include name="testPriceInformationDisplay"/>
+                    <include name="testPriceChangeIndicator"/>
+                    <include name="testPlaceBuyOrder"/>
+                    <include name="testPlaceSellOrder"/>
+                    <include name="testPlaceMarketBuyOrder"/>
+                    <include name="testOrderTypeSelection"/>
+                    <include name="testAccountBalanceDisplay"/>
+                    <include name="testOrderHistoryAccess"/>
+                    <include name="testOrderCancellation"/>
+                    <include name="testDashboardResponsiveness"/>
+                    <include name="testInvalidOrderHandling"/>
+                    <include name="testFullPageScreenshot"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Account UI Tests -->
+    <test name="Account UI Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.ui.AccountUITests">
+                <methods>
+                    <include name="testAccountPageLoads"/>
+                    <include name="testAccountInformationDisplay"/>
+                    <include name="testVerificationStatus"/>
+                    <include name="testProfileTabNavigation"/>
+                    <include name="testProfileUpdate"/>
+                    <include name="testIndividualFieldUpdates"/>
+                    <include name="testSecurityTabNavigation"/>
+                    <include name="testPasswordChange"/>
+                    <include name="testTwoFactorAuthenticationStatus"/>
+                    <include name="testTwoFactorAuthenticationToggle"/>
+                    <include name="testPaymentTabNavigation"/>
+                    <include name="testPaymentMethodsDisplay"/>
+                    <include name="testAddPaymentMethod"/>
+                    <include name="testRemovePaymentMethod"/>
+                    <include name="testTransactionsTabNavigation"/>
+                    <include name="testTransactionHistoryDisplay"/>
+                    <include name="testTransactionFilteringByType"/>
+                    <include name="testTransactionExport"/>
+                    <include name="testTabSwitching"/>
+                    <include name="testFullPageScreenshot"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

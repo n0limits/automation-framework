@@ -1,0 +1,82 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+    Multi-Browser UI Test Suite
+    Runs all UI tests sequentially across Chromium, Firefox, and WebKit
+
+    Usage: mvn clean test -DsuiteXmlFile=testng-ui-multi-browser.xml
+-->
+<suite name="Multi-Browser UI Test Suite" verbose="1">
+
+    <listeners>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+        <listener class-name="com.automation.reporting.EnhancedAllureListener"/>
+    </listeners>
+
+    <!-- ========== CHROMIUM BROWSER TESTS ========== -->
+    <test name="Chromium - Login UI Tests" preserve-order="true">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.automation.ui.LoginUITests"/>
+        </classes>
+    </test>
+
+    <test name="Chromium - Trading Dashboard UI Tests" preserve-order="true">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests"/>
+        </classes>
+    </test>
+
+    <test name="Chromium - Account UI Tests" preserve-order="true">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.automation.ui.AccountUITests"/>
+        </classes>
+    </test>
+
+    <!-- ========== FIREFOX BROWSER TESTS ========== -->
+    <test name="Firefox - Login UI Tests" preserve-order="true">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.automation.ui.LoginUITests"/>
+        </classes>
+    </test>
+
+    <test name="Firefox - Trading Dashboard UI Tests" preserve-order="true">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests"/>
+        </classes>
+    </test>
+
+    <test name="Firefox - Account UI Tests" preserve-order="true">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.automation.ui.AccountUITests"/>
+        </classes>
+    </test>
+
+    <!-- ========== WEBKIT (Safari) BROWSER TESTS ========== -->
+    <test name="WebKit - Login UI Tests" preserve-order="true">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.automation.ui.LoginUITests"/>
+        </classes>
+    </test>
+
+    <test name="WebKit - Trading Dashboard UI Tests" preserve-order="true">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.automation.ui.TradingDashboardUITests"/>
+        </classes>
+    </test>
+
+    <test name="WebKit - Account UI Tests" preserve-order="true">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.automation.ui.AccountUITests"/>
+        </classes>
+    </test>
+
+</suite>

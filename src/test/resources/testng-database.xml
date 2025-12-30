@@ -1,0 +1,51 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Database Test Suite" verbose="1">
+
+    <listeners>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+
+    <!-- User Database Tests -->
+    <test name="User Database Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.database.UserDatabaseTests">
+                <methods>
+                    <include name="testUserTableExists"/>
+                    <include name="testUserTableSchema"/>
+                    <include name="testCreateUser"/>
+                    <include name="testRetrieveUser"/>
+                    <include name="testUpdateUser"/>
+                    <include name="testDeleteUser"/>
+                    <include name="testCreateMultipleUsers"/>
+                    <include name="testCountUsersByStatus"/>
+                    <include name="testQueryUsersWithConditions"/>
+                    <include name="testTransactionRollback"/>
+                    <include name="testTransactionCommit"/>
+                    <include name="testTestDataBuilderDefaults"/>
+                    <include name="testTestDataCleanupTracking"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Data Integrity Tests -->
+    <test name="Data Integrity Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.database.DataIntegrityTests">
+                <methods>
+                    <include name="testUserOrderRelationship"/>
+                    <include name="testOneToManyRelationship"/>
+                    <include name="testDataConsistency"/>
+                    <include name="testNullHandling"/>
+                    <include name="testUniqueConstraint"/>
+                    <include name="testDataTypeValidation"/>
+                    <include name="testCascadingOperations"/>
+                    <include name="testAggregateFunctions"/>
+                    <include name="testGroupByQuery"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
