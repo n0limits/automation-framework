@@ -5,9 +5,12 @@ import com.automation.utils.PlaywrightManager;
 import com.microsoft.playwright.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.ITestContext;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Slf4j
@@ -20,7 +23,7 @@ public class BaseWebTest extends BaseTest {
     // BEFORE METHOD - Browser Setup + Common Operations
     // ========================================
     @BeforeMethod
-    public void setupBrowser(ITestContext context) {
+    public void setupBrowser(ITestContext context, Method testMethod) {
         // Check for device parameter first (for mobile testing)
         String device = context.getCurrentXmlTest().getParameter("device");
 
@@ -52,15 +55,19 @@ public class BaseWebTest extends BaseTest {
 
         page = PlaywrightManager.getPage();
 
-        // 2. Navigate to base URL (home page)
+        // 2. Start tracing for failure debugging
+        String testName = testMethod.getDeclaringClass().getSimpleName() + "." + testMethod.getName();
+        PlaywrightManager.startTracing(testName);
+
+        // 3. Navigate to base URL (home page)
         navigateToHomePage();
 
-        // 3. Wait for page to be fully loaded
+        // 4. Wait for page to be fully loaded
         waitForPageLoad();
 
         log.info("Browser/Device {} setup completed. Navigated to: {}", currentBrowser, config.getBaseUrl());
 
-        // 4. Call hook for additional setup (can be overridden by test classes)
+        // 5. Call hook for additional setup (can be overridden by test classes)
         performAdditionalSetup();
     }
 
@@ -68,13 +75,25 @@ public class BaseWebTest extends BaseTest {
     // AFTER METHOD - Common Cleanup + Browser Teardown
     // ========================================
     @AfterMethod
-    public void tearDownBrowser() {
+    public void tearDownBrowser(ITestResult result) {
         log.info("Starting teardown for {} browser", currentBrowser);
 
         // 1. Call hook for additional cleanup (can be overridden by test classes)
         performAdditionalCleanup();
 
-        // 2. Close browser
+        // 2. Handle tracing based on test result
+        if (result.getStatus() == ITestResult.FAILURE) {
+            // Save trace on failure for debugging
+            Path tracePath = PlaywrightManager.saveTracingOnFailure();
+            if (tracePath != null) {
+                log.info("Trace file saved for failed test: {}", tracePath);
+            }
+        } else {
+            // Discard trace for passed/skipped tests
+            PlaywrightManager.discardTracing();
+        }
+
+        // 3. Close browser
         PlaywrightManager.quitPlaywright();
 
         log.info("Teardown completed for {} browser", currentBrowser);

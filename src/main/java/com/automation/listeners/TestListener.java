@@ -4,23 +4,57 @@ import com.automation.utils.FileUtils;
 import com.automation.utils.PlaywrightManager;
 import io.qameta.allure.Allure;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
 import java.io.ByteArrayInputStream;
 
+/**
+ * TestNG Listener for test lifecycle events.
+ * Features:
+ * - MDC context for log correlation
+ * - Screenshot capture on failure
+ * - Allure report integration
+ *
+ * @author Victor Grozev
+ */
 @Slf4j
 public class TestListener implements ITestListener {
 
+    private static final String MDC_TEST_ID = "testId";
+
     @Override
     public void onTestStart(ITestResult result) {
+        // Set MDC context for log correlation
+        String testId = formatTestId(result);
+        MDC.put(MDC_TEST_ID, testId);
+
         log.info("========== Test Started: {} ==========", result.getName());
+    }
+
+    /**
+     * Format test ID for MDC context.
+     * Format: ClassName.methodName
+     */
+    private String formatTestId(ITestResult result) {
+        String className = result.getTestClass().getRealClass().getSimpleName();
+        String methodName = result.getMethod().getMethodName();
+        return className + "." + methodName;
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         log.info("========== Test Passed: {} ==========", result.getName());
+        clearMDC();
+    }
+
+    /**
+     * Clear MDC context after test completion.
+     */
+    private void clearMDC() {
+        MDC.remove(MDC_TEST_ID);
     }
 
     @Override
@@ -41,12 +75,15 @@ public class TestListener implements ITestListener {
             }
         } catch (Exception e) {
             log.error("Failed to capture screenshot", e);
+        } finally {
+            clearMDC();
         }
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
         log.warn("========== Test Skipped: {} ==========", result.getName());
+        clearMDC();
     }
 
     @Override

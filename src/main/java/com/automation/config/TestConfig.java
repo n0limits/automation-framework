@@ -16,6 +16,16 @@ public class TestConfig {
     private final boolean headless = ConfigReader.getBooleanProperty("headless", false);
     private final int timeout = ConfigReader.getIntProperty("timeout", 30000);
 
+    // ========== Wait Strategy Configuration ==========
+    // Element wait timeout - used when waiting for elements to appear/be ready
+    private final int elementTimeout = ConfigReader.getIntProperty("wait.element.timeout", 15000);
+    // Short timeout - for quick visibility checks
+    private final int shortTimeout = ConfigReader.getIntProperty("wait.short.timeout", 5000);
+    // Poll interval - interval between polling attempts
+    private final int pollInterval = ConfigReader.getIntProperty("wait.poll.interval", 500);
+    // Max poll attempts - maximum number of polling iterations
+    private final int maxPollAttempts = ConfigReader.getIntProperty("wait.max.poll.attempts", 30);
+
     // ========== API Configuration ==========
     private final String apiBaseUrl = ConfigReader.getProperty("api.base.url", "https://api.example.com");
     private final int apiTimeout = ConfigReader.getIntProperty("api.timeout", 30000);
@@ -42,8 +52,10 @@ public class TestConfig {
     private final String postgresPassword = ConfigReader.getProperty("postgres.password");
 
     // ========== Test Credentials ==========
-    private final String username = ConfigReader.getProperty("test.username", "testuser");
-    private final String password = ConfigReader.getProperty("test.password", "testpassword");
+    // Note: Test credentials should be set via environment variables:
+    // TEST_USERNAME and TEST_PASSWORD
+    private final String username = ConfigReader.getProperty("test.username");
+    private final String password = ConfigReader.getProperty("test.password");
 
     // ========== Test Data ==========
     private final String testDataPath = ConfigReader.getProperty("test.data.path", "src/test/resources/testdata");
