@@ -1,6 +1,6 @@
 package com.automation.database;
 
-import com.automation.config.TestConfig;
+import com.automation.config.ConfigReader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
@@ -8,10 +8,12 @@ import java.util.*;
 
 /**
  * Database Test Utilities
- * Provides database connectivity and common database operations for testing
+ * Provides database connectivity and common database operations for testing.
+ * Uses ConnectionPoolManager (HikariCP) for high-performance, thread-safe connections.
  *
  * Features:
- * - Connection management with connection pooling
+ * - Thread-safe connection management via ThreadLocal
+ * - Connection pooling via HikariCP (ConnectionPoolManager)
  * - Query execution (SELECT, INSERT, UPDATE, DELETE)
  * - Result set processing
  * - Transaction management
@@ -30,70 +32,73 @@ import java.util.*;
  */
 @Slf4j
 public class DatabaseTestUtils {
-    private Connection connection;
-    private final TestConfig config;
-    private final String dbUrl;
-    private final String dbUser;
-    private final String dbPassword;
+    private final ThreadLocal<Connection> connectionHolder = new ThreadLocal<>();
+    private final DatabaseType dbType;
 
     /**
-     * Initialize database utilities with default configuration
+     * Initialize database utilities with default configuration.
+     * Detects database type from application.properties (sql.connection.string).
      */
     public DatabaseTestUtils() {
-        this.config = TestConfig.getInstance();
-        // Get database configuration from TestConfig or environment variables
-        this.dbUrl = System.getProperty("db.url", System.getenv("DB_URL"));
-        this.dbUser = System.getProperty("db.user", System.getenv("DB_USER"));
-        this.dbPassword = System.getProperty("db.password", System.getenv("DB_PASSWORD"));
-
-        log.info("DatabaseTestUtils initialized with URL: {}", maskPassword(dbUrl));
+        this.dbType = detectDatabaseType();
+        log.info("DatabaseTestUtils initialized (pooled, thread-safe) for database type: {}", dbType);
     }
 
     /**
-     * Initialize with custom database configuration
+     * Initialize with specific database type
      *
-     * @param dbUrl Database JDBC URL
-     * @param dbUser Database username
-     * @param dbPassword Database password
+     * @param dbType Database type (MYSQL or POSTGRESQL)
      */
-    public DatabaseTestUtils(String dbUrl, String dbUser, String dbPassword) {
-        this.config = TestConfig.getInstance();
-        this.dbUrl = dbUrl;
-        this.dbUser = dbUser;
-        this.dbPassword = dbPassword;
+    public DatabaseTestUtils(DatabaseType dbType) {
+        this.dbType = dbType;
+        log.info("DatabaseTestUtils initialized (pooled, thread-safe) for database type: {}", dbType);
+    }
 
-        log.info("DatabaseTestUtils initialized with custom URL: {}", maskPassword(dbUrl));
+    /**
+     * Detect database type from configuration
+     */
+    private DatabaseType detectDatabaseType() {
+        String jdbcUrl = ConfigReader.getProperty("sql.connection.string");
+        if (jdbcUrl != null && jdbcUrl.contains("postgresql")) {
+            return DatabaseType.POSTGRESQL;
+        }
+        return DatabaseType.MYSQL;
     }
 
     // ========== Connection Management ==========
 
     /**
-     * Establish database connection
+     * Get a connection from the pool (thread-safe via ThreadLocal)
      *
      * @return Database connection
      * @throws SQLException if connection fails
      */
     public Connection getConnection() throws SQLException {
+        Connection connection = connectionHolder.get();
         if (connection == null || connection.isClosed()) {
-            log.info("Establishing database connection...");
-            connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-            log.info("✅ Database connection established");
+            log.info("Obtaining connection from pool for thread: {}", Thread.currentThread().getName());
+            connection = ConnectionPoolManager.getInstance().getConnection(dbType);
+            connectionHolder.set(connection);
+            log.info("Database connection obtained from pool");
         }
         return connection;
     }
 
     /**
-     * Close database connection
+     * Close/return database connection to pool
      */
     public void closeConnection() {
+        Connection connection = connectionHolder.get();
         if (connection != null) {
             try {
                 if (!connection.isClosed()) {
-                    connection.close();
-                    log.info("Database connection closed");
+                    connection.close(); // Returns to pool when using HikariCP
+                    log.info("Database connection returned to pool");
                 }
             } catch (SQLException e) {
-                log.error("Error closing database connection", e);
+                log.error("Error returning database connection to pool", e);
+            } finally {
+                connectionHolder.remove();
             }
         }
     }
@@ -105,6 +110,7 @@ public class DatabaseTestUtils {
      */
     public boolean isConnectionValid() {
         try {
+            Connection connection = connectionHolder.get();
             return connection != null && !connection.isClosed() && connection.isValid(5);
         } catch (SQLException e) {
             log.error("Error checking connection validity", e);
@@ -270,6 +276,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if commit fails
      */
     public void commitTransaction() throws SQLException {
+        Connection connection = connectionHolder.get();
         if (connection != null && !connection.getAutoCommit()) {
             connection.commit();
             connection.setAutoCommit(true);
@@ -283,6 +290,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if rollback fails
      */
     public void rollbackTransaction() throws SQLException {
+        Connection connection = connectionHolder.get();
         if (connection != null && !connection.getAutoCommit()) {
             connection.rollback();
             connection.setAutoCommit(true);
@@ -445,19 +453,6 @@ public class DatabaseTestUtils {
         for (int i = 0; i < params.length; i++) {
             stmt.setObject(i + 1, params[i]);
         }
-    }
-
-    /**
-     * Mask password in connection string for logging
-     *
-     * @param url Connection URL
-     * @return Masked URL
-     */
-    private String maskPassword(String url) {
-        if (url == null) {
-            return "null";
-        }
-        return url.replaceAll("password=[^&;]+", "password=***");
     }
 
     /**

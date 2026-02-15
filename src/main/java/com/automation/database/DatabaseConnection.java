@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 import java.util.Map;
 

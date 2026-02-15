@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;

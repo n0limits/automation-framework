@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;

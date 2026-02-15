@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 import com.automation.config.ConfigReader;
 import com.zaxxer.hikari.HikariConfig;

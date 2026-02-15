@@ -2,8 +2,8 @@ package com.automation.base;
 
 import com.automation.config.ConfigValidator;
 import com.automation.config.TestConfig;
-import com.automation.db.ConnectionPoolManager;
-import com.automation.db.DatabaseConnectionFactory;
+import com.automation.database.ConnectionPoolManager;
+import com.automation.database.DatabaseConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;

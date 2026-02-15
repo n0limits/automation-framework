@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

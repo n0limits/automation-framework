@@ -1,4 +1,4 @@
-package com.automation.db;
+package com.automation.database;
 
 public enum DatabaseType {
 
