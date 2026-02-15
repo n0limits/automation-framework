@@ -130,12 +130,9 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
         String input = createSimpleJsonInput("delay", "true");
         String executionArn = stepFunctionsClient.startExecution(input);
 
-        // Wait a moment for execution to start
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        // Verify execution has started before attempting to stop
+        ExecutionStatus currentStatus = stepFunctionsClient.getExecutionStatus(executionArn);
+        log.info("Execution status after start: {}", currentStatus);
 
         // Stop execution
         stepFunctionsClient.stopExecution(executionArn, "Test: verifying stop functionality");

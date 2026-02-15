@@ -3,6 +3,7 @@ package com.automation.ui;
 import com.automation.base.BaseTest;
 import com.automation.pages.AccountPage;
 import com.automation.pages.LoginPage;
+import com.automation.providers.TestDataProviders;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.BeforeMethod;
@@ -206,7 +207,8 @@ public class AccountUITests extends BaseTest {
                 .as("Success message should show after name update")
                 .isTrue();
 
-        accountPage.waitFor(1000);
+        // Wait for success message to settle before next update
+        accountPage.getPage().waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
 
         // Test updating phone
         accountPage.goToProfileTab(); // Refresh to profile tab
@@ -479,28 +481,23 @@ public class AccountUITests extends BaseTest {
         log.info("✅ Transaction history display test passed");
     }
 
-    @Test(description = "Verify transaction filtering by type")
+    @Test(description = "Verify transaction filtering by type",
+          dataProvider = "transactionTypesProvider", dataProviderClass = TestDataProviders.class)
     @Description("Test user can filter transactions by type")
     @Severity(SeverityLevel.MINOR)
     @Story("Transaction History")
-    public void testTransactionFilteringByType() {
-        log.info("=== Test: Transaction Filtering by Type ===");
+    public void testTransactionFilteringByType(String transactionType) {
+        log.info("=== Test: Transaction Filtering by Type - {} ===", transactionType);
 
-        // Filter by deposit
-        accountPage.filterTransactionsByType("Deposit");
-        int depositCount = accountPage.getTransactionCount();
-        log.info("Deposit transactions: {}", depositCount);
+        accountPage.filterTransactionsByType(transactionType);
+        int count = accountPage.getTransactionCount();
+        log.info("{} transactions: {}", transactionType, count);
 
-        // Filter by withdrawal
-        accountPage.filterTransactionsByType("Withdrawal");
-        int withdrawalCount = accountPage.getTransactionCount();
-        log.info("Withdrawal transactions: {}", withdrawalCount);
+        assertThat(count)
+                .as("%s transaction count should be non-negative", transactionType)
+                .isGreaterThanOrEqualTo(0);
 
-        // Both counts should be non-negative
-        assertThat(depositCount).isGreaterThanOrEqualTo(0);
-        assertThat(withdrawalCount).isGreaterThanOrEqualTo(0);
-
-        log.info("✅ Transaction filtering by type test passed");
+        log.info("✅ Transaction filtering test passed for: {}", transactionType);
     }
 
     @Test(description = "Verify transaction export functionality")
@@ -526,18 +523,11 @@ public class AccountUITests extends BaseTest {
     public void testTabSwitching() {
         log.info("=== Test: Tab Switching ===");
 
-        // Switch through all tabs
+        // Switch through all tabs (each goToXxxTab() already waits for tab content to be visible)
         accountPage.goToProfileTab();
-        accountPage.waitFor(500);
-
         accountPage.goToSecurityTab();
-        accountPage.waitFor(500);
-
         accountPage.goToPaymentTab();
-        accountPage.waitFor(500);
-
         accountPage.goToTransactionsTab();
-        accountPage.waitFor(500);
 
         // Return to profile
         accountPage.goToProfileTab();
@@ -559,7 +549,7 @@ public class AccountUITests extends BaseTest {
         log.info("=== Test: Full Page Screenshot ===");
 
         // Take full page screenshot
-        String screenshotPath = accountPage.takeFullPageScreenshot("account-page-full");
+        String screenshotPath = accountPage.takeScreenshot("account-page-full");
 
         assertThat(screenshotPath)
                 .as("Screenshot should be saved")

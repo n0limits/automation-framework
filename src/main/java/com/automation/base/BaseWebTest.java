@@ -11,7 +11,6 @@ import org.testng.annotations.BeforeMethod;
 
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 public class BaseWebTest extends BaseTest {
@@ -112,21 +111,11 @@ public class BaseWebTest extends BaseTest {
     }
 
     /**
-     * Wait for page to be fully loaded
+     * Wait for page to be fully loaded (NETWORKIDLE)
      */
     protected void waitForPageLoad() {
-        page.waitForLoadState();
-        log.debug("Page load state reached");
-    }
-
-    /**
-     * Navigate to a specific URL
-     * @param url The URL to navigate to
-     */
-    protected void navigateToUrl(String url) {
-        log.info("Navigating to URL: {}", url);
-        page.navigate(url);
-        waitForPageLoad();
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        log.debug("Page loaded (NETWORKIDLE): {}", page.url());
     }
 
     /**
@@ -161,20 +150,6 @@ public class BaseWebTest extends BaseTest {
     protected void clearBrowserStorage() {
         log.info("Clearing browser storage");
         page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }");
-    }
-
-    /**
-     * Take a screenshot
-     * @param screenshotName Name for the screenshot file
-     */
-    protected void takeScreenshot(String screenshotName) {
-        try {
-            String screenshotPath = "target/screenshots/" + screenshotName + ".png";
-            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(screenshotPath)));
-            log.info("Screenshot saved: {}", screenshotPath);
-        } catch (Exception e) {
-            log.error("Failed to take screenshot: {}", screenshotName, e);
-        }
     }
 
     /**

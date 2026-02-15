@@ -56,8 +56,9 @@ public class CommonSteps {
         log.info("Screenshot saved: {}", path);
     }
 
-    @And("I wait {int} milliseconds")
-    public void iWaitMilliseconds(int ms) {
-        PlaywrightManager.getPage().waitForTimeout(ms);
+    @And("I wait for the network to be idle")
+    public void iWaitForNetworkIdle() {
+        PlaywrightManager.getPage().waitForLoadState(
+                com.microsoft.playwright.options.LoadState.NETWORKIDLE);
     }
 }

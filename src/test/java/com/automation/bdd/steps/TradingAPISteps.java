@@ -117,6 +117,18 @@ public class TradingAPISteps {
         log.info("DELETE /orders/{} - Status: {}", orderId, response.getStatusCode());
     }
 
+    @When("I request the authenticated {string} endpoint with token {string}")
+    public void iRequestTheAuthenticatedEndpointWithToken(String endpoint, String token) {
+        Response response = switch (endpoint) {
+            case "balance" -> getClient().getAccountBalance(token);
+            case "trade-history" -> getClient().getTradeHistory(token);
+            case "cancel-order" -> getClient().cancelOrder(token, "test-order-123");
+            default -> throw new IllegalArgumentException("Unknown authenticated endpoint: " + endpoint);
+        };
+        scenarioContext.set("lastResponse", response);
+        log.info("Authenticated endpoint '{}' - Status: {}", endpoint, response.getStatusCode());
+    }
+
     // ===== Then =====
 
     @Then("the response status code is {int}")

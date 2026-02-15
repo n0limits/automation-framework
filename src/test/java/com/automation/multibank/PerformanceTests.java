@@ -62,7 +62,7 @@ public class PerformanceTests extends BaseWebTest {
 
         // Perform navigation (scroll and interaction)
         page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)");
-        page.waitForTimeout(100);
+        page.waitForLoadState();
 
         long navigationTime = System.currentTimeMillis() - startTime;
         log.info("Page interaction time: {} ms", navigationTime);

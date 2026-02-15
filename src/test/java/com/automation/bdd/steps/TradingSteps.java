@@ -157,38 +157,28 @@ public class TradingSteps {
                 .isTrue();
     }
 
-    @Then("the Fear Index indicator is visible")
-    public void theFearIndexIndicatorIsVisible() {
-        assertThat(getTradingPage().isFearIndexVisible())
-                .as("Fear Index should be visible")
+    @Then("the {string} market indicator is visible")
+    public void theMarketIndicatorIsVisible(String indicatorName) {
+        boolean visible = switch (indicatorName) {
+            case "Fear Index" -> getTradingPage().isFearIndexVisible();
+            case "Top Gainers" -> getTradingPage().areTopGainersVisible();
+            case "Top Losers" -> getTradingPage().areTopLosersVisible();
+            default -> throw new IllegalArgumentException("Unknown market indicator: " + indicatorName);
+        };
+        assertThat(visible)
+                .as("%s should be visible", indicatorName)
                 .isTrue();
     }
 
-    @Then("the Top Gainers indicator is visible")
-    public void theTopGainersIndicatorIsVisible() {
-        assertThat(getTradingPage().areTopGainersVisible())
-                .as("Top Gainers should be visible")
-                .isTrue();
-    }
-
-    @Then("the Top Losers indicator is visible")
-    public void theTopLosersIndicatorIsVisible() {
-        assertThat(getTradingPage().areTopLosersVisible())
-                .as("Top Losers should be visible")
-                .isTrue();
-    }
-
-    @Then("the MBG Token section is visible")
-    public void theMBGTokenSectionIsVisible() {
-        assertThat(getTradingPage().isMBGTokenSectionVisible())
-                .as("MBG Token section should be visible")
-                .isTrue();
-    }
-
-    @Then("the Real World Assets section is visible")
-    public void theRealWorldAssetsSectionIsVisible() {
-        assertThat(getTradingPage().isRealWorldAssetsSectionVisible())
-                .as("Real World Assets section should be visible")
+    @Then("the {string} investment section is visible")
+    public void theInvestmentSectionIsVisible(String sectionName) {
+        boolean visible = switch (sectionName) {
+            case "MBG Token" -> getTradingPage().isMBGTokenSectionVisible();
+            case "Real World Assets" -> getTradingPage().isRealWorldAssetsSectionVisible();
+            default -> throw new IllegalArgumentException("Unknown investment section: " + sectionName);
+        };
+        assertThat(visible)
+                .as("%s section should be visible", sectionName)
                 .isTrue();
     }
 

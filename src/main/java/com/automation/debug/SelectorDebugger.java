@@ -105,7 +105,7 @@ public class SelectorDebugger {
             log.info("========================================\n");
 
             page.evaluate("window.scrollTo(0, document.body.scrollHeight)");
-            page.waitForTimeout(2000); // Wait for lazy-loaded content
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
 
             debugFooterSelectors(page);
 

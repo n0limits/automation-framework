@@ -1,6 +1,7 @@
 package com.automation.api;
 
 import com.automation.base.BaseAPITest;
+import com.automation.providers.TestDataProviders;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -169,28 +170,20 @@ public class TradingAPITests extends BaseAPITest {
         log.info("✅ Error handling test passed");
     }
 
-    @Test(priority = 7, description = "Verify response time for concurrent ticker requests")
-    @Description("Performance test: multiple ticker requests should complete quickly")
+    @Test(priority = 7, description = "Verify ticker response time per symbol",
+          dataProvider = "tradingSymbolsProvider", dataProviderClass = TestDataProviders.class)
+    @Description("Performance test: ticker request should complete quickly for each symbol")
     @Severity(SeverityLevel.MINOR)
-    public void testTickerPerformance() {
-        log.info("=== Test: Ticker Performance ===");
+    public void testTickerPerformance(String symbol) {
+        log.info("=== Test: Ticker Performance for {} ===", symbol);
 
-        String[] symbols = {"BTCUSD", "ETHUSD", "XRPUSD"};
-        long startTime = System.currentTimeMillis();
+        Response response = tradingAPI.getTickerPrice(symbol);
 
-        for (String symbol : symbols) {
-            Response response = tradingAPI.getTickerPrice(symbol);
-            assertThat(response).isOK().respondsWithin(500);
-        }
+        assertThat(response)
+                .isOK()
+                .respondsWithin(500);
 
-        long totalTime = System.currentTimeMillis() - startTime;
-        log.info("Total time for {} ticker requests: {} ms", symbols.length, totalTime);
-
-        org.assertj.core.api.Assertions.assertThat(totalTime)
-                .as("Total time for ticker requests")
-                .isLessThan(2000);  // All requests should complete in under 2 seconds
-
-        log.info("✅ Performance test passed");
+        log.info("✅ Ticker performance test passed for {}", symbol);
     }
 
     @Test(priority = 8, description = "Verify POST /orders creates order (simulated)")

@@ -1,13 +1,14 @@
 package com.automation.aws;
 
 import com.automation.config.TestConfig;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.*;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -299,30 +300,20 @@ public class StepFunctionsClient {
         return String.format("test-execution-%s-%s", threadName, timestamp);
     }
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
-     * Convert Map to JSON string (simple implementation)
-     * For complex objects, consider using Jackson or Gson
+     * Convert Map to JSON string using Jackson
      *
      * @param map Input map
      * @return JSON string
      */
     private String convertMapToJson(Map<String, Object> map) {
-        // Simple JSON conversion - for production use Jackson or Gson
-        StringBuilder json = new StringBuilder("{");
-        map.forEach((key, value) -> {
-            if (json.length() > 1) {
-                json.append(",");
-            }
-            json.append("\"").append(key).append("\":");
-            if (value instanceof String) {
-                json.append("\"").append(value).append("\"");
-            } else if (value instanceof Number || value instanceof Boolean) {
-                json.append(value);
-            } else {
-                json.append("\"").append(value.toString()).append("\"");
-            }
-        });
-        json.append("}");
-        return json.toString();
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to convert map to JSON", e);
+            throw new RuntimeException("Failed to convert map to JSON", e);
+        }
     }
 }

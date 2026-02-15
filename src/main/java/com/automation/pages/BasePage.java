@@ -285,16 +285,6 @@ public abstract class BasePage {
     }
 
     /**
-     * Wait for specific duration
-     *
-     * @param milliseconds Duration in milliseconds
-     */
-    public void waitFor(int milliseconds) {
-        log.debug("Waiting for {} ms", milliseconds);
-        page.waitForTimeout(milliseconds);
-    }
-
-    /**
      * Reload current page
      */
     @Step("Reload page")
@@ -323,29 +313,17 @@ public abstract class BasePage {
     }
 
     /**
-     * Take screenshot
+     * Take full-page screenshot with timestamp
      *
      * @param screenshotName Screenshot file name
      * @return Path to screenshot
      */
     @Step("Take screenshot: {screenshotName}")
     public String takeScreenshot(String screenshotName) {
-        String path = String.format("target/screenshots/%s.png", screenshotName);
+        String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String path = String.format("target/screenshots/%s_%s.png", screenshotName, timestamp);
         log.info("Taking screenshot: {}", path);
-        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(path)));
-        return path;
-    }
-
-    /**
-     * Take full page screenshot
-     *
-     * @param screenshotName Screenshot file name
-     * @return Path to screenshot
-     */
-    @Step("Take full page screenshot: {screenshotName}")
-    public String takeFullPageScreenshot(String screenshotName) {
-        String path = String.format("target/screenshots/%s-fullpage.png", screenshotName);
-        log.info("Taking full page screenshot: {}", path);
         page.screenshot(new Page.ScreenshotOptions()
                 .setPath(Paths.get(path))
                 .setFullPage(true));

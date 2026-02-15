@@ -3,6 +3,7 @@ package com.automation.pages.multibank;
 import com.automation.config.TestConfig;
 import com.automation.pages.BasePage;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -16,8 +17,6 @@ public class TradingPage extends BasePage {
     // Configurable timeouts from TestConfig
     private final int elementTimeout;
     private final int shortTimeout;
-    private final int pollInterval;
-    private final int maxPollAttempts;
 
     // =========================
     // Locator Fields
@@ -48,8 +47,6 @@ public class TradingPage extends BasePage {
         TestConfig config = TestConfig.getInstance();
         this.elementTimeout = config.getElementTimeout();
         this.shortTimeout = config.getShortTimeout();
-        this.pollInterval = config.getPollInterval();
-        this.maxPollAttempts = config.getMaxPollAttempts();
 
         // Trading Tabs - using exact text from page
         this.spotTab = page.locator(":has-text('Spot'):not(:has-text('Favorites')):not(:has-text('All'))").first();
@@ -157,26 +154,18 @@ public class TradingPage extends BasePage {
     }
 
     /**
-     * Wait for a cell to have content using configurable polling.
-     * Uses exponential backoff to reduce unnecessary polling.
+     * Wait for a cell to have content using Playwright's waitForCondition.
      */
     private void waitForDataToPopulate(Locator cell) {
-        long currentPollInterval = pollInterval;
-        for (int i = 0; i < maxPollAttempts; i++) {
-            try {
+        try {
+            page.waitForCondition(() -> {
                 String text = cell.textContent();
-                if (text != null && !text.trim().isEmpty()) {
-                    log.debug("Data populated after {} attempts", i + 1);
-                    return;
-                }
-                page.waitForTimeout(currentPollInterval);
-                // Exponential backoff with cap
-                currentPollInterval = Math.min(currentPollInterval * 2, 2000);
-            } catch (Exception e) {
-                log.debug("Polling attempt {} failed", i + 1);
-            }
+                return text != null && !text.trim().isEmpty();
+            }, new Page.WaitForConditionOptions().setTimeout(elementTimeout));
+            log.debug("Data populated successfully");
+        } catch (Exception e) {
+            log.warn("Data did not populate within timeout ({}ms)", elementTimeout);
         }
-        log.warn("Data did not populate within max poll attempts ({})", maxPollAttempts);
     }
 
     public boolean isTradingPairVisible(String pairName) {
@@ -279,7 +268,7 @@ public class TradingPage extends BasePage {
         try {
             // Scroll down to make section visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.6)");
-            page.waitForTimeout(pollInterval);
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
             mbgTokenSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return mbgTokenSection.isVisible();
         } catch (Exception e) {
@@ -292,7 +281,7 @@ public class TradingPage extends BasePage {
         try {
             // Scroll down to make section visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.7)");
-            page.waitForTimeout(pollInterval);
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
             realWorldAssetsSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return realWorldAssetsSection.isVisible();
         } catch (Exception e) {

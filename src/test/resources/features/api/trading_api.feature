@@ -15,21 +15,31 @@ Feature: Trading API Endpoints
     And the response body is not empty
     And the response time is within 2000 ms
 
-  Scenario: GET specific trading pair returns correct data
-    When I request the trading pair "BTCUSD"
+  Scenario Outline: GET specific trading pair <symbol> returns correct data
+    When I request the trading pair "<symbol>"
     Then the response is OK
     And the response has JSON content type
     And the response time is within 1000 ms
-    And the response contains field "symbol" with value "BTCUSD"
+    And the response contains field "symbol" with value "<symbol>"
 
-  Scenario: GET ticker price returns current price
-    When I request the ticker price for "BTCUSD"
+    Examples:
+      | symbol |
+      | BTCUSD |
+      | ETHUSD |
+
+  Scenario Outline: GET ticker price for <symbol> returns current price
+    When I request the ticker price for "<symbol>"
     Then the response is OK
     And the response has JSON content type
     And the response time is within 500 ms
-    And the response contains field "symbol" with value "BTCUSD"
+    And the response contains field "symbol" with value "<symbol>"
     And the response contains field "price"
     And the price field is a positive number
+
+    Examples:
+      | symbol |
+      | BTCUSD |
+      | ETHUSD |
 
   Scenario: GET 24h statistics returns complete data
     When I request the 24h statistics for "BTCUSD"
@@ -70,21 +80,16 @@ Feature: Trading API Endpoints
     When I create a market order for "BTCUSD" side "BUY" quantity -1.0
     Then the response status code is 400 or 401
 
-  Scenario: GET account balance requires authentication
-    When I request account balance with token "invalid-token"
-    Then the response is unauthorized
-    And the response has JSON content type
-    And the response time is within 1000 ms
-
-  Scenario: GET trade history requires authentication
-    When I request trade history with token "invalid-token"
+  Scenario Outline: Authenticated endpoint <endpoint> requires valid token
+    When I request the authenticated "<endpoint>" endpoint with token "invalid-token"
     Then the response is unauthorized
     And the response time is within 1000 ms
 
-  Scenario: DELETE order requires authentication
-    When I cancel order "test-order-123" with token "invalid-token"
-    Then the response is unauthorized
-    And the response time is within 1000 ms
+    Examples:
+      | endpoint      |
+      | balance       |
+      | trade-history |
+      | cancel-order  |
 
   Scenario: API responses include correct headers
     When I request all trading pairs

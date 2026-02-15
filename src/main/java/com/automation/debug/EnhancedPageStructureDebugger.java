@@ -27,7 +27,7 @@ public class EnhancedPageStructureDebugger {
 
             // Scroll to bottom to ensure all content loads
             page.evaluate("window.scrollTo(0, document.body.scrollHeight)");
-            page.waitForTimeout(3000);
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
 
             // Find download section
             log.info("\n========================================");

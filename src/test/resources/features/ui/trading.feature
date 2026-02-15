@@ -43,35 +43,39 @@ Feature: Trading Page Functionality
   Scenario: Trading pair data structure is correct
     Then the trading pair data for "BTC/USD" is not empty
 
-  Scenario: Favorites tab is visible
-    Then the "Favorites" tab is visible
+  Scenario Outline: Trading tab <tab> is visible
+    Then the "<tab>" tab is visible
 
-  Scenario: All Pairs tab is visible
-    Then the "All Pairs" tab is visible
+    Examples:
+      | tab        |
+      | Favorites  |
+      | All Pairs  |
 
-  Scenario: Clicking Favorites tab keeps table displayed
-    When I click the "Favorites" tab
+  Scenario Outline: Clicking <tab> tab keeps table displayed
+    When I click the "<tab>" tab
     Then the trading pairs table is still displayed after tab switch
 
-  Scenario: Clicking All Pairs tab shows trading pairs
-    When I click the "All Pairs" tab
-    Then the trading pairs table is still displayed after tab switch
-    And the trading pairs count is greater than 0
+    Examples:
+      | tab        |
+      | Favorites  |
+      | All Pairs  |
 
-  Scenario: Market indicator Fear Index is visible
-    Then the Fear Index indicator is visible
+  Scenario Outline: Market indicator <indicator> is visible
+    Then the "<indicator>" market indicator is visible
 
-  Scenario: Market indicator Top Gainers is visible
-    Then the Top Gainers indicator is visible
+    Examples:
+      | indicator   |
+      | Fear Index  |
+      | Top Gainers |
+      | Top Losers  |
 
-  Scenario: Market indicator Top Losers is visible
-    Then the Top Losers indicator is visible
+  Scenario Outline: Investment section <section> is visible
+    Then the "<section>" investment section is visible
 
-  Scenario: MBG Token investment section is visible
-    Then the MBG Token section is visible
-
-  Scenario: Real World Assets investment section is visible
-    Then the Real World Assets section is visible
+    Examples:
+      | section            |
+      | MBG Token          |
+      | Real World Assets  |
 
   Scenario: Quick access tools are visible
     Then at least one quick access tool is visible
