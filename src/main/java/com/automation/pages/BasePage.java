@@ -2,6 +2,7 @@ package com.automation.pages;
 
 import com.automation.config.TestConfig;
 import com.automation.utils.PlaywrightManager;
+import com.automation.utils.SelfHealingLocator;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.LoadState;
@@ -38,6 +39,17 @@ public abstract class BasePage {
         this.page = PlaywrightManager.getPage();
         this.config = TestConfig.getInstance();
         this.defaultTimeout = config.getTimeout();
+    }
+
+    /**
+     * Create a self-healing locator with fallback strategies.
+     * Use the builder API to add fallbacks: text, role, CSS, testId, etc.
+     *
+     * @param primarySelector Primary CSS or Playwright selector
+     * @return SelfHealingLocator builder
+     */
+    protected SelfHealingLocator selfHeal(String primarySelector) {
+        return SelfHealingLocator.create(page, primarySelector);
     }
 
     /**

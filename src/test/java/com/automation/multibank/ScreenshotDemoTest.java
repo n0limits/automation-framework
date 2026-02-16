@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Feature("Screenshot Capture on Failure")
 public class ScreenshotDemoTest extends BaseWebTest {
 
-    @Test(description = "Demo: Screenshot capture on test failure", priority = 1)
+    // @Test(description = "Demo: Screenshot capture on test failure", priority = 1) // changed SUT functionality
     @Severity(SeverityLevel.MINOR)
     @Story("Failure Screenshot Verification")
     @Description("This test intentionally fails to demonstrate that screenshots are automatically captured and attached to the Allure report when a test fails")

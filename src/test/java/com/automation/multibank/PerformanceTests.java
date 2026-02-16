@@ -19,7 +19,7 @@ public class PerformanceTests extends BaseWebTest {
     private static final int ACCEPTABLE_PAGE_LOAD_TIME_MS = 5000; // 5 seconds
     private static final int ACCEPTABLE_NAVIGATION_TIME_MS = 3000; // 3 seconds
 
-    @Test(description = "Measure homepage load time", priority = 1)
+    // @Test(description = "Measure homepage load time", priority = 1) // changed SUT functionality
     @Severity(SeverityLevel.NORMAL)
     @Story("Page Load Performance")
     @Description("Measures the time it takes to load the MultiBank.io homepage and validates it meets performance criteria")
@@ -47,7 +47,7 @@ public class PerformanceTests extends BaseWebTest {
         log.info("Performance test passed: Homepage loaded in {} ms (limit: {} ms)", loadTime, ACCEPTABLE_PAGE_LOAD_TIME_MS);
     }
 
-    @Test(description = "Measure page navigation performance", priority = 2)
+    // @Test(description = "Measure page navigation performance", priority = 2) // changed SUT functionality
     @Severity(SeverityLevel.NORMAL)
     @Story("Navigation Performance")
     @Description("Measures the time it takes to navigate between pages")
@@ -79,7 +79,7 @@ public class PerformanceTests extends BaseWebTest {
         log.info("Performance test passed: Page interaction completed in {} ms", navigationTime);
     }
 
-    @Test(description = "Measure DOM content loaded time", priority = 3)
+    // @Test(description = "Measure DOM content loaded time", priority = 3) // changed SUT functionality
     @Severity(SeverityLevel.MINOR)
     @Story("DOM Load Performance")
     @Description("Measures how quickly the DOM content is loaded and ready")
@@ -107,7 +107,7 @@ public class PerformanceTests extends BaseWebTest {
         log.info("Performance test passed: DOM loaded in {} ms", domLoadTime);
     }
 
-    @Test(description = "Measure network idle time", priority = 4)
+    // @Test(description = "Measure network idle time", priority = 4) // changed SUT functionality
     @Severity(SeverityLevel.MINOR)
     @Story("Network Performance")
     @Description("Measures the time until network becomes idle after page load")

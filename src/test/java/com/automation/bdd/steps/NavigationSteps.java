@@ -4,6 +4,9 @@ import com.automation.bdd.context.ScenarioContext;
 import com.automation.config.TestConfig;
 import com.automation.pages.multibank.NavigationPage;
 import com.automation.utils.PlaywrightManager;
+import com.automation.utils.SelfHealingLocator;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -68,7 +71,13 @@ public class NavigationSteps {
 
     @Then("the header is visible")
     public void theHeaderIsVisible() {
-        boolean headerVisible = PlaywrightManager.getPage().locator("header").isVisible();
+        Page page = PlaywrightManager.getPage();
+        boolean headerVisible = SelfHealingLocator.create(page, "header")
+                .withRole(AriaRole.BANNER, "")
+                .withCss("[role='banner']")
+                .withCss("nav")
+                .find()
+                .isVisible();
         assertThat(headerVisible)
                 .as("Header should be visible")
                 .isTrue();

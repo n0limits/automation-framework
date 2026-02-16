@@ -2,6 +2,8 @@ package com.automation.bdd.steps;
 
 import com.automation.bdd.context.ScenarioContext;
 import com.automation.utils.PlaywrightManager;
+import com.automation.utils.SelfHealingLocator;
+import com.microsoft.playwright.Page;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -28,7 +30,11 @@ public class CommonSteps {
 
     @Then("the page has links")
     public void thePageHasLinks() {
-        int linkCount = PlaywrightManager.getPage().locator("a").count();
+        Page page = PlaywrightManager.getPage();
+        int linkCount = SelfHealingLocator.create(page, "a")
+                .withCss("[href]")
+                .find()
+                .count();
         assertThat(linkCount)
                 .as("Page should have links")
                 .isGreaterThan(0);
@@ -36,7 +42,11 @@ public class CommonSteps {
 
     @Then("the page body is not empty")
     public void thePageBodyIsNotEmpty() {
-        int bodyCount = PlaywrightManager.getPage().locator("body").count();
+        Page page = PlaywrightManager.getPage();
+        int bodyCount = SelfHealingLocator.create(page, "body")
+                .withCss("html > body")
+                .find()
+                .count();
         assertThat(bodyCount)
                 .as("Body element should be present")
                 .isGreaterThan(0);

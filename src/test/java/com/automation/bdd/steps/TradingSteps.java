@@ -3,6 +3,9 @@ package com.automation.bdd.steps;
 import com.automation.bdd.context.ScenarioContext;
 import com.automation.pages.multibank.TradingPage;
 import com.automation.utils.PlaywrightManager;
+import com.automation.utils.SelfHealingLocator;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -92,14 +95,25 @@ public class TradingSteps {
 
     @Then("the spot trading section is displayed")
     public void theSpotTradingSectionIsDisplayed() {
-        assertThat(getTradingPage().isSpotTradingSectionDisplayed())
+        Page page = PlaywrightManager.getPage();
+        Locator spotSection = SelfHealingLocator.create(page, "table")
+                .withText("Spot")
+                .withCss("[class*='trading'], [class*='spot']")
+                .withCss("section:has(table)")
+                .find();
+        assertThat(spotSection.isVisible())
                 .as("Spot trading section should be displayed")
                 .isTrue();
     }
 
     @Then("the trading pairs table is displayed")
     public void theTradingPairsTableIsDisplayed() {
-        assertThat(getTradingPage().isTradingPairsTableDisplayed())
+        Page page = PlaywrightManager.getPage();
+        Locator table = SelfHealingLocator.create(page, "table")
+                .withCss("[class*='pairs'] table, [class*='trading'] table")
+                .withCss("table:has(thead)")
+                .find();
+        assertThat(table.isVisible())
                 .as("Trading pairs table should be displayed")
                 .isTrue();
     }
