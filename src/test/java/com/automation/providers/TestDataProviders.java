@@ -100,4 +100,32 @@ public class TestDataProviders {
             { "Google Play" }
         };
     }
+
+    @DataProvider(name = "specialUsernamesProvider")
+    public Object[][] specialUsernamesProvider() {
+        return new Object[][] {
+            { "user@email.com" },
+            { "user+test@domain.com" },
+            { "user.name@test.com" },
+            { "user_123" },
+            { "user-name" }
+        };
+    }
+
+    @DataProvider(name = "transactionTypesProvider")
+    public Object[][] transactionTypesProvider() {
+        return new Object[][] {
+            { "Deposit" },
+            { "Withdrawal" }
+        };
+    }
+
+    @DataProvider(name = "tradingSymbolsProvider")
+    public Object[][] tradingSymbolsProvider() {
+        return new Object[][] {
+            { "BTCUSD" },
+            { "ETHUSD" },
+            { "XRPUSD" }
+        };
+    }
 }

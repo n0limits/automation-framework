@@ -1,7 +1,9 @@
 package com.automation.pages.multibank;
 
+import com.automation.config.TestConfig;
 import com.automation.pages.BasePage;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -11,6 +13,10 @@ import java.util.Map;
 
 @Slf4j
 public class TradingPage extends BasePage {
+
+    // Configurable timeouts from TestConfig
+    private final int elementTimeout;
+    private final int shortTimeout;
 
     // =========================
     // Locator Fields
@@ -36,6 +42,11 @@ public class TradingPage extends BasePage {
 
     public TradingPage() {
         super();
+
+        // Initialize configurable timeouts
+        TestConfig config = TestConfig.getInstance();
+        this.elementTimeout = config.getElementTimeout();
+        this.shortTimeout = config.getShortTimeout();
 
         // Trading Tabs - using exact text from page
         this.spotTab = page.locator(":has-text('Spot'):not(:has-text('Favorites')):not(:has-text('All'))").first();
@@ -67,7 +78,7 @@ public class TradingPage extends BasePage {
 
     public boolean isSpotTradingSectionDisplayed() {
         try {
-            tradingPairsTable.waitFor(new Locator.WaitForOptions().setTimeout(15000));
+            tradingPairsTable.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Spot trading section is displayed");
             return true;
         } catch (Exception e) {
@@ -105,7 +116,7 @@ public class TradingPage extends BasePage {
     public int getTradingPairsCount() {
         try {
             // Wait for table to be populated with data
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
         } catch (Exception e) {
             log.warn("No trading pair rows found", e);
         }
@@ -118,17 +129,10 @@ public class TradingPage extends BasePage {
         List<String> pairs = new ArrayList<>();
         try {
             // Wait for rows to be present
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            // Additional wait for data to populate - wait until first cell has content
-            Locator firstDataCell = tradingPairRows.first().locator("td").first();
-            for (int i = 0; i < 30; i++) {
-                String text = firstDataCell.textContent();
-                if (text != null && !text.trim().isEmpty()) {
-                    break;
-                }
-                page.waitForTimeout(500);
-            }
+            // Wait for data to populate using configurable polling
+            waitForDataToPopulate(tradingPairRows.first().locator("td").first());
 
             List<Locator> rows = tradingPairRows.all();
 
@@ -147,6 +151,21 @@ public class TradingPage extends BasePage {
             log.error("Failed to get trading pairs", e);
         }
         return pairs;
+    }
+
+    /**
+     * Wait for a cell to have content using Playwright's waitForCondition.
+     */
+    private void waitForDataToPopulate(Locator cell) {
+        try {
+            page.waitForCondition(() -> {
+                String text = cell.textContent();
+                return text != null && !text.trim().isEmpty();
+            }, new Page.WaitForConditionOptions().setTimeout(elementTimeout));
+            log.debug("Data populated successfully");
+        } catch (Exception e) {
+            log.warn("Data did not populate within timeout ({}ms)", elementTimeout);
+        }
     }
 
     public boolean isTradingPairVisible(String pairName) {
@@ -172,17 +191,10 @@ public class TradingPage extends BasePage {
         Map<String, String> data = new HashMap<>();
         try {
             // Wait for rows to be present and populated with data
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(15000));
+            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            // Wait for data to populate - wait until first cell has content
-            Locator firstDataCell = tradingPairRows.first().locator("td").first();
-            for (int i = 0; i < 30; i++) {
-                String text = firstDataCell.textContent();
-                if (text != null && !text.trim().isEmpty()) {
-                    break;
-                }
-                page.waitForTimeout(500);
-            }
+            // Wait for data to populate using configurable polling
+            waitForDataToPopulate(tradingPairRows.first().locator("td").first());
 
             List<Locator> rows = tradingPairRows.all();
 
@@ -256,8 +268,8 @@ public class TradingPage extends BasePage {
         try {
             // Scroll down to make section visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.6)");
-            page.waitForTimeout(500);
-            mbgTokenSection.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
+            mbgTokenSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return mbgTokenSection.isVisible();
         } catch (Exception e) {
             log.warn("MBG Token section not found");
@@ -269,8 +281,8 @@ public class TradingPage extends BasePage {
         try {
             // Scroll down to make section visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.7)");
-            page.waitForTimeout(500);
-            realWorldAssetsSection.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
+            realWorldAssetsSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return realWorldAssetsSection.isVisible();
         } catch (Exception e) {
             log.warn("Real World Assets section not found");

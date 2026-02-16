@@ -345,12 +345,9 @@ public class TradingDashboardUITests extends BaseTest {
     public void testOrderTypeSelection() {
         log.info("=== Test: Order Type Selection ===");
 
-        // Test switching order types
+        // Test switching order types (selectOrderType uses selectByText which auto-waits)
         dashboardPage.selectOrderType("Market");
-        dashboardPage.waitFor(500);
-
         dashboardPage.selectOrderType("Limit");
-        dashboardPage.waitFor(500);
 
         // Verify we can interact with the order form after switching
         boolean dashboardStillLoaded = dashboardPage.isDashboardLoaded();
@@ -440,8 +437,8 @@ public class TradingDashboardUITests extends BaseTest {
             // Cancel first order
             dashboardPage.cancelOrder(0);
 
-            // Wait and verify count decreased
-            dashboardPage.waitFor(1000);
+            // Wait for UI to update after cancellation
+            dashboardPage.getPage().waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
             int newCount = dashboardPage.getOpenOrdersCount();
 
             assertThat(newCount)
@@ -524,7 +521,7 @@ public class TradingDashboardUITests extends BaseTest {
         log.info("=== Test: Full Page Screenshot ===");
 
         // Take full page screenshot
-        String screenshotPath = dashboardPage.takeFullPageScreenshot("dashboard-full");
+        String screenshotPath = dashboardPage.takeScreenshot("dashboard-full");
 
         assertThat(screenshotPath)
                 .as("Screenshot path should be returned")

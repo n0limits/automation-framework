@@ -3,6 +3,7 @@ package com.automation.ui;
 import com.automation.base.BaseTest;
 import com.automation.pages.LoginPage;
 import com.automation.pages.TradingDashboardPage;
+import com.automation.providers.TestDataProviders;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.BeforeMethod;
@@ -222,39 +223,26 @@ public class LoginUITests extends BaseTest {
         log.info("✅ Session persistence test passed");
     }
 
-    @Test(description = "Verify login with username containing special characters")
+    @Test(description = "Verify login with username containing special characters",
+          dataProvider = "specialUsernamesProvider", dataProviderClass = TestDataProviders.class)
     @Description("Test login handles special characters in username gracefully")
     @Severity(SeverityLevel.MINOR)
     @Story("Input Validation")
-    public void testLoginWithSpecialCharactersInUsername() {
-        log.info("=== Test: Login with Special Characters ===");
+    public void testLoginWithSpecialCharactersInUsername(String username) {
+        log.info("=== Test: Login with Special Characters - {} ===", username);
 
         loginPage.open();
+        loginPage.login(username, "testPassword123");
 
-        // Test various special characters
-        String[] specialUsernames = {
-                "user@email.com",
-                "user+test@domain.com",
-                "user.name@test.com",
-                "user_123",
-                "user-name"
-        };
+        // Should show error or remain on login (since these are likely invalid)
+        String currentUrl = loginPage.getCurrentUrl();
+        boolean handledGracefully = currentUrl.contains("/login") || loginPage.isErrorVisible();
 
-        for (String username : specialUsernames) {
-            log.info("Testing username: {}", username);
-            loginPage.open(); // Refresh page for each attempt
-            loginPage.login(username, "testPassword123");
+        assertThat(handledGracefully)
+                .as("Should handle special characters in username: " + username)
+                .isTrue();
 
-            // Should show error or remain on login (since these are likely invalid)
-            String currentUrl = loginPage.getCurrentUrl();
-            boolean handledGracefully = currentUrl.contains("/login") || loginPage.isErrorVisible();
-
-            assertThat(handledGracefully)
-                    .as("Should handle special characters in username: " + username)
-                    .isTrue();
-        }
-
-        log.info("✅ Special characters test passed");
+        log.info("✅ Special characters test passed for: {}", username);
     }
 
     @Test(description = "Verify multiple failed login attempts are handled")
@@ -277,9 +265,6 @@ public class LoginUITests extends BaseTest {
             assertThat(loginPage.isErrorVisible())
                     .as("Error should be shown for attempt " + i)
                     .isTrue();
-
-            // Small delay between attempts
-            loginPage.waitFor(500);
 
             // Refresh for next attempt
             if (i < attempts) {
@@ -309,7 +294,7 @@ public class LoginUITests extends BaseTest {
         loginPage.open();
 
         // Take full page screenshot for accessibility review
-        String screenshotPath = loginPage.takeFullPageScreenshot("login-accessibility");
+        String screenshotPath = loginPage.takeScreenshot("login-accessibility");
         log.info("Full page screenshot for accessibility review: {}", screenshotPath);
 
         // Verify page title exists
@@ -320,9 +305,7 @@ public class LoginUITests extends BaseTest {
 
         // Verify we can navigate using keyboard (press Tab and Enter)
         loginPage.pressKey("Tab");
-        loginPage.waitFor(200);
         loginPage.pressKey("Tab");
-        loginPage.waitFor(200);
 
         log.info("✅ Accessibility test passed");
     }

@@ -120,7 +120,7 @@ public class FooterPage extends BasePage {
         try {
             // Scroll to make banners visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)");
-            page.waitForTimeout(500);
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
 
             // Wait for at least one banner with explicit timeout
             marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
@@ -191,7 +191,7 @@ public class FooterPage extends BasePage {
         try {
             // Scroll to make banners visible
             page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)");
-            page.waitForTimeout(1000);
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
 
             Locator specificBanner = page.locator(String.format(":has-text('%s')", bannerText)).first();
             specificBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));

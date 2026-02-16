@@ -2,6 +2,7 @@ package com.automation.mobile;
 
 import com.automation.base.BaseWebTest;
 import com.automation.utils.MobileUtils;
+import com.microsoft.playwright.options.LoadState;
 import io.qameta.allure.*;
 import org.testng.annotations.Test;
 
@@ -20,19 +21,19 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     public void testSwipeGestures() {
         // Swipe up to scroll down
         MobileUtils.swipeUp(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Swipe down to scroll back up
         MobileUtils.swipeDown(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Swipe left (useful for carousels, image galleries)
         MobileUtils.swipeLeft(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Swipe right
         MobileUtils.swipeRight(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
     }
 
     @Test(description = "Demonstrate tap and long press gestures")
@@ -43,19 +44,19 @@ public class MobileGesturesExampleTests extends BaseWebTest {
         // Tap on an element (mobile-friendly click)
         if (page.locator(".menu-button").isVisible()) {
             MobileUtils.tap(page.locator(".menu-button"));
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
 
         // Double tap (zoom or select)
         if (page.locator(".trading-chart").isVisible()) {
             MobileUtils.doubleTap(page.locator(".trading-chart"));
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
 
         // Long press (context menu or additional options)
         if (page.locator(".trading-pair-item").first().isVisible()) {
             MobileUtils.longPress(page.locator(".trading-pair-item").first(), 1000);
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
     }
 
@@ -66,16 +67,16 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     public void testScrolling() {
         // Scroll to bottom of page
         MobileUtils.scrollToBottom(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Scroll to top of page
         MobileUtils.scrollToTop(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Scroll to specific element
         if (page.locator(".footer").isVisible()) {
             MobileUtils.scrollToElement(page.locator(".footer"));
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
     }
 
@@ -86,14 +87,14 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     public void testOrientationSwitching() {
         // Start in portrait (390x844 for iPhone 13)
         MobileUtils.setPortraitOrientation(page, 390, 844);
-        waitFor(1000);
+        page.waitForLoadState(LoadState.LOAD);
 
         // Verify page adapts to portrait
         // Add your assertions here
 
         // Switch to landscape
         MobileUtils.setLandscapeOrientation(page, 390, 844);
-        waitFor(1000);
+        page.waitForLoadState(LoadState.LOAD);
 
         // Verify page adapts to landscape
         // Add your assertions here
@@ -110,15 +111,13 @@ public class MobileGesturesExampleTests extends BaseWebTest {
         // Click on input field to show keyboard
         if (page.locator("input[type='text']").first().isVisible()) {
             MobileUtils.tap(page.locator("input[type='text']").first());
-            waitFor(500);
+            page.locator("input[type='text']").first().waitFor();
 
             // Type some text
             page.locator("input[type='text']").first().fill("test input");
-            waitFor(500);
 
             // Hide keyboard
             MobileUtils.hideKeyboard(page);
-            waitFor(500);
         }
     }
 
@@ -130,10 +129,10 @@ public class MobileGesturesExampleTests extends BaseWebTest {
         // Swipe on a specific scrollable list or container
         if (page.locator(".trading-pairs-list").isVisible()) {
             MobileUtils.swipeOnElement(page.locator(".trading-pairs-list"), MobileUtils.SwipeDirection.UP);
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
             MobileUtils.swipeOnElement(page.locator(".trading-pairs-list"), MobileUtils.SwipeDirection.DOWN);
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
     }
 
@@ -144,11 +143,11 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     public void testPullToRefresh() {
         // Simulate pull-to-refresh by swiping down from top
         MobileUtils.scrollToTop(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Swipe down to trigger refresh
         MobileUtils.swipeDown(page);
-        waitFor(2000); // Wait for refresh animation
+        page.waitForLoadState(LoadState.NETWORKIDLE);
 
         // Verify page refreshed
         // Add your assertions here
@@ -160,49 +159,38 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     @Description("Complete end-to-end mobile user journey with gestures")
     public void testCompleteMobileWorkflow() {
         // 1. Wait for page to load
-        waitFor(1000);
+        page.waitForLoadState(LoadState.NETWORKIDLE);
 
         // 2. Scroll to explore content
         MobileUtils.swipeUp(page);
         MobileUtils.swipeUp(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // 3. Tap on a trading pair
         if (page.locator(".trading-pair-item").first().isVisible()) {
             MobileUtils.tap(page.locator(".trading-pair-item").first());
-            waitFor(1000);
+            page.waitForLoadState(LoadState.LOAD);
         }
 
         // 4. Swipe through charts or details
         MobileUtils.swipeLeft(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         MobileUtils.swipeRight(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // 5. Scroll back to top
         MobileUtils.scrollToTop(page);
-        waitFor(500);
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // 6. Open menu with tap
         if (page.locator(".menu-button").isVisible()) {
             MobileUtils.tap(page.locator(".menu-button"));
-            waitFor(500);
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
 
         // 7. Close menu (tap outside or back)
         if (page.locator(".overlay").isVisible()) {
             MobileUtils.tap(page.locator(".overlay"));
-        }
-    }
-
-    /**
-     * Helper method to wait
-     */
-    private void waitFor(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 }

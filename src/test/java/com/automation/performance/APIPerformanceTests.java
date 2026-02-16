@@ -248,15 +248,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
             );
 
             averageResponseTimes[i] = result.getAverageResponseTime();
-            log.info("Iteration {} - Avg Response Time: {:.2f}ms",
-                    i + 1, averageResponseTimes[i]);
-
-            // Small delay between iterations
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            log.info("Iteration {} - Avg Response Time: {}ms",
+                    i + 1, String.format("%.2f", averageResponseTimes[i]));
         }
 
         // Calculate variation

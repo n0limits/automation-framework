@@ -51,7 +51,7 @@ public class AboutUsPage extends BasePage {
             Locator aboutUsNav = page.locator("header span:has-text('About Us'), header a:has-text('About Us')").first();
             aboutUsNav.waitFor(new Locator.WaitForOptions().setTimeout(5000));
             aboutUsNav.click();
-            page.waitForTimeout(1000); // Wait for dropdown or navigation
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
             log.info("Clicked About Us navigation item");
 
             // Check if we navigated to about page

@@ -13,7 +13,6 @@
     <listeners>
         <listener class-name="com.automation.listeners.TestListener"/>
         <listener class-name="com.automation.listeners.RetryListener"/>
-        <listener class-name="com.automation.reporting.EnhancedAllureListener"/>
     </listeners>
 
     <!-- ========== Samsung Galaxy S21 TESTS ========== -->

@@ -302,13 +302,13 @@ public class TestMetrics {
         log.info("");
         log.info("Test Statistics:");
         log.info("  Total Tests: {}", totalTests.get());
-        log.info("  Passed: {} ({:.2f}%)", passedTests.get(), getPassRate());
-        log.info("  Failed: {} ({:.2f}%)", failedTests.get(), getFailureRate());
-        log.info("  Skipped: {} ({:.2f}%)", skippedTests.get(), getSkipRate());
+        log.info("  Passed: {} ({}%)", passedTests.get(), String.format("%.2f", getPassRate()));
+        log.info("  Failed: {} ({}%)", failedTests.get(), String.format("%.2f", getFailureRate()));
+        log.info("  Skipped: {} ({}%)", skippedTests.get(), String.format("%.2f", getSkipRate()));
         log.info("");
         log.info("Execution Time:");
         log.info("  Total: {} ms", getTotalExecutionTime());
-        log.info("  Average per Test: {:.2f} ms", getAverageDuration());
+        log.info("  Average per Test: {} ms", String.format("%.2f", getAverageDuration()));
 
         if (!testsByCategory.isEmpty()) {
             log.info("");
@@ -330,7 +330,7 @@ public class TestMetrics {
             log.info("");
             log.info("Slowest Tests:");
             getSlowestTests(5).forEach(entry ->
-                    log.info("  {}: {:.2f} ms", entry.getKey(), entry.getValue())
+                    log.info("  {}: {} ms", entry.getKey(), String.format("%.2f", entry.getValue()))
             );
         }
 

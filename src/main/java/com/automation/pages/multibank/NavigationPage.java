@@ -123,7 +123,7 @@ public class NavigationPage extends BasePage {
         // Trade might be a dropdown trigger - click and wait for any navigation
         tradeLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
         tradeLink.click();
-        page.waitForTimeout(500); // Wait for dropdown or navigation
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Trade link/dropdown");
     }
 
@@ -131,7 +131,7 @@ public class NavigationPage extends BasePage {
         // Features might be a dropdown trigger - click and wait for any navigation
         featuresLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
         featuresLink.click();
-        page.waitForTimeout(500); // Wait for dropdown or navigation
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Features link/dropdown");
     }
 
@@ -139,7 +139,7 @@ public class NavigationPage extends BasePage {
         // About Us might be a dropdown trigger - click and wait for any navigation
         aboutLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
         aboutLink.click();
-        page.waitForTimeout(500); // Wait for dropdown or navigation
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked About Us link/dropdown");
     }
 
@@ -147,7 +147,7 @@ public class NavigationPage extends BasePage {
         // Support might be a dropdown trigger - click and wait for any navigation
         supportLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
         supportLink.click();
-        page.waitForTimeout(500); // Wait for dropdown or navigation
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Support link/dropdown");
     }
 

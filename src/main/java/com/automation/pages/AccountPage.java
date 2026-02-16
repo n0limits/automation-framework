@@ -367,7 +367,7 @@ public class AccountPage extends BasePage {
         goToTransactionsTab();
         selectByText(TRANSACTION_TYPE_FILTER, type);
         click(FILTER_BUTTON);
-        waitFor(1000); // Wait for filter to apply
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
         return this;
     }
 
@@ -378,7 +378,7 @@ public class AccountPage extends BasePage {
         fill(DATE_FROM_INPUT, fromDate);
         fill(DATE_TO_INPUT, toDate);
         click(FILTER_BUTTON);
-        waitFor(1000); // Wait for filter to apply
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
         return this;
     }
 
@@ -387,7 +387,7 @@ public class AccountPage extends BasePage {
         log.info("Exporting transactions");
         goToTransactionsTab();
         click(EXPORT_BUTTON);
-        waitFor(2000); // Wait for export to complete
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
         log.info("✅ Transactions exported");
         return this;
     }
@@ -415,7 +415,6 @@ public class AccountPage extends BasePage {
     private void waitForSuccessMessage() {
         log.debug("Waiting for success message");
         waitForVisible(SUCCESS_MESSAGE);
-        waitFor(500);
     }
 
     @Step("Check if success message is visible")
