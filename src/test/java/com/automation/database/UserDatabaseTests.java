@@ -72,7 +72,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .exists();
 
-        log.info("✅ User table exists");
+        log.info("[PASS] User table exists");
     }
 
     @Test(description = "Verify user table has expected columns")
@@ -92,7 +92,7 @@ public class UserDatabaseTests extends BaseTest {
                 .as("User table should have required columns")
                 .contains("id", "username", "email", "status");
 
-        log.info("✅ User table schema is valid");
+        log.info("[PASS] User table schema is valid");
     }
 
     @Test(description = "Verify user creation")
@@ -125,7 +125,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .hasRecord("id = ?", userId);
 
-        log.info("✅ User created successfully");
+        log.info("[PASS] User created successfully");
     }
 
     @Test(description = "Verify user retrieval")
@@ -175,7 +175,7 @@ public class UserDatabaseTests extends BaseTest {
                 .columnEquals("email", email)
                 .columnEquals("status", "active");
 
-        log.info("✅ User retrieved successfully");
+        log.info("[PASS] User retrieved successfully");
     }
 
     @Test(description = "Verify user update")
@@ -214,7 +214,7 @@ public class UserDatabaseTests extends BaseTest {
                 .columnEquals("status", "active")
                 .columnIsNotNull("updated_at");
 
-        log.info("✅ User updated successfully");
+        log.info("[PASS] User updated successfully");
     }
 
     @Test(description = "Verify user deletion")
@@ -249,7 +249,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .doesNotHaveRecord("id = ?", userId);
 
-        log.info("✅ User deleted successfully");
+        log.info("[PASS] User deleted successfully");
     }
 
     @Test(description = "Verify multiple users creation")
@@ -287,7 +287,7 @@ public class UserDatabaseTests extends BaseTest {
                 .as("User count should increase by 3")
                 .isEqualTo(initialCount + 3);
 
-        log.info("✅ Multiple users created successfully");
+        log.info("[PASS] Multiple users created successfully");
     }
 
     @Test(description = "Verify user count by status")
@@ -318,7 +318,7 @@ public class UserDatabaseTests extends BaseTest {
                 .isGreaterThanOrEqualTo(1);
 
         log.info("Active users: {}, Pending users: {}", activeCount, pendingCount);
-        log.info("✅ User count by status verified");
+        log.info("[PASS] User count by status verified");
     }
 
     @Test(description = "Verify user query with multiple conditions")
@@ -352,7 +352,7 @@ public class UserDatabaseTests extends BaseTest {
         }
 
         log.info("Found {} active users matching criteria", activeUsers.size());
-        log.info("✅ Complex query executed successfully");
+        log.info("[PASS] Complex query executed successfully");
     }
 
     @Test(description = "Verify transaction rollback")
@@ -394,7 +394,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .doesNotHaveRecord("username = ?", "rollback_test");
 
-        log.info("✅ Transaction rollback verified");
+        log.info("[PASS] Transaction rollback verified");
     }
 
     @Test(description = "Verify transaction commit")
@@ -432,7 +432,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .hasRecord("username = ?", "commit_test_2");
 
-        log.info("✅ Transaction commit verified");
+        log.info("[PASS] Transaction commit verified");
     }
 
     @Test(description = "Verify default values in test data builder")
@@ -459,7 +459,7 @@ public class UserDatabaseTests extends BaseTest {
                 .returnsOneRow()
                 .columnEquals("status", "active");
 
-        log.info("✅ Default values applied correctly");
+        log.info("[PASS] Default values applied correctly");
     }
 
     @Test(description = "Verify test data cleanup tracking")
@@ -485,6 +485,6 @@ public class UserDatabaseTests extends BaseTest {
                 .isEqualTo(initialTrackedCount + 2);
 
         log.info("Tracked records: {}", dataBuilder.getTrackedRecords());
-        log.info("✅ Cleanup tracking verified");
+        log.info("[PASS] Cleanup tracking verified");
     }
 }

@@ -36,7 +36,7 @@ public class APIClientTest {
         String expectedBaseUri = config.getApiBaseUrl();
 
         log.info("Expected Base URI: {}", expectedBaseUri);
-        log.info("✅ APIClient initialization successful!");
+        log.info("[PASS] APIClient initialization successful!");
     }
 
     @Test(description = "Verify ThreadLocal pattern - each thread gets isolated RequestSpec")
@@ -78,7 +78,7 @@ public class APIClientTest {
         assertThat(specs).hasSize(numberOfThreads);
         assertThat(specs).doesNotContainNull();
 
-        log.info("✅ ThreadLocal isolation verified - {} threads safely accessed APIClient", numberOfThreads);
+        log.info("[PASS] ThreadLocal isolation verified - {} threads safely accessed APIClient", numberOfThreads);
     }
 
     @Test(description = "Verify cleanup removes ThreadLocal reference")
@@ -102,7 +102,7 @@ public class APIClientTest {
         // Note: Identity hashcodes may or may not be different depending on GC and object pooling
         // The important thing is that cleanup() was called without errors
 
-        log.info("✅ Cleanup executed successfully!");
+        log.info("[PASS] Cleanup executed successfully!");
     }
 
     @Test(description = "Verify withAuth adds Authorization header")
@@ -113,7 +113,7 @@ public class APIClientTest {
         RequestSpecification authSpec = APIClient.withAuth(testToken);
 
         assertThat(authSpec).isNotNull();
-        log.info("✅ withAuth() created RequestSpec with Bearer token");
+        log.info("[PASS] withAuth() created RequestSpec with Bearer token");
     }
 
     @Test(description = "Verify withApiKey adds X-API-Key header")
@@ -124,7 +124,7 @@ public class APIClientTest {
         RequestSpecification apiKeySpec = APIClient.withApiKey(testApiKey);
 
         assertThat(apiKeySpec).isNotNull();
-        log.info("✅ withApiKey() created RequestSpec with API key header");
+        log.info("[PASS] withApiKey() created RequestSpec with API key header");
     }
 
     @Test(description = "Verify getBaseUri returns correct value")
@@ -137,7 +137,7 @@ public class APIClientTest {
 
         assertThat(baseUri).isEqualTo(expectedBaseUri);
         log.info("Base URI: {}", baseUri);
-        log.info("✅ getBaseUri() returns correct value from config");
+        log.info("[PASS] getBaseUri() returns correct value from config");
     }
 
     @Test(description = "Verify parallel access doesn't cause race conditions")
@@ -190,7 +190,7 @@ public class APIClientTest {
                 .withFailMessage("Errors occurred in parallel execution: " + errors)
                 .isEmpty();
 
-        log.info("✅ Parallel access safe - {} threads executed without race conditions", numberOfThreads);
+        log.info("[PASS] Parallel access safe - {} threads executed without race conditions", numberOfThreads);
     }
 
     @AfterClass

@@ -94,7 +94,7 @@ public class DataIntegrityTests extends BaseTest {
                 .table("orders")
                 .hasRecord("user_id = ?", userId);
 
-        log.info("✅ User-Order relationship verified");
+        log.info("[PASS] User-Order relationship verified");
     }
 
     @Test(description = "Verify one-to-many relationship")
@@ -146,7 +146,7 @@ public class DataIntegrityTests extends BaseTest {
                     .isEqualTo(userId);
         }
 
-        log.info("✅ One-to-Many relationship verified");
+        log.info("[PASS] One-to-Many relationship verified");
     }
 
     @Test(description = "Verify data consistency across tables")
@@ -215,7 +215,7 @@ public class DataIntegrityTests extends BaseTest {
                     .isEqualTo("suspended");
         }
 
-        log.info("✅ Data consistency verified");
+        log.info("[PASS] Data consistency verified");
     }
 
     @Test(description = "Verify NULL handling in database")
@@ -244,7 +244,7 @@ public class DataIntegrityTests extends BaseTest {
                 .columnIsNotNull("username")
                 .columnIsNotNull("email");
 
-        log.info("✅ NULL handling verified");
+        log.info("[PASS] NULL handling verified");
     }
 
     @Test(description = "Verify unique constraint enforcement")
@@ -290,7 +290,7 @@ public class DataIntegrityTests extends BaseTest {
                 .as("Should have exactly one user with that username")
                 .isEqualTo(1);
 
-        log.info("✅ Unique constraint enforced");
+        log.info("[PASS] Unique constraint enforced");
     }
 
     @Test(description = "Verify data type validation")
@@ -333,7 +333,7 @@ public class DataIntegrityTests extends BaseTest {
                 .as("order_number should be string")
                 .isInstanceOf(String.class);
 
-        log.info("✅ Data types validated");
+        log.info("[PASS] Data types validated");
     }
 
     @Test(description = "Verify cascading operations")
@@ -386,7 +386,7 @@ public class DataIntegrityTests extends BaseTest {
             log.info("Manually cleaned up orphaned orders");
         }
 
-        log.info("✅ Cascading operations verified");
+        log.info("[PASS] Cascading operations verified");
     }
 
     @Test(description = "Verify aggregate function calculations")
@@ -443,7 +443,7 @@ public class DataIntegrityTests extends BaseTest {
                 .as("AVG should return 200.0")
                 .isCloseTo(expectedAvg, org.assertj.core.data.Offset.offset(0.01));
 
-        log.info("✅ Aggregate functions verified - COUNT: {}, SUM: {}, AVG: {}", count, sum, avg);
+        log.info("[PASS] Aggregate functions verified - COUNT: {}, SUM: {}, AVG: {}", count, sum, avg);
     }
 
     @Test(description = "Verify GROUP BY query results")
@@ -499,6 +499,6 @@ public class DataIntegrityTests extends BaseTest {
                     .isEqualTo(300.0);
         }
 
-        log.info("✅ GROUP BY query verified");
+        log.info("[PASS] GROUP BY query verified");
     }
 }

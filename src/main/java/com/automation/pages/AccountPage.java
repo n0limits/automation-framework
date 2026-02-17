@@ -198,7 +198,7 @@ public class AccountPage extends BasePage {
 
         click(SAVE_PROFILE_BUTTON);
         waitForSuccessMessage();
-        log.info("✅ Profile updated successfully");
+        log.info("[PASS] Profile updated successfully");
         return this;
     }
 
@@ -262,7 +262,7 @@ public class AccountPage extends BasePage {
         click(CHANGE_PASSWORD_BUTTON);
         waitForSuccessMessage();
 
-        log.info("✅ Password changed successfully");
+        log.info("[PASS] Password changed successfully");
         return this;
     }
 
@@ -283,7 +283,7 @@ public class AccountPage extends BasePage {
         if (!isTwoFactorEnabled()) {
             click(ENABLE_2FA_BUTTON);
             waitForSuccessMessage();
-            log.info("✅ Two-factor authentication enabled");
+            log.info("[PASS] Two-factor authentication enabled");
         } else {
             log.info("Two-factor authentication already enabled");
         }
@@ -299,7 +299,7 @@ public class AccountPage extends BasePage {
         if (isTwoFactorEnabled()) {
             click(DISABLE_2FA_BUTTON);
             waitForSuccessMessage();
-            log.info("✅ Two-factor authentication disabled");
+            log.info("[PASS] Two-factor authentication disabled");
         } else {
             log.info("Two-factor authentication already disabled");
         }
@@ -325,7 +325,7 @@ public class AccountPage extends BasePage {
         click(SAVE_CARD_BUTTON);
         waitForSuccessMessage();
 
-        log.info("✅ Payment method added successfully");
+        log.info("[PASS] Payment method added successfully");
         return this;
     }
 
@@ -347,7 +347,7 @@ public class AccountPage extends BasePage {
                 .click();
 
         waitForSuccessMessage();
-        log.info("✅ Payment method removed");
+        log.info("[PASS] Payment method removed");
         return this;
     }
 
@@ -388,7 +388,7 @@ public class AccountPage extends BasePage {
         goToTransactionsTab();
         click(EXPORT_BUTTON);
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
-        log.info("✅ Transactions exported");
+        log.info("[PASS] Transactions exported");
         return this;
     }
 

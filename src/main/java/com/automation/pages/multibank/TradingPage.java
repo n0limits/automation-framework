@@ -105,6 +105,19 @@ public class TradingPage extends BasePage {
         log.info("Clicked All Pairs tab");
     }
 
+    /**
+     * Click a trading tab by name.
+     *
+     * @param tabName the tab to click ("All Pairs" or "Favorites")
+     */
+    public void clickTab(String tabName) {
+        switch (tabName) {
+            case "All Pairs" -> clickAllPairsTab();
+            case "Favorites" -> clickFavoritesTab();
+            default -> throw new IllegalArgumentException("Unknown trading tab: " + tabName);
+        }
+    }
+
     // =========================
     // Table
     // =========================

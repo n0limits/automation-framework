@@ -208,7 +208,7 @@ public class TestDataBuilder {
             generatedId = key instanceof Number ? ((Number) key).longValue() : null;
         }
 
-        log.info("✅ Insert successful. Generated ID: {}", generatedId);
+        log.info("[PASS] Insert successful. Generated ID: {}", generatedId);
 
         // Track for cleanup
         if (trackForCleanup && generatedId != null) {
@@ -247,7 +247,7 @@ public class TestDataBuilder {
             }
         }
 
-        log.info("✅ Batch insert completed: {} records", generatedIds.size());
+        log.info("[PASS] Batch insert completed: {} records", generatedIds.size());
         return generatedIds;
     }
 
@@ -286,7 +286,7 @@ public class TestDataBuilder {
 
         log.info("Updating {}: {} WHERE {}", currentTable, currentValues, whereClause);
         int affected = dbUtils.executeUpdate(query, allParams);
-        log.info("✅ Update affected {} rows", affected);
+        log.info("[PASS] Update affected {} rows", affected);
 
         return affected;
     }
@@ -313,7 +313,7 @@ public class TestDataBuilder {
         }
 
         cleanupRecords.clear();
-        log.info("✅ Cleanup completed");
+        log.info("[PASS] Cleanup completed");
     }
 
     /**
@@ -350,7 +350,7 @@ public class TestDataBuilder {
         }
 
         cleanupRecords.removeAll(toRemove);
-        log.info("✅ Cleaned up {} records from {}", toRemove.size(), tableName);
+        log.info("[PASS] Cleaned up {} records from {}", toRemove.size(), tableName);
     }
 
     // ========== Query Building ==========

@@ -381,24 +381,24 @@ public abstract class PerformanceTestBase extends BaseTest {
         boolean meetsThroughput = result.getThroughput() >= minThroughput;
 
         log.info("SLA Validation Results:");
-        log.info("  ✓ Avg Response Time: {} ms <= {} ms: {}",
+        log.info("  [OK] Avg Response Time: {} ms <= {} ms: {}",
                 result.getAverageResponseTime(), maxAverageResponseTime, meetsAvgResponseTime);
-        log.info("  ✓ P95 Response Time: {} ms <= {} ms: {}",
+        log.info("  [OK] P95 Response Time: {} ms <= {} ms: {}",
                 result.getP95ResponseTime(), maxP95ResponseTime, meetsP95ResponseTime);
-        log.info("  ✓ P99 Response Time: {} ms <= {} ms: {}",
+        log.info("  [OK] P99 Response Time: {} ms <= {} ms: {}",
                 result.getP99ResponseTime(), maxP99ResponseTime, meetsP99ResponseTime);
-        log.info("  ✓ Success Rate: {:.2f}% >= {:.2f}%: {}",
+        log.info("  [OK] Success Rate: {:.2f}% >= {:.2f}%: {}",
                 result.getSuccessRate(), minSuccessRate, meetsSuccessRate);
-        log.info("  ✓ Throughput: {:.2f} req/s >= {:.2f} req/s: {}",
+        log.info("  [OK] Throughput: {:.2f} req/s >= {:.2f} req/s: {}",
                 result.getThroughput(), minThroughput, meetsThroughput);
 
         boolean meetsSLA = meetsAvgResponseTime && meetsP95ResponseTime &&
                 meetsP99ResponseTime && meetsSuccessRate && meetsThroughput;
 
         if (meetsSLA) {
-            log.info("✅ Performance meets SLA requirements");
+            log.info("[PASS] Performance meets SLA requirements");
         } else {
-            log.warn("❌ Performance does NOT meet SLA requirements");
+            log.warn("[FAIL] Performance does NOT meet SLA requirements");
         }
 
         return meetsSLA;

@@ -336,7 +336,7 @@ public class TradingDashboardPage extends BasePage {
             cancelOrder(0); // Always cancel first order since list updates after each cancellation
         }
 
-        log.info("✅ All orders cancelled");
+        log.info("[PASS] All orders cancelled");
         return this;
     }
 

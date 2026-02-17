@@ -75,7 +75,7 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
                 .respondsWithin(2000)
                 .jsonPath("symbol").isEqualTo(symbol);
 
-        log.info("✅ API call successful");
+        log.info("[PASS] API call successful");
 
         // Step 2: Extract data and prepare Step Functions input
         log.info("Step 2: Preparing Step Functions workflow input");
@@ -120,7 +120,7 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
                 .as("Workflow should return output")
                 .isNotNull();
 
-        log.info("✅ API → Step Functions integration test passed!");
+        log.info("[PASS] API → Step Functions integration test passed!");
     }
 
     @Test(description = "Verify parallel API calls trigger parallel Step Functions workflows")
@@ -163,10 +163,10 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
                     .as("Workflow %d (%s) should succeed", i + 1, symbols[i])
                     .isEqualTo(ExecutionStatus.SUCCEEDED);
 
-            log.info("✅ Workflow {} ({}) completed successfully", i + 1, symbols[i]);
+            log.info("[PASS] Workflow {} ({}) completed successfully", i + 1, symbols[i]);
         }
 
-        log.info("✅ Parallel execution integration test passed!");
+        log.info("[PASS] Parallel execution integration test passed!");
     }
 
     @Test(description = "Verify API error triggers appropriate Step Functions error handling")
@@ -181,7 +181,7 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
         Response apiResponse = tradingAPI.getTradingPair(invalidSymbol);
 
         APIAssertions.assertThat(apiResponse).isNotFound();
-        log.info("✅ API returned expected error (404)");
+        log.info("[PASS] API returned expected error (404)");
 
         // Step 2: Start workflow with error handling scenario
         log.info("Step 2: Starting workflow with error handling");
@@ -214,7 +214,7 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
             log.info("Workflow failed as expected. Error: {}", error);
         }
 
-        log.info("✅ Error handling integration test passed!");
+        log.info("[PASS] Error handling integration test passed!");
     }
 
     @Test(description = "Verify complete trading workflow: API → Validation → Step Functions → Result")
@@ -269,7 +269,7 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
         log.info("Phase 4: Post-workflow validation");
         // Could verify state changes via API here if workflow modified data
 
-        log.info("✅ Complete trading workflow integration test passed!");
+        log.info("[PASS] Complete trading workflow integration test passed!");
     }
 
     @Test(description = "Verify performance of API + Step Functions integration")
@@ -309,6 +309,6 @@ public class TradingWorkflowIntegrationTests extends BaseTest {
                 .as("Total integration time should be reasonable")
                 .isLessThan(60000);  // 1 minute max
 
-        log.info("✅ Performance integration test passed!");
+        log.info("[PASS] Performance integration test passed!");
     }
 }

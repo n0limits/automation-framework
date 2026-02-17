@@ -74,7 +74,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("Performance should meet SLA requirements")
                 .isTrue();
 
-        log.info("✅ API response time test passed");
+        log.info("[PASS] API response time test passed");
     }
 
     @Test(description = "Verify API throughput")
@@ -106,7 +106,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("Success rate should remain high under load")
                 .isGreaterThan(95.0);
 
-        log.info("✅ API throughput test passed");
+        log.info("[PASS] API throughput test passed");
     }
 
     @Test(description = "Verify API handles spike in traffic")
@@ -137,7 +137,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("P95 response time should be reasonable during spike")
                 .isLessThan(5000.0);
 
-        log.info("✅ API spike test passed");
+        log.info("[PASS] API spike test passed");
     }
 
     @Test(description = "Verify API handles ramped load")
@@ -168,7 +168,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("Average response time should still be reasonable")
                 .isLessThan(2000.0);
 
-        log.info("✅ API ramped load test passed");
+        log.info("[PASS] API ramped load test passed");
     }
 
     @Test(description = "Verify different API endpoints performance")
@@ -222,7 +222,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
         assertThat(result2.getAverageResponseTime()).isLessThan(1000.0);
         assertThat(result3.getAverageResponseTime()).isLessThan(1000.0);
 
-        log.info("✅ Multiple endpoints performance test passed");
+        log.info("[PASS] Multiple endpoints performance test passed");
     }
 
     @Test(description = "Verify API performance consistency")
@@ -276,7 +276,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("Performance should be consistent (low variation)")
                 .isLessThan(0.3);
 
-        log.info("✅ API performance consistency test passed");
+        log.info("[PASS] API performance consistency test passed");
     }
 
     @Test(description = "Verify API error rate under load")
@@ -312,7 +312,7 @@ public class APIPerformanceTests extends PerformanceTestBase {
         log.info("Error Rate: {:.2f}%", result.getFailureRate());
         log.info("Success Rate: {:.2f}%", result.getSuccessRate());
 
-        log.info("✅ API error rate test passed");
+        log.info("[PASS] API error rate test passed");
     }
 
     @Test(description = "Verify API percentile response times")
@@ -344,6 +344,6 @@ public class APIPerformanceTests extends PerformanceTestBase {
         assertThat(p95).as("P95 should be acceptable").isLessThan(1500.0);
         assertThat(p99).as("P99 should be reasonable").isLessThan(3000.0);
 
-        log.info("✅ API percentile response times test passed");
+        log.info("[PASS] API percentile response times test passed");
     }
 }

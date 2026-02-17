@@ -27,10 +27,7 @@ public class TradingSteps {
     }
 
     private TradingPage getTradingPage() {
-        if (!scenarioContext.contains("tradingPage")) {
-            scenarioContext.set("tradingPage", new TradingPage());
-        }
-        return scenarioContext.get("tradingPage");
+        return scenarioContext.getOrCreate("tradingPage", TradingPage::new);
     }
 
     // ===== Given =====
@@ -76,11 +73,7 @@ public class TradingSteps {
 
     @When("I click the {string} tab")
     public void iClickTheTab(String tabName) {
-        switch (tabName) {
-            case "Favorites" -> getTradingPage().clickFavoritesTab();
-            case "All Pairs" -> getTradingPage().clickAllPairsTab();
-            default -> throw new IllegalArgumentException("Unknown tab: " + tabName);
-        }
+        getTradingPage().clickTab(tabName);
         PlaywrightManager.getPage().waitForLoadState();
         log.info("Clicked {} tab", tabName);
     }
@@ -212,5 +205,43 @@ public class TradingSteps {
         assertThat(getTradingPage().isTradingPairsTableDisplayed())
                 .as("Trading pairs table should remain displayed after tab switch")
                 .isTrue();
+    }
+
+    @When("I store the trading pairs count")
+    public void iStoreTheTradingPairsCount() {
+        int count = getTradingPage().getTradingPairsCount();
+        scenarioContext.set("storedPairsCount", count);
+        log.info("Stored trading pairs count: {}", count);
+    }
+
+    @Then("the trading pairs count matches the stored count")
+    public void theTradingPairsCountMatchesTheStoredCount() {
+        int storedCount = scenarioContext.get("storedPairsCount");
+        int currentCount = getTradingPage().getTradingPairsCount();
+        assertThat(currentCount)
+                .as("Trading pairs count should match stored count")
+                .isEqualTo(storedCount);
+    }
+
+    @When("I get the trading pair data for the first pair")
+    public void iGetTheTradingPairDataForTheFirstPair() {
+        List<String> pairs = scenarioContext.get("tradingPairs");
+        assertThat(pairs)
+                .as("Trading pairs list should have been retrieved first")
+                .isNotNull()
+                .isNotEmpty();
+        String firstPair = pairs.get(0);
+        Map<String, String> data = getTradingPage().getTradingPairData(firstPair);
+        scenarioContext.set("pairData", data);
+        log.info("Retrieved data for first pair '{}': {}", firstPair, data);
+    }
+
+    @Then("the trading pair data is not empty")
+    public void theTradingPairDataIsNotEmpty() {
+        Map<String, String> data = scenarioContext.get("pairData");
+        assertThat(data)
+                .as("Trading pair data should not be empty")
+                .isNotNull()
+                .isNotEmpty();
     }
 }

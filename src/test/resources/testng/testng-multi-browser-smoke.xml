@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Multi-Browser Smoke Test Suite" parallel="tests" thread-count="2">
+<suite name="Multi-Browser Smoke Test Suite" parallel="tests" thread-count="3">
 
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
@@ -9,38 +9,26 @@
     </listeners>
 
     <!-- Chromium Browser Test -->
-    <test name="Chromium - Homepage Smoke Test">
+    <test name="Chromium - Smoke Tests">
         <parameter name="browser" value="chromium"/>
         <classes>
-            <class name="com.automation.multibank.SmokeTests">
-                <methods>
-                    <include name="smokeTestHomepageLoads"/>
-                </methods>
-            </class>
+            <class name="com.automation.multibank.SmokeTests"/>
         </classes>
     </test>
 
     <!-- Firefox Browser Test -->
-    <test name="Firefox - Homepage Smoke Test">
+    <test name="Firefox - Smoke Tests">
         <parameter name="browser" value="firefox"/>
         <classes>
-            <class name="com.automation.multibank.SmokeTests">
-                <methods>
-                    <include name="smokeTestHomepageLoads"/>
-                </methods>
-            </class>
+            <class name="com.automation.multibank.SmokeTests"/>
         </classes>
     </test>
 
     <!-- WebKit Browser Test -->
-    <test name="WebKit - Homepage Smoke Test">
+    <test name="WebKit - Smoke Tests">
         <parameter name="browser" value="webkit"/>
         <classes>
-            <class name="com.automation.multibank.SmokeTests">
-                <methods>
-                    <include name="smokeTestHomepageLoads"/>
-                </methods>
-            </class>
+            <class name="com.automation.multibank.SmokeTests"/>
         </classes>
     </test>
 

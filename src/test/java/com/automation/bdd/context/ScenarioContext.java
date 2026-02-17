@@ -2,6 +2,7 @@ package com.automation.bdd.context;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /**
  * Shared state between step definition classes within a single scenario.
@@ -24,6 +25,14 @@ public class ScenarioContext {
 
     public <T> T get(String key, Class<T> type) {
         return type.cast(context.get(key));
+    }
+
+    /**
+     * Returns the value for the given key, creating and storing it via the supplier if absent.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getOrCreate(String key, Supplier<T> supplier) {
+        return (T) context.computeIfAbsent(key, k -> supplier.get());
     }
 
     public boolean contains(String key) {
