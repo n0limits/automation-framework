@@ -4,6 +4,8 @@ import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+
 /**
  * Domain-specific API client for Trading operations
  * Provides high-level API for trading-related endpoints
@@ -67,14 +69,12 @@ public class TradingAPIClient {
     public Response createMarketOrder(String symbol, String side, double quantity) {
         log.info("Creating market order: {} {} {}", side, quantity, symbol);
 
-        String requestBody = String.format("""
-                {
-                    "symbol": "%s",
-                    "side": "%s",
-                    "type": "MARKET",
-                    "quantity": %s
-                }
-                """, symbol, side, quantity);
+        Map<String, Object> requestBody = Map.of(
+                "symbol", symbol,
+                "side", side,
+                "type", "MARKET",
+                "quantity", quantity
+        );
 
         return APIClient.getRequestSpec()
                 .body(requestBody)
@@ -95,15 +95,13 @@ public class TradingAPIClient {
     public Response createLimitOrder(String symbol, String side, double quantity, double price) {
         log.info("Creating limit order: {} {} {} @ {}", side, quantity, symbol, price);
 
-        String requestBody = String.format("""
-                {
-                    "symbol": "%s",
-                    "side": "%s",
-                    "type": "LIMIT",
-                    "quantity": %s,
-                    "price": %s
-                }
-                """, symbol, side, quantity, price);
+        Map<String, Object> requestBody = Map.of(
+                "symbol", symbol,
+                "side", side,
+                "type", "LIMIT",
+                "quantity", quantity,
+                "price", price
+        );
 
         return APIClient.getRequestSpec()
                 .body(requestBody)

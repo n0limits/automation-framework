@@ -120,7 +120,7 @@ public class ConfigReader {
         // 1. Check system properties (highest precedence)
         String value = System.getProperty(key);
         if (value != null) {
-            log.debug("Property '{}' loaded from system properties: {}", key, value);
+            log.debug("Property '{}' loaded from system properties: {}", key, maskIfSensitive(key, value));
             return value;
         }
 
@@ -128,20 +128,30 @@ public class ConfigReader {
         String envKey = key.toUpperCase().replace('.', '_').replace('-', '_');
         value = System.getenv(envKey);
         if (value != null) {
-            log.debug("Property '{}' loaded from environment variable {}: {}", key, envKey, value);
+            log.debug("Property '{}' loaded from environment variable {}: {}", key, envKey, maskIfSensitive(key, value));
             return value;
         }
 
         // 3. Check properties files
         value = properties.getProperty(key);
         if (value != null) {
-            log.debug("Property '{}' loaded from properties file: {}", key, value);
+            log.debug("Property '{}' loaded from properties file: {}", key, maskIfSensitive(key, value));
             return value;
         }
 
         // 4. Return default value
-        log.debug("Property '{}' not found, using default: {}", key, defaultValue);
+        log.debug("Property '{}' not found, using default: {}", key, maskIfSensitive(key, defaultValue));
         return defaultValue;
+    }
+
+    private static String maskIfSensitive(String key, String value) {
+        if (value == null) return null;
+        String lowerKey = key.toLowerCase();
+        if (lowerKey.contains("password") || lowerKey.contains("secret")
+                || lowerKey.contains("token") || lowerKey.contains("access.key")) {
+            return "****";
+        }
+        return value;
     }
 
     /**

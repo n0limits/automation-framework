@@ -153,7 +153,7 @@ public class TradingDashboardPage extends BasePage {
     @Step("Wait for price update")
     private void waitForPriceUpdate() {
         log.debug("Waiting for price update");
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
     }
 
     @Step("Check if price chart is visible")
@@ -251,7 +251,7 @@ public class TradingDashboardPage extends BasePage {
     @Step("Wait for order confirmation")
     private void waitForOrderConfirmation() {
         log.info("Waiting for order confirmation");
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
 
         // Check for success or error message
         if (isVisible(SUCCESS_MESSAGE)) {
@@ -336,7 +336,7 @@ public class TradingDashboardPage extends BasePage {
             cancelOrder(0); // Always cancel first order since list updates after each cancellation
         }
 
-        log.info("✅ All orders cancelled");
+        log.info("[PASS] All orders cancelled");
         return this;
     }
 

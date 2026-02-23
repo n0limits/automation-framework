@@ -1,9 +1,12 @@
 package com.automation.api;
 
+import com.automation.base.BaseAPITest;
 import com.automation.config.TestConfig;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -19,9 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Victor Grozev
  */
 @Slf4j
-public class APIClientTest {
+@Feature("API Client Infrastructure")
+public class APIClientTest extends BaseAPITest {
 
     @Test(description = "Verify APIClient initialization works")
+    @Severity(SeverityLevel.CRITICAL)
     public void testAPIClientInitialization() {
         log.info("=== Testing APIClient Initialization ===");
 
@@ -36,10 +41,11 @@ public class APIClientTest {
         String expectedBaseUri = config.getApiBaseUrl();
 
         log.info("Expected Base URI: {}", expectedBaseUri);
-        log.info("✅ APIClient initialization successful!");
+        log.info("[PASS] APIClient initialization successful!");
     }
 
     @Test(description = "Verify ThreadLocal pattern - each thread gets isolated RequestSpec")
+    @Severity(SeverityLevel.CRITICAL)
     public void testThreadLocalIsolation() throws InterruptedException, ExecutionException {
         log.info("=== Testing ThreadLocal Isolation ===");
 
@@ -78,10 +84,11 @@ public class APIClientTest {
         assertThat(specs).hasSize(numberOfThreads);
         assertThat(specs).doesNotContainNull();
 
-        log.info("✅ ThreadLocal isolation verified - {} threads safely accessed APIClient", numberOfThreads);
+        log.info("[PASS] ThreadLocal isolation verified - {} threads safely accessed APIClient", numberOfThreads);
     }
 
     @Test(description = "Verify cleanup removes ThreadLocal reference")
+    @Severity(SeverityLevel.NORMAL)
     public void testCleanup() {
         log.info("=== Testing ThreadLocal Cleanup ===");
 
@@ -102,10 +109,11 @@ public class APIClientTest {
         // Note: Identity hashcodes may or may not be different depending on GC and object pooling
         // The important thing is that cleanup() was called without errors
 
-        log.info("✅ Cleanup executed successfully!");
+        log.info("[PASS] Cleanup executed successfully!");
     }
 
     @Test(description = "Verify withAuth adds Authorization header")
+    @Severity(SeverityLevel.NORMAL)
     public void testWithAuth() {
         log.info("=== Testing withAuth() Method ===");
 
@@ -113,10 +121,11 @@ public class APIClientTest {
         RequestSpecification authSpec = APIClient.withAuth(testToken);
 
         assertThat(authSpec).isNotNull();
-        log.info("✅ withAuth() created RequestSpec with Bearer token");
+        log.info("[PASS] withAuth() created RequestSpec with Bearer token");
     }
 
     @Test(description = "Verify withApiKey adds X-API-Key header")
+    @Severity(SeverityLevel.NORMAL)
     public void testWithApiKey() {
         log.info("=== Testing withApiKey() Method ===");
 
@@ -124,10 +133,11 @@ public class APIClientTest {
         RequestSpecification apiKeySpec = APIClient.withApiKey(testApiKey);
 
         assertThat(apiKeySpec).isNotNull();
-        log.info("✅ withApiKey() created RequestSpec with API key header");
+        log.info("[PASS] withApiKey() created RequestSpec with API key header");
     }
 
     @Test(description = "Verify getBaseUri returns correct value")
+    @Severity(SeverityLevel.NORMAL)
     public void testGetBaseUri() {
         log.info("=== Testing getBaseUri() Method ===");
 
@@ -137,10 +147,11 @@ public class APIClientTest {
 
         assertThat(baseUri).isEqualTo(expectedBaseUri);
         log.info("Base URI: {}", baseUri);
-        log.info("✅ getBaseUri() returns correct value from config");
+        log.info("[PASS] getBaseUri() returns correct value from config");
     }
 
     @Test(description = "Verify parallel access doesn't cause race conditions")
+    @Severity(SeverityLevel.CRITICAL)
     public void testParallelAccessSafety() throws InterruptedException {
         log.info("=== Testing Parallel Access Safety ===");
 
@@ -190,13 +201,7 @@ public class APIClientTest {
                 .withFailMessage("Errors occurred in parallel execution: " + errors)
                 .isEmpty();
 
-        log.info("✅ Parallel access safe - {} threads executed without race conditions", numberOfThreads);
+        log.info("[PASS] Parallel access safe - {} threads executed without race conditions", numberOfThreads);
     }
 
-    @AfterClass
-    public void cleanup() {
-        log.info("=== Test Class Cleanup ===");
-        APIClient.cleanup();
-        log.info("APIClient ThreadLocal cleaned up");
-    }
 }

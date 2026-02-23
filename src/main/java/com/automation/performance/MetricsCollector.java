@@ -306,19 +306,21 @@ public class MetricsCollector {
      * @return Standard deviation
      */
     public double getStandardDeviation() {
-        if (responseTimes.isEmpty()) {
-            return 0.0;
+        synchronized (responseTimes) {
+            if (responseTimes.isEmpty()) {
+                return 0.0;
+            }
+
+            double mean = getAverageResponseTime();
+            double sumSquaredDiff = 0.0;
+
+            for (Long time : responseTimes) {
+                double diff = time - mean;
+                sumSquaredDiff += diff * diff;
+            }
+
+            return Math.sqrt(sumSquaredDiff / responseTimes.size());
         }
-
-        double mean = getAverageResponseTime();
-        double sumSquaredDiff = 0.0;
-
-        for (Long time : responseTimes) {
-            double diff = time - mean;
-            sumSquaredDiff += diff * diff;
-        }
-
-        return Math.sqrt(sumSquaredDiff / responseTimes.size());
     }
 
     /**
@@ -371,23 +373,23 @@ public class MetricsCollector {
         log.info("  Total Requests: {}", getTotalRequests());
         log.info("  Successful: {}", getSuccessfulRequests());
         log.info("  Failed: {}", getFailedRequests());
-        log.info("  Success Rate: {:.2f}%", getSuccessRate());
-        log.info("  Failure Rate: {:.2f}%", getFailureRate());
+        log.info("  Success Rate: {}%", String.format("%.2f", getSuccessRate()));
+        log.info("  Failure Rate: {}%", String.format("%.2f", getFailureRate()));
         log.info("");
         log.info("Response Time Statistics:");
-        log.info("  Average: {:.2f} ms", getAverageResponseTime());
+        log.info("  Average: {} ms", String.format("%.2f", getAverageResponseTime()));
         log.info("  Minimum: {} ms", getMinResponseTime());
         log.info("  Maximum: {} ms", getMaxResponseTime());
-        log.info("  Std Dev: {:.2f} ms", getStandardDeviation());
+        log.info("  Std Dev: {} ms", String.format("%.2f", getStandardDeviation()));
         log.info("");
         log.info("Percentiles:");
-        log.info("  P50 (Median): {:.2f} ms", getP50());
-        log.info("  P95: {:.2f} ms", getP95());
-        log.info("  P99: {:.2f} ms", getP99());
+        log.info("  P50 (Median): {} ms", String.format("%.2f", getP50()));
+        log.info("  P95: {} ms", String.format("%.2f", getP95()));
+        log.info("  P99: {} ms", String.format("%.2f", getP99()));
         log.info("");
         log.info("Throughput:");
-        log.info("  Requests/Second: {:.2f}", getThroughput());
-        log.info("  Requests/Minute: {:.2f}", getRequestsPerMinute());
+        log.info("  Requests/Second: {}", String.format("%.2f", getThroughput()));
+        log.info("  Requests/Minute: {}", String.format("%.2f", getRequestsPerMinute()));
 
         if (!errorTypes.isEmpty()) {
             log.info("");

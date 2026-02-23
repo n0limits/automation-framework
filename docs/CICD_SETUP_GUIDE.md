@@ -1,10 +1,10 @@
-# 🔧 CI/CD SETUP GUIDE
+#  CI/CD SETUP GUIDE
 
 Complete guide for setting up GitHub Actions workflows with nightly builds.
 
 ---
 
-## 📋 TABLE OF CONTENTS
+##  TABLE OF CONTENTS
 
 1. [GitHub Secrets Configuration](#github-secrets-configuration)
 2. [Workflow Overview](#workflow-overview)
@@ -15,7 +15,7 @@ Complete guide for setting up GitHub Actions workflows with nightly builds.
 
 ---
 
-## 🔐 GITHUB SECRETS CONFIGURATION
+##  GITHUB SECRETS CONFIGURATION
 
 ### Step 1: Navigate to Repository Settings
 
@@ -44,7 +44,7 @@ GitHub Repository → Settings → Secrets and variables → Actions → New rep
 
 ---
 
-## 📊 WORKFLOW OVERVIEW
+##  WORKFLOW OVERVIEW
 
 ### Available Workflows
 
@@ -57,7 +57,7 @@ GitHub Repository → Settings → Secrets and variables → Actions → New rep
 
 ---
 
-## 🌙 NIGHTLY BUILD CONFIGURATION
+##  NIGHTLY BUILD CONFIGURATION
 
 ### Automatic Schedule
 
@@ -130,7 +130,7 @@ Nightly Build Start (2 AM UTC)
 
 ---
 
-## 🎯 MANUAL WORKFLOW TRIGGERS
+##  MANUAL WORKFLOW TRIGGERS
 
 ### Trigger Nightly Build Manually
 
@@ -178,7 +178,7 @@ gh workflow run api-tests.yml
 
 ---
 
-## 💬 SLACK INTEGRATION
+##  SLACK INTEGRATION
 
 ### Step 1: Create Slack Incoming Webhook
 
@@ -211,14 +211,14 @@ gh workflow run nightly-tests.yml
 
 **Success Notification:**
 ```
-✅ Nightly Test Suite Passed
+[PASS] Nightly Test Suite Passed
 Environment: staging
 Total Tests: 150
 ```
 
 **Failure Notification:**
 ```
-❌ Nightly Test Suite Failed
+[FAIL] Nightly Test Suite Failed
 Environment: staging
 Date: 2025-12-30
 Total Tests: 150
@@ -228,7 +228,7 @@ Failures: 5
 
 ---
 
-## 🔍 MONITORING & OBSERVABILITY
+##  MONITORING & OBSERVABILITY
 
 ### View Test Results
 
@@ -265,7 +265,7 @@ Actions → Workflow Run → "Nightly Test Results Summary" check
 
 ---
 
-## 🛠️ TROUBLESHOOTING
+##  TROUBLESHOOTING
 
 ### Issue: Workflow Not Running on Schedule
 
@@ -375,17 +375,17 @@ ls -la target/surefire-reports/
 
 ---
 
-## 📈 BEST PRACTICES
+##  BEST PRACTICES
 
 ### 1. Secrets Management
 
-✅ **DO:**
+[PASS] **DO:**
 - Use GitHub Secrets for all credentials
 - Rotate AWS keys regularly
 - Use separate AWS accounts for staging/prod
 - Limit IAM permissions (principle of least privilege)
 
-❌ **DON'T:**
+[FAIL] **DON'T:**
 - Commit secrets to code
 - Share AWS credentials across teams
 - Use production credentials in CI/CD
@@ -393,13 +393,13 @@ ls -la target/surefire-reports/
 
 ### 2. Workflow Optimization
 
-✅ **DO:**
+[PASS] **DO:**
 - Run fast tests first (API before UI)
 - Use matrix for parallel execution
 - Cache Maven dependencies
 - Set appropriate timeouts
 
-❌ **DON'T:**
+[FAIL] **DON'T:**
 - Run all tests serially
 - Install browsers for API-only tests
 - Set timeout too short (causes flaky failures)
@@ -407,13 +407,13 @@ ls -la target/surefire-reports/
 
 ### 3. Notifications
 
-✅ **DO:**
+[PASS] **DO:**
 - Send notifications to dedicated channel
 - Include actionable information
 - Create GitHub issues for failures
 - Send success notifications too (team morale)
 
-❌ **DON'T:**
+[FAIL] **DON'T:**
 - Spam personal channels
 - Send notifications without context
 - Ignore repeated failures
@@ -421,7 +421,7 @@ ls -la target/surefire-reports/
 
 ---
 
-## 🔄 MAINTENANCE
+##  MAINTENANCE
 
 ### Weekly Tasks
 
@@ -446,7 +446,7 @@ ls -la target/surefire-reports/
 
 ---
 
-## 📞 SUPPORT
+##  SUPPORT
 
 **Common Commands:**
 

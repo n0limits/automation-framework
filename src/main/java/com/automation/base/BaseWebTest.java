@@ -12,6 +12,16 @@ import org.testng.annotations.BeforeMethod;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 
+/**
+ * Base class for all web UI tests using Playwright.
+ *
+ * <p><b>Parallelism note:</b> This class uses an instance field {@code page} set in
+ * {@code @BeforeMethod}. It is safe with {@code parallel="tests"} (separate class
+ * instances per {@code <test>} element) but <b>NOT safe</b> with
+ * {@code parallel="methods"} (shared class instance across threads).
+ * All UI test suites should use {@code parallel="tests"} or {@code parallel="false"}.
+ * For thread-safe page access, use {@link PlaywrightManager#getPage()} directly.</p>
+ */
 @Slf4j
 public class BaseWebTest extends BaseTest {
 
@@ -111,11 +121,11 @@ public class BaseWebTest extends BaseTest {
     }
 
     /**
-     * Wait for page to be fully loaded (NETWORKIDLE)
+     * Wait for page to be fully loaded
      */
     protected void waitForPageLoad() {
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
-        log.debug("Page loaded (NETWORKIDLE): {}", page.url());
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
+        log.debug("Page loaded: {}", page.url());
     }
 
     /**
@@ -198,46 +208,6 @@ public class BaseWebTest extends BaseTest {
     protected void performAdditionalCleanup() {
         // Empty implementation - meant to be overridden by test classes
         log.debug("No additional cleanup required");
-    }
-
-    // ========================================
-    // LOGIN/LOGOUT OPERATIONS (Template for future use)
-    // ========================================
-
-    /**
-     * Perform login operation
-     * @param username Username
-     * @param password Password
-     */
-    protected void login(String username, String password) {
-        log.info("Performing login for user: {}", username);
-        // TODO: Implement login logic when authentication is added
-        // Example:
-        // page.fill("input[name='username']", username);
-        // page.fill("input[name='password']", password);
-        // page.click("button[type='submit']");
-        // waitForPageLoad();
-    }
-
-    /**
-     * Perform logout operation
-     */
-    protected void logout() {
-        log.info("Performing logout");
-        // TODO: Implement logout logic when authentication is added
-        // Example:
-        // page.click("button.logout");
-        // waitForPageLoad();
-    }
-
-    /**
-     * Check if user is logged in
-     * @return true if logged in, false otherwise
-     */
-    protected boolean isLoggedIn() {
-        // TODO: Implement login status check
-        // Example: return page.isVisible(".user-profile");
-        return false;
     }
 
 }

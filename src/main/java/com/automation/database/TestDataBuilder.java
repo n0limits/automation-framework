@@ -47,7 +47,10 @@ public class TestDataBuilder {
     private final DatabaseTestUtils dbUtils;
     private final List<CleanupRecord> cleanupRecords;
 
+    private static final String DEFAULT_PK_COLUMN = "id";
+
     private String currentTable;
+    private String pkColumn = DEFAULT_PK_COLUMN;
     private Map<String, Object> currentValues;
     private Map<String, Object> defaultValues;
 
@@ -75,8 +78,22 @@ public class TestDataBuilder {
      */
     public TestDataBuilder forTable(String tableName) {
         this.currentTable = tableName;
+        this.pkColumn = DEFAULT_PK_COLUMN;
         this.currentValues = new LinkedHashMap<>();
         log.debug("Building data for table: {}", tableName);
+        return this;
+    }
+
+    /**
+     * Specify the primary key column name for cleanup tracking.
+     * Defaults to "id" if not called.
+     *
+     * @param column Primary key column name
+     * @return this for chaining
+     */
+    public TestDataBuilder withPrimaryKey(String column) {
+        this.pkColumn = column;
+        log.debug("Using primary key column: {}", column);
         return this;
     }
 
@@ -208,11 +225,11 @@ public class TestDataBuilder {
             generatedId = key instanceof Number ? ((Number) key).longValue() : null;
         }
 
-        log.info("✅ Insert successful. Generated ID: {}", generatedId);
+        log.info("[PASS] Insert successful. Generated ID: {}", generatedId);
 
         // Track for cleanup
         if (trackForCleanup && generatedId != null) {
-            CleanupRecord cleanup = new CleanupRecord(currentTable, "id", generatedId);
+            CleanupRecord cleanup = new CleanupRecord(currentTable, pkColumn, generatedId);
             cleanupRecords.add(cleanup);
             log.debug("Tracking record for cleanup: {}", cleanup);
         }
@@ -247,7 +264,7 @@ public class TestDataBuilder {
             }
         }
 
-        log.info("✅ Batch insert completed: {} records", generatedIds.size());
+        log.info("[PASS] Batch insert completed: {} records", generatedIds.size());
         return generatedIds;
     }
 
@@ -261,7 +278,7 @@ public class TestDataBuilder {
      * @throws SQLException if update fails
      */
     public int update(Long id) throws SQLException {
-        return updateWhere("id = ?", id);
+        return updateWhere(pkColumn + " = ?", id);
     }
 
     /**
@@ -286,7 +303,7 @@ public class TestDataBuilder {
 
         log.info("Updating {}: {} WHERE {}", currentTable, currentValues, whereClause);
         int affected = dbUtils.executeUpdate(query, allParams);
-        log.info("✅ Update affected {} rows", affected);
+        log.info("[PASS] Update affected {} rows", affected);
 
         return affected;
     }
@@ -313,7 +330,7 @@ public class TestDataBuilder {
         }
 
         cleanupRecords.clear();
-        log.info("✅ Cleanup completed");
+        log.info("[PASS] Cleanup completed");
     }
 
     /**
@@ -350,7 +367,7 @@ public class TestDataBuilder {
         }
 
         cleanupRecords.removeAll(toRemove);
-        log.info("✅ Cleaned up {} records from {}", toRemove.size(), tableName);
+        log.info("[PASS] Cleaned up {} records from {}", toRemove.size(), tableName);
     }
 
     // ========== Query Building ==========

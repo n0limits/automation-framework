@@ -13,6 +13,7 @@
 <suite name="Parallel API Test Suite" parallel="tests" thread-count="5" verbose="1">
 
     <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
         <listener class-name="com.automation.listeners.TestListener"/>
         <listener class-name="com.automation.listeners.RetryListener"/>
     </listeners>
@@ -26,7 +27,7 @@
             <class name="com.automation.api.TradingAPITests">
                 <methods>
                     <include name="testGetTradingPairs"/>
-                    <include name="testGetTradingPairBTCUSD"/>
+                    <include name="testGetSpecificTradingPair"/>
                     <include name="testGetTickerPrice"/>
                     <include name="testGetMarketDepth"/>
                 </methods>
@@ -38,8 +39,8 @@
         <classes>
             <class name="com.automation.api.TradingAPITests">
                 <methods>
-                    <include name="testGetTradingPairInvalidSymbol"/>
-                    <include name="testAPIResponseTime"/>
+                    <include name="testGetNonExistentTradingPair"/>
+                    <include name="testTickerPerformance"/>
                 </methods>
             </class>
         </classes>
@@ -48,11 +49,11 @@
     <!-- ========== AWS STEP FUNCTIONS TESTS (Parallel) ========== -->
     <test name="AWS Step Functions - Execution Tests" preserve-order="false">
         <classes>
-            <class name="com.automation.aws.StepFunctionsTests">
+            <class name="com.automation.aws.StepFunctionsWorkflowTests">
                 <methods>
-                    <include name="testStartExecution"/>
-                    <include name="testGetExecutionStatus"/>
-                    <include name="testListExecutions"/>
+                    <include name="testBasicWorkflowExecution"/>
+                    <include name="testRetrieveExecutionDetails"/>
+                    <include name="testGetStateMachineDetails"/>
                 </methods>
             </class>
         </classes>

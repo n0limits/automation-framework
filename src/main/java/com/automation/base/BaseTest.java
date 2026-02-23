@@ -3,7 +3,6 @@ package com.automation.base;
 import com.automation.config.ConfigValidator;
 import com.automation.config.TestConfig;
 import com.automation.database.ConnectionPoolManager;
-import com.automation.database.DatabaseConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -30,8 +29,6 @@ public class BaseTest {
     public void tearDownSuite() {
         // Close all database connection pools
         ConnectionPoolManager.getInstance().closeAllPools();
-        // Close any remaining direct connections
-        DatabaseConnectionFactory.closeAllConnections();
         log.info("===== Test Suite Teardown Completed =====");
     }
 

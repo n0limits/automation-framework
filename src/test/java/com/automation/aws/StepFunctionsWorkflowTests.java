@@ -56,7 +56,7 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
         log.info("Execution output: {}", output);
         assertThat(output).isNotNull();
 
-        log.info("✅ Basic workflow executed successfully!");
+        log.info("[PASS] Basic workflow executed successfully!");
     }
 
     @Test(description = "Verify Step Functions execution with complex input")
@@ -82,7 +82,7 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
         // Verify success
         assertThat(status).isEqualTo(ExecutionStatus.SUCCEEDED);
 
-        log.info("✅ Complex input workflow executed successfully!");
+        log.info("[PASS] Complex input workflow executed successfully!");
     }
 
     @Test(description = "Verify Step Functions execution details can be retrieved")
@@ -116,7 +116,7 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
         log.info("Execution duration: {} ms", durationMs);
         assertThat(durationMs).isGreaterThanOrEqualTo(0);
 
-        log.info("✅ Execution details retrieved successfully!");
+        log.info("[PASS] Execution details retrieved successfully!");
     }
 
     @Test(description = "Verify Step Functions execution can be stopped")
@@ -146,7 +146,7 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
                 .as("Execution should be stopped or aborted")
                 .isIn(ExecutionStatus.ABORTED, ExecutionStatus.RUNNING);
 
-        log.info("✅ Execution stop functionality verified!");
+        log.info("[PASS] Execution stop functionality verified!");
     }
 
     @Test(description = "Verify Step Functions State Machine details can be retrieved")
@@ -170,7 +170,7 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
         log.info("State Machine Type: {}", stateMachine.type());
         log.info("State Machine Status: {}", stateMachine.status());
 
-        log.info("✅ State Machine details retrieved successfully!");
+        log.info("[PASS] State Machine details retrieved successfully!");
     }
 
     @Test(description = "Verify parallel executions are isolated",
@@ -201,6 +201,6 @@ public class StepFunctionsWorkflowTests extends BaseAWSTest {
                 .as("Thread {} execution should succeed", threadName)
                 .isEqualTo(ExecutionStatus.SUCCEEDED);
 
-        log.info("✅ Thread {} execution completed successfully!", threadName);
+        log.info("[PASS] Thread {} execution completed successfully!", threadName);
     }
 }

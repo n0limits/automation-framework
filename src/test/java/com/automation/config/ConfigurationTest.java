@@ -39,7 +39,7 @@ public class ConfigurationTest {
         log.info("API Base URL: {}", config.getApiBaseUrl());
         log.info("AWS Region: {}", config.getAwsRegion());
 
-        log.info("✅ Configuration system working correctly!");
+        log.info("[PASS] Configuration system working correctly!");
     }
 
     @Test(description = "Verify environment-specific loading")
@@ -56,7 +56,7 @@ public class ConfigurationTest {
                 .as("Environment should be valid")
                 .isIn("local", "staging", "prod");
 
-        log.info("✅ Environment detection working!");
+        log.info("[PASS] Environment detection working!");
     }
 
     @Test(description = "Verify AWS configuration properties")
@@ -76,7 +76,7 @@ public class ConfigurationTest {
         log.info("Execution Timeout: {} ms", config.getAwsStepFunctionsExecutionTimeout());
         log.info("Poll Interval: {} ms", config.getAwsStepFunctionsPollInterval());
 
-        log.info("✅ AWS configuration loaded successfully!");
+        log.info("[PASS] AWS configuration loaded successfully!");
     }
 
     @Test(description = "Verify property precedence")
@@ -96,7 +96,7 @@ public class ConfigurationTest {
         boolean headless = ConfigReader.getBooleanProperty("headless", false);
         log.info("Headless mode: {}", headless);
 
-        log.info("✅ Property precedence working correctly!");
+        log.info("[PASS] Property precedence working correctly!");
     }
 
     @Test(description = "Verify environment variable override capability")
@@ -117,7 +117,7 @@ public class ConfigurationTest {
 
         assertThat(baseUrl).isNotNull();
 
-        log.info("✅ Environment variable override capability verified!");
-        log.info("💡 To test override: export BASE_URL=https://custom.com && mvn test -Dtest=ConfigurationTest");
+        log.info("[PASS] Environment variable override capability verified!");
+        log.info("To test override: export BASE_URL=https://custom.com && mvn test -Dtest=ConfigurationTest");
     }
 }

@@ -51,9 +51,9 @@ public class SchemaValidator {
                     .assertThat()
                     .body(matchesJsonSchemaInClasspath(schemaPath));
 
-            log.info("✅ Schema validation passed for: {}", schemaFile);
+            log.info("[PASS] Schema validation passed for: {}", schemaFile);
         } catch (AssertionError e) {
-            log.error("❌ Schema validation failed for: {}", schemaFile);
+            log.error("[FAIL] Schema validation failed for: {}", schemaFile);
             log.error("Response body: {}", response.getBody().asString());
             throw e;
         }
@@ -74,9 +74,9 @@ public class SchemaValidator {
                     .assertThat()
                     .body(JsonSchemaValidator.matchesJsonSchema(schemaFilePath));
 
-            log.info("✅ Schema validation passed");
+            log.info("[PASS] Schema validation passed");
         } catch (AssertionError e) {
-            log.error("❌ Schema validation failed");
+            log.error("[FAIL] Schema validation failed");
             log.error("Response body: {}", response.getBody().asString());
             throw e;
         }
@@ -114,7 +114,7 @@ public class SchemaValidator {
             }
         }
 
-        log.info("✅ All required fields present");
+        log.info("[PASS] All required fields present");
     }
 
     /**
@@ -150,6 +150,6 @@ public class SchemaValidator {
             log.debug("Field '{}' type validation passed: {}", fieldPath, expectedType.getSimpleName());
         });
 
-        log.info("✅ All field types valid");
+        log.info("[PASS] All field types valid");
     }
 }

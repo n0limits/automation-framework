@@ -198,7 +198,7 @@ public class AccountPage extends BasePage {
 
         click(SAVE_PROFILE_BUTTON);
         waitForSuccessMessage();
-        log.info("✅ Profile updated successfully");
+        log.info("[PASS] Profile updated successfully");
         return this;
     }
 
@@ -262,7 +262,7 @@ public class AccountPage extends BasePage {
         click(CHANGE_PASSWORD_BUTTON);
         waitForSuccessMessage();
 
-        log.info("✅ Password changed successfully");
+        log.info("[PASS] Password changed successfully");
         return this;
     }
 
@@ -283,7 +283,7 @@ public class AccountPage extends BasePage {
         if (!isTwoFactorEnabled()) {
             click(ENABLE_2FA_BUTTON);
             waitForSuccessMessage();
-            log.info("✅ Two-factor authentication enabled");
+            log.info("[PASS] Two-factor authentication enabled");
         } else {
             log.info("Two-factor authentication already enabled");
         }
@@ -299,7 +299,7 @@ public class AccountPage extends BasePage {
         if (isTwoFactorEnabled()) {
             click(DISABLE_2FA_BUTTON);
             waitForSuccessMessage();
-            log.info("✅ Two-factor authentication disabled");
+            log.info("[PASS] Two-factor authentication disabled");
         } else {
             log.info("Two-factor authentication already disabled");
         }
@@ -325,7 +325,7 @@ public class AccountPage extends BasePage {
         click(SAVE_CARD_BUTTON);
         waitForSuccessMessage();
 
-        log.info("✅ Payment method added successfully");
+        log.info("[PASS] Payment method added successfully");
         return this;
     }
 
@@ -347,7 +347,7 @@ public class AccountPage extends BasePage {
                 .click();
 
         waitForSuccessMessage();
-        log.info("✅ Payment method removed");
+        log.info("[PASS] Payment method removed");
         return this;
     }
 
@@ -367,7 +367,7 @@ public class AccountPage extends BasePage {
         goToTransactionsTab();
         selectByText(TRANSACTION_TYPE_FILTER, type);
         click(FILTER_BUTTON);
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
         return this;
     }
 
@@ -378,7 +378,7 @@ public class AccountPage extends BasePage {
         fill(DATE_FROM_INPUT, fromDate);
         fill(DATE_TO_INPUT, toDate);
         click(FILTER_BUTTON);
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
         return this;
     }
 
@@ -387,8 +387,8 @@ public class AccountPage extends BasePage {
         log.info("Exporting transactions");
         goToTransactionsTab();
         click(EXPORT_BUTTON);
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
-        log.info("✅ Transactions exported");
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
+        log.info("[PASS] Transactions exported");
         return this;
     }
 
@@ -400,6 +400,8 @@ public class AccountPage extends BasePage {
         Map<String, String> transaction = new HashMap<>();
         var row = page.locator(TRANSACTION_ROW).nth(index);
 
+        // TODO: Replace positional selectors with data-attribute or class-based selectors
+        //       when page access is available (e.g. td[data-col='type'], .transaction-type)
         transaction.put("type", row.locator("td:nth-child(1)").textContent());
         transaction.put("amount", row.locator("td:nth-child(2)").textContent());
         transaction.put("date", row.locator("td:nth-child(3)").textContent());

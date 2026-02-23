@@ -7,20 +7,26 @@
         <listener class-name="com.automation.listeners.TestListener"/>
     </listeners>
 
-    <test name="Navigation and Layout Tests" preserve-order="true">
+    <test name="Smoke Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.multibank.SmokeTests">
+                <methods>
+                    <include name="testHomepageLoadsAndIsInteractive"/>
+                    <include name="testTradingTableIsInteractive"/>
+                    <include name="testFullPageScrollAndReturn"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Navigation Tests" preserve-order="true">
         <classes>
             <class name="com.automation.multibank.NavigationTests">
                 <methods>
-                    <include name="testNavigationMenuDisplayed"/>
-                    <include name="testNavigationMenuItems"/>
-                    <include name="testNavigationItemVisibility"/>
+                    <include name="testNavigationItemIsClickable"/>
                     <include name="testNavigationItemFunctionality"/>
-                    <include name="testDashboardNavigation"/>
-                    <include name="testMarketsNavigation"/>
-                    <include name="testTradeNavigation"/>
-                    <include name="testFeaturesNavigation"/>
-                    <include name="testAboutUsNavigation"/>
-                    <include name="testSupportNavigation"/>
+                    <include name="testBrowserBackAfterNavigation"/>
+                    <include name="testLanguageSelectorIsVisible"/>
                 </methods>
             </class>
         </classes>
@@ -30,43 +36,36 @@
         <classes>
             <class name="com.automation.multibank.TradingTests">
                 <methods>
-                    <include name="testSpotTradingSectionDisplayed"/>
-                    <include name="testTradingPairsTableDisplayed"/>
-                    <include name="testTradingPairsTableColumns"/>
-                    <include name="testTradingPairsDisplayed"/>
-                    <include name="testSpecificTradingPairVisible"/>
-                    <include name="testTradingPairDataStructure"/>
-                    <include name="testFavoritesTabVisible"/>
-                    <include name="testAllPairsTabVisible"/>
-                    <include name="testFearIndexVisible"/>
-                    <include name="testTopGainersVisible"/>
-                    <include name="testTopLosersVisible"/>
-                    <include name="testMBGTokenSectionVisible"/>
-                    <include name="testRealWorldAssetsSectionVisible"/>
-                    <include name="testQuickAccessToolsVisible"/>
-                    <include name="testTradingPairsCount"/>
+                    <include name="testClickAllPairsTabAndReadData"/>
+                    <include name="testTabDisplaysTradingTable"/>
+                    <include name="testSwitchTabsMultipleTimes"/>
+                    <include name="testTableColumnPresent"/>
+                    <include name="testTradingPairDataHasValues"/>
                 </methods>
             </class>
         </classes>
     </test>
 
-    <test name="Content Validation Tests" preserve-order="true">
+    <test name="Page Sections Tests" preserve-order="true">
         <classes>
-            <class name="com.automation.multibank.ContentValidationTests">
+            <class name="com.automation.multibank.PageSectionsTests">
                 <methods>
-                    <include name="testFooterDisplayed"/>
-                    <include name="testAppStoreLinkVisible"/>
-                    <include name="testGooglePlayLinkVisible"/>
-                    <include name="testDownloadLinksPointToCorrectStores"/>
-                    <include name="testQRCodeVisible"/>
-                    <include name="testMarketingBannersVisible"/>
-                    <include name="testSpecificMarketingBannerVisible"/>
-                    <include name="testAboutUsPageAccessible"/>
-                    <include name="testWhyMultiBankSectionVisible"/>
-                    <include name="testAboutUsPageComponents"/>
-                    <include name="testAboutUsContentLoaded"/>
-                    <include name="testSocialMediaLinksVisible"/>
-                    <include name="testPageElementsRenderCorrectly"/>
+                    <include name="testScrollToInvestmentCardsSection"/>
+                    <include name="testScrollToQuickAccessTools"/>
+                    <include name="testScrollToFooterAndVerifyDownloadLinks"/>
+                    <include name="testScrollSequenceThroughPage"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Cross-Page Navigation Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.multibank.CrossPageNavigationTests">
+                <methods>
+                    <include name="testNavigateToAboutUsAndBack"/>
+                    <include name="testNavigateToMarketsAndBackToDashboard"/>
+                    <include name="testMultiStepNavigationWithBrowserHistory"/>
                 </methods>
             </class>
         </classes>

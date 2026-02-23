@@ -72,7 +72,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .exists();
 
-        log.info("✅ User table exists");
+        log.info("[PASS] User table exists");
     }
 
     @Test(description = "Verify user table has expected columns")
@@ -92,7 +92,7 @@ public class UserDatabaseTests extends BaseTest {
                 .as("User table should have required columns")
                 .contains("id", "username", "email", "status");
 
-        log.info("✅ User table schema is valid");
+        log.info("[PASS] User table schema is valid");
     }
 
     @Test(description = "Verify user creation")
@@ -125,7 +125,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .hasRecord("id = ?", userId);
 
-        log.info("✅ User created successfully");
+        log.info("[PASS] User created successfully");
     }
 
     @Test(description = "Verify user retrieval")
@@ -175,7 +175,7 @@ public class UserDatabaseTests extends BaseTest {
                 .columnEquals("email", email)
                 .columnEquals("status", "active");
 
-        log.info("✅ User retrieved successfully");
+        log.info("[PASS] User retrieved successfully");
     }
 
     @Test(description = "Verify user update")
@@ -214,7 +214,7 @@ public class UserDatabaseTests extends BaseTest {
                 .columnEquals("status", "active")
                 .columnIsNotNull("updated_at");
 
-        log.info("✅ User updated successfully");
+        log.info("[PASS] User updated successfully");
     }
 
     @Test(description = "Verify user deletion")
@@ -249,7 +249,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .doesNotHaveRecord("id = ?", userId);
 
-        log.info("✅ User deleted successfully");
+        log.info("[PASS] User deleted successfully");
     }
 
     @Test(description = "Verify multiple users creation")
@@ -270,8 +270,7 @@ public class UserDatabaseTests extends BaseTest {
         long initialCount = dbUtils.countRows("users");
 
         // Insert batch
-        dataBuilder.forTable("users");
-        List<Long> userIds = dataBuilder.insertBatch(users);
+        List<Long> userIds = dataBuilder.forTable("users").insertBatch(users);
 
         log.info("Created {} users: {}", userIds.size(), userIds);
 
@@ -287,7 +286,7 @@ public class UserDatabaseTests extends BaseTest {
                 .as("User count should increase by 3")
                 .isEqualTo(initialCount + 3);
 
-        log.info("✅ Multiple users created successfully");
+        log.info("[PASS] Multiple users created successfully");
     }
 
     @Test(description = "Verify user count by status")
@@ -298,12 +297,9 @@ public class UserDatabaseTests extends BaseTest {
         log.info("=== Test: Count Users By Status ===");
 
         // Create users with different statuses
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "active_user_1").with("email", "a1@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "active_user_2").with("email", "a2@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "pending_user_1").with("email", "p1@test.com").with("status", "pending").insert();
+        dataBuilder.forTable("users").with("username", "active_user_1").with("email", "a1@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "active_user_2").with("email", "a2@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "pending_user_1").with("email", "p1@test.com").with("status", "pending").insert();
 
         // Count active users
         long activeCount = dbUtils.countRowsWhere("users", "status = ?", "active");
@@ -318,7 +314,7 @@ public class UserDatabaseTests extends BaseTest {
                 .isGreaterThanOrEqualTo(1);
 
         log.info("Active users: {}, Pending users: {}", activeCount, pendingCount);
-        log.info("✅ User count by status verified");
+        log.info("[PASS] User count by status verified");
     }
 
     @Test(description = "Verify user query with multiple conditions")
@@ -329,10 +325,8 @@ public class UserDatabaseTests extends BaseTest {
         log.info("=== Test: Query Users With Conditions ===");
 
         // Create test users
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "query_test_active").with("email", "qa@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "query_test_inactive").with("email", "qi@test.com").with("status", "inactive").insert();
+        dataBuilder.forTable("users").with("username", "query_test_active").with("email", "qa@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "query_test_inactive").with("email", "qi@test.com").with("status", "inactive").insert();
 
         // Query active users
         List<Map<String, Object>> activeUsers = dbUtils.executeQuery(
@@ -352,7 +346,7 @@ public class UserDatabaseTests extends BaseTest {
         }
 
         log.info("Found {} active users matching criteria", activeUsers.size());
-        log.info("✅ Complex query executed successfully");
+        log.info("[PASS] Complex query executed successfully");
     }
 
     @Test(description = "Verify transaction rollback")
@@ -367,8 +361,8 @@ public class UserDatabaseTests extends BaseTest {
         try {
             dbUtils.executeInTransaction(db -> {
                 // Insert user within transaction
-                dataBuilder.forTable("users");
                 Long userId = dataBuilder
+                        .forTable("users")
                         .with("username", "rollback_test")
                         .with("email", "rollback@test.com")
                         .with("status", "active")
@@ -394,7 +388,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .doesNotHaveRecord("username = ?", "rollback_test");
 
-        log.info("✅ Transaction rollback verified");
+        log.info("[PASS] Transaction rollback verified");
     }
 
     @Test(description = "Verify transaction commit")
@@ -409,11 +403,8 @@ public class UserDatabaseTests extends BaseTest {
         // Execute successful transaction
         dbUtils.executeInTransaction(db -> {
             // Insert users within transaction
-            dataBuilder.forTable("users");
-            dataBuilder.with("username", "commit_test_1").with("email", "c1@test.com").with("status", "active").insert();
-
-            dataBuilder.forTable("users");
-            dataBuilder.with("username", "commit_test_2").with("email", "c2@test.com").with("status", "active").insert();
+            dataBuilder.forTable("users").with("username", "commit_test_1").with("email", "c1@test.com").with("status", "active").insert();
+            dataBuilder.forTable("users").with("username", "commit_test_2").with("email", "c2@test.com").with("status", "active").insert();
 
             log.info("Inserted 2 users in transaction");
         });
@@ -432,7 +423,7 @@ public class UserDatabaseTests extends BaseTest {
                 .table("users")
                 .hasRecord("username = ?", "commit_test_2");
 
-        log.info("✅ Transaction commit verified");
+        log.info("[PASS] Transaction commit verified");
     }
 
     @Test(description = "Verify default values in test data builder")
@@ -459,7 +450,7 @@ public class UserDatabaseTests extends BaseTest {
                 .returnsOneRow()
                 .columnEquals("status", "active");
 
-        log.info("✅ Default values applied correctly");
+        log.info("[PASS] Default values applied correctly");
     }
 
     @Test(description = "Verify test data cleanup tracking")
@@ -472,11 +463,8 @@ public class UserDatabaseTests extends BaseTest {
         int initialTrackedCount = dataBuilder.getTrackedRecordCount();
 
         // Create multiple users
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "tracked_1").with("email", "t1@test.com").insert();
-
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "tracked_2").with("email", "t2@test.com").insert();
+        dataBuilder.forTable("users").with("username", "tracked_1").with("email", "t1@test.com").insert();
+        dataBuilder.forTable("users").with("username", "tracked_2").with("email", "t2@test.com").insert();
 
         int newTrackedCount = dataBuilder.getTrackedRecordCount();
 
@@ -485,6 +473,6 @@ public class UserDatabaseTests extends BaseTest {
                 .isEqualTo(initialTrackedCount + 2);
 
         log.info("Tracked records: {}", dataBuilder.getTrackedRecords());
-        log.info("✅ Cleanup tracking verified");
+        log.info("[PASS] Cleanup tracking verified");
     }
 }

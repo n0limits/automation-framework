@@ -8,6 +8,7 @@
 <suite name="Multi-Browser UI Test Suite" verbose="1">
 
     <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
         <listener class-name="com.automation.listeners.TestListener"/>
         <listener class-name="com.automation.listeners.RetryListener"/>
     </listeners>

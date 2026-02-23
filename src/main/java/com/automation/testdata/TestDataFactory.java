@@ -1,12 +1,13 @@
 package com.automation.testdata;
 
-import com.github.javafaker.Faker;
+import net.datafaker.Faker;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TestDataFactory {
     private final Faker faker;
-    private final Random random;
 
     /**
      * Create factory with default locale (English)
@@ -43,8 +43,11 @@ public class TestDataFactory {
      */
     public TestDataFactory(Locale locale) {
         this.faker = new Faker(locale);
-        this.random = new Random();
         log.debug("TestDataFactory initialized with locale: {}", locale);
+    }
+
+    private Random random() {
+        return ThreadLocalRandom.current();
     }
 
     // ========== Person Data ==========
@@ -233,7 +236,7 @@ public class TestDataFactory {
                 "Engineering", "Sales", "Marketing", "HR", "Finance",
                 "Operations", "Customer Service", "IT", "Legal", "R&D"
         };
-        return departments[random.nextInt(departments.length)];
+        return departments[random().nextInt(departments.length)];
     }
 
     // ========== Financial Data ==========
@@ -262,7 +265,7 @@ public class TestDataFactory {
      * @return CVV (3 digits)
      */
     public String cvv() {
-        return String.format("%03d", random.nextInt(1000));
+        return String.format("%03d", random().nextInt(1000));
     }
 
     /**
@@ -273,7 +276,7 @@ public class TestDataFactory {
      * @return Random amount
      */
     public double amount(double min, double max) {
-        return min + (max - min) * random.nextDouble();
+        return min + (max - min) * random().nextDouble();
     }
 
     /**
@@ -458,7 +461,7 @@ public class TestDataFactory {
      * @return Random boolean
      */
     public boolean bool() {
-        return random.nextBoolean();
+        return random().nextBoolean();
     }
 
     /**
@@ -470,7 +473,7 @@ public class TestDataFactory {
      */
     @SafeVarargs
     public final <T> T randomElement(T... elements) {
-        return elements[random.nextInt(elements.length)];
+        return elements[random().nextInt(elements.length)];
     }
 
     /**
@@ -481,7 +484,7 @@ public class TestDataFactory {
      * @return Random element
      */
     public <T> T randomElement(List<T> elements) {
-        return elements.get(random.nextInt(elements.size()));
+        return elements.get(random().nextInt(elements.size()));
     }
 
     /**

@@ -361,11 +361,11 @@ public class TestMetrics {
     public static class TestResult {
         private final String testName;
         private final LocalDateTime startTime;
-        private boolean passed;
-        private boolean skipped;
-        private long duration;
-        private String failureReason;
-        private String skipReason;
+        private volatile boolean passed;
+        private volatile boolean skipped;
+        private volatile long duration;
+        private volatile String failureReason;
+        private volatile String skipReason;
 
         public TestResult(String testName) {
             this.testName = testName;

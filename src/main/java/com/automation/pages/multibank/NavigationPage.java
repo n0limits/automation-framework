@@ -11,6 +11,10 @@ import java.util.List;
 @Slf4j
 public class NavigationPage extends BasePage {
 
+    // Configurable timeouts from TestConfig
+    private final int elementTimeout;
+    private final int shortTimeout;
+
     // ============================================================
     // Locator Fields
     // ============================================================
@@ -37,6 +41,11 @@ public class NavigationPage extends BasePage {
     public NavigationPage() {
         super();
 
+        // Initialize configurable timeouts
+        TestConfig config = TestConfig.getInstance();
+        this.elementTimeout = config.getElementTimeout();
+        this.shortTimeout = config.getShortTimeout();
+
         // Initialize Navigation Locators
         this.topNavigation = page.locator("header");
         this.navMenuItems = page.locator("header nav a, header a");
@@ -61,7 +70,7 @@ public class NavigationPage extends BasePage {
 
     public boolean isNavigationMenuDisplayed() {
         try {
-            topNavigation.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            topNavigation.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Navigation menu is displayed");
             return true;
         } catch (Exception e) {
@@ -71,7 +80,7 @@ public class NavigationPage extends BasePage {
     }
 
     public List<String> getNavigationMenuItems() {
-        navMenuItems.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+        navMenuItems.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
         List<Locator> menuLocators = navMenuItems.all();
         List<String> menuItems = new ArrayList<>();
 
@@ -89,7 +98,7 @@ public class NavigationPage extends BasePage {
     public boolean isNavigationItemVisible(String itemName) {
         try {
             Locator itemLocator = page.locator(String.format("header a:has-text('%s'), header span:has-text('%s')", itemName, itemName)).first();
-            itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Navigation item '{}' is visible", itemName);
             return true;
         } catch (Exception e) {
@@ -104,7 +113,7 @@ public class NavigationPage extends BasePage {
                 "header a:has-text('%s'), header span:has-text('%s')",
                 itemName, itemName
         )).first();
-        itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+        itemLocator.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
         itemLocator.click();
         log.info("Clicked navigation item: {}", itemName);
     }
@@ -121,7 +130,7 @@ public class NavigationPage extends BasePage {
 
     public void clickTrade() {
         // Trade might be a dropdown trigger - click and wait for any navigation
-        tradeLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        tradeLink.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
         tradeLink.click();
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Trade link/dropdown");
@@ -129,7 +138,7 @@ public class NavigationPage extends BasePage {
 
     public void clickFeatures() {
         // Features might be a dropdown trigger - click and wait for any navigation
-        featuresLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        featuresLink.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
         featuresLink.click();
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Features link/dropdown");
@@ -137,7 +146,7 @@ public class NavigationPage extends BasePage {
 
     public void clickAboutUs() {
         // About Us might be a dropdown trigger - click and wait for any navigation
-        aboutLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        aboutLink.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
         aboutLink.click();
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked About Us link/dropdown");
@@ -145,7 +154,7 @@ public class NavigationPage extends BasePage {
 
     public void clickSupport() {
         // Support might be a dropdown trigger - click and wait for any navigation
-        supportLink.waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        supportLink.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
         supportLink.click();
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
         log.info("Clicked Support link/dropdown");
@@ -159,7 +168,7 @@ public class NavigationPage extends BasePage {
 
     public boolean isLanguageSelectorVisible() {
         try {
-            languageSelector.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            languageSelector.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Language selector is visible");
             return true;
         } catch (Exception e) {
@@ -173,13 +182,11 @@ public class NavigationPage extends BasePage {
         page.waitForLoadState();
         String currentUrl = getCurrentUrl();
 
-        if (currentUrl.contains(expectedUrlPart)) {
-            log.info("Navigation to '{}' successful. URL contains: {}", itemName, expectedUrlPart);
-        } else {
-            log.warn(
-                    "Navigation to '{}' may have failed. Expected URL part '{}', but got: {}",
-                    itemName, expectedUrlPart, currentUrl
-            );
+        if (!currentUrl.contains(expectedUrlPart)) {
+            throw new AssertionError(String.format(
+                    "Navigation to '%s' failed. Expected URL to contain '%s', but got: %s",
+                    itemName, expectedUrlPart, currentUrl));
         }
+        log.info("Navigation to '{}' successful. URL contains: {}", itemName, expectedUrlPart);
     }
 }

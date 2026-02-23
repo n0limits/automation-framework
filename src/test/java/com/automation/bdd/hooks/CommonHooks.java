@@ -5,6 +5,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
+import io.qameta.allure.model.Label;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -40,7 +41,8 @@ public class CommonHooks {
 
         Allure.label("scenario", scenario.getName());
         for (String tag : scenario.getSourceTagNames()) {
-            Allure.label("tag", tag);
+            Allure.getLifecycle().updateTestCase(testResult ->
+                    testResult.getLabels().add(new Label().setName("tag").setValue(tag)));
         }
 
         scenarioContext.clear();

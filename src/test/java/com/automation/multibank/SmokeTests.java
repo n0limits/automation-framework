@@ -1,98 +1,108 @@
 package com.automation.multibank;
 
-import com.automation.base.BaseWebTest;
+import com.automation.base.BaseMultibankTest;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Smoke tests for MultiBank.io platform
- * These tests verify basic application functionality
- */
 @Slf4j
 @Epic("Smoke Tests")
 @Feature("Application Health")
-public class SmokeTests extends BaseWebTest {
+public class SmokeTests extends BaseMultibankTest {
 
-    // @Test(description = "Verify main page loads successfully", priority = 1) // changed SUT functionality
+    @Test(description = "Verify homepage loads and is interactive", priority = 1)
     @Severity(SeverityLevel.BLOCKER)
     @Story("Homepage Accessibility")
-    @Description("Validates that the MultiBank.io homepage loads successfully and displays expected content")
-    // configured to run through multiple browsers (chromium, webkit) if executed via the testng-multi-browser-smoke.xml
-    public void smokeTestHomepageLoads() {
-        log.info("Starting smoke test: Homepage load verification");
+    @Description("Validates that the homepage loads with interactive content: URL, title, nav menu, and trading table")
+    public void testHomepageLoadsAndIsInteractive() {
+        log.info("Starting smoke test: Homepage load and interactivity verification");
 
-        // Verify page loaded
         assertThat(page.url())
-                .as("Page URL should be the homepage")
+                .as("Page URL should contain trade.multibank.io")
                 .contains("trade.multibank.io");
 
-        // Verify page title
         String pageTitle = page.title();
         log.info("Page title: {}", pageTitle);
         assertThat(pageTitle)
-                .as("Page title should be present and not empty")
-                .isNotNull()
-                .isNotEmpty()
-                .contains("MultiBank");
+                .as("Page title should contain MultiBank")
+                .containsIgnoringCase("MultiBank");
 
-        // Verify page is interactive (header/navigation visible)
-        boolean isNavigationVisible = page.locator("header").isVisible();
-        assertThat(isNavigationVisible)
-                .as("Main navigation should be visible")
+        assertNavigationMenuVisible();
+
+        List<String> navItems = navigationPage.getNavigationMenuItems();
+        log.info("Navigation items: {}", navItems);
+        assertThat(navItems)
+                .as("Navigation menu should have items")
+                .isNotEmpty();
+
+        assertThat(tradingPage.isTradingPairsTableDisplayed())
+                .as("Trading pairs table should be displayed")
                 .isTrue();
 
-        log.info("Smoke test passed: Homepage loaded successfully");
+        log.info("Smoke test passed: Homepage is loaded and interactive");
     }
 
-    // @Test(description = "Verify critical page elements are present", priority = 2) // changed SUT functionality
+    @Test(description = "Verify trading table responds to tab clicks", priority = 2)
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Critical Elements")
-    @Description("Validates that critical page elements are present on the homepage")
-    public void smokeTestCriticalElementsPresent() {
-        log.info("Starting smoke test: Critical elements verification");
+    @Story("Trading Table Interactivity")
+    @Description("Validates that the trading table responds to tab switching and preserves data")
+    public void testTradingTableIsInteractive() {
+        log.info("Starting smoke test: Trading table interactivity");
 
-        // Check header exists
-        assertThat(page.locator("header").count())
-                .as("Header should be present")
+        assertThat(tradingPage.isTradingPairsTableDisplayed())
+                .as("Trading table should be visible")
+                .isTrue();
+
+        tradingPage.clickAllPairsTab();
+        page.waitForLoadState();
+        int allPairsCount = tradingPage.getTradingPairsCount();
+        log.info("All Pairs count: {}", allPairsCount);
+        assertThat(allPairsCount)
+                .as("All Pairs tab should show trading pairs")
                 .isGreaterThan(0);
 
-        // Check page has content (body is not empty)
-        int bodyElementCount = page.locator("body").count();
-        assertThat(bodyElementCount)
-                .as("Body element should be present")
-                .isGreaterThan(0);
+        tradingPage.clickFavoritesTab();
+        page.waitForLoadState();
+        assertThat(tradingPage.isTradingPairsTableDisplayed())
+                .as("Trading table should remain displayed after switching to Favorites")
+                .isTrue();
 
-        // Check page has interactive elements
-        int linkCount = page.locator("a").count();
-        assertThat(linkCount)
-                .as("Page should have links")
-                .isGreaterThan(0);
+        tradingPage.clickAllPairsTab();
+        page.waitForLoadState();
+        int allPairsCountAfter = tradingPage.getTradingPairsCount();
+        assertThat(allPairsCountAfter)
+                .as("All Pairs count should be consistent after tab switching")
+                .isEqualTo(allPairsCount);
 
-        log.info("Smoke test passed: All critical elements are present");
+        log.info("Smoke test passed: Trading table is interactive");
     }
 
-    // @Test(description = "Verify page has no JavaScript errors", priority = 3) // changed SUT functionality
+    @Test(description = "Verify full page scroll and return to top", priority = 3)
     @Severity(SeverityLevel.NORMAL)
-    @Story("Page Stability")
-    @Description("Validates that the page loads without critical JavaScript errors")
-    public void smokeTestNoJavaScriptErrors() {
-        log.info("Starting smoke test: JavaScript errors check");
+    @Story("Page Scroll")
+    @Description("Validates scrolling to footer and back to top preserves page structure")
+    public void testFullPageScrollAndReturn() {
+        log.info("Starting smoke test: Full page scroll and return");
 
-        // Navigate and wait for network idle
-        page.navigate("https://trade.multibank.io");
+        footerPage.scrollToFooter();
         page.waitForLoadState();
 
-        // Verify page is in ready state
-        String readyState = (String) page.evaluate("document.readyState");
-        log.info("Document ready state: {}", readyState);
+        assertThat(footerPage.isFooterDisplayed())
+                .as("Footer should be visible after scrolling down")
+                .isTrue();
 
-        assertThat(readyState)
-                .as("Document should be in complete ready state")
-                .isEqualTo("complete");
+        assertThat(footerPage.isAppStoreLinkVisible())
+                .as("App Store link should be visible in footer")
+                .isTrue();
 
-        log.info("Smoke test passed: No critical JavaScript errors detected");
+        scrollToTop();
+
+        assertNavigationMenuVisible();
+
+        log.info("Smoke test passed: Full page scroll and return works");
     }
 }

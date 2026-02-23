@@ -8,10 +8,14 @@ import java.util.List;
 public class QueryBuilder {
     private final StringBuilder query;
     private final List<String> conditions;
+    private String orderByClause;
+    private String limitClause;
+    private boolean hasFrom;
 
     private QueryBuilder() {
         this.query = new StringBuilder();
         this.conditions = new ArrayList<>();
+        this.hasFrom = false;
     }
 
     public static QueryBuilder select(String... columns) {
@@ -26,6 +30,7 @@ public class QueryBuilder {
 
     public QueryBuilder from(String table) {
         this.query.append("FROM ").append(table).append(" ");
+        this.hasFrom = true;
         return this;
     }
 
@@ -35,35 +40,52 @@ public class QueryBuilder {
     }
 
     public QueryBuilder and(String condition) {
-        if (!conditions.isEmpty()) {
-            conditions.add("AND " + condition);
+        if (conditions.isEmpty()) {
+            throw new IllegalStateException("Cannot use and() without a preceding where() clause");
         }
+        conditions.add("AND " + condition);
         return this;
     }
 
     public QueryBuilder or(String condition) {
-        if (!conditions.isEmpty()) {
-            conditions.add("OR " + condition);
+        if (conditions.isEmpty()) {
+            throw new IllegalStateException("Cannot use or() without a preceding where() clause");
         }
+        conditions.add("OR " + condition);
         return this;
     }
 
     public QueryBuilder orderBy(String column, String direction) {
-        query.append("ORDER BY ").append(column).append(" ").append(direction).append(" ");
+        this.orderByClause = "ORDER BY " + column + " " + direction;
         return this;
     }
 
     public QueryBuilder limit(int limit) {
-        query.append("LIMIT ").append(limit).append(" ");
+        this.limitClause = "LIMIT " + limit;
         return this;
     }
 
     public String build() {
-        if (!conditions.isEmpty()) {
-            query.append("WHERE ");
-            query.append(String.join(" ", conditions));
+        if (!hasFrom) {
+            throw new IllegalStateException("Cannot build query without a from() clause");
         }
-        String finalQuery = query.toString().trim();
+
+        StringBuilder result = new StringBuilder(query.toString().trim());
+
+        if (!conditions.isEmpty()) {
+            result.append(" WHERE ");
+            result.append(String.join(" ", conditions));
+        }
+
+        if (orderByClause != null) {
+            result.append(" ").append(orderByClause);
+        }
+
+        if (limitClause != null) {
+            result.append(" ").append(limitClause);
+        }
+
+        String finalQuery = result.toString().trim();
         log.debug("Built query: {}", finalQuery);
         return finalQuery;
     }

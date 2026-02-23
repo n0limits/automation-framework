@@ -69,6 +69,6 @@ public class CommonSteps {
     @And("I wait for the network to be idle")
     public void iWaitForNetworkIdle() {
         PlaywrightManager.getPage().waitForLoadState(
-                com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+                com.microsoft.playwright.options.LoadState.LOAD);
     }
 }

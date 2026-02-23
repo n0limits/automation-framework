@@ -46,8 +46,8 @@ public class UIHooks {
         String scenarioName = scenario.getName().replaceAll("\\s+", "_");
         PlaywrightManager.startTracing(scenarioName);
 
-        PlaywrightManager.getPage().navigate(config.getBaseUrl());
-        PlaywrightManager.getPage().waitForLoadState();
+        // Navigation is handled by scenario Background steps (e.g. "Given I am on the homepage")
+        // to avoid double navigation and wasted time.
 
         scenarioContext.set("page", PlaywrightManager.getPage());
         log.info("Browser setup complete for scenario: {}", scenario.getName());

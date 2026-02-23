@@ -147,7 +147,7 @@ public class MobileGesturesExampleTests extends BaseWebTest {
 
         // Swipe down to trigger refresh
         MobileUtils.swipeDown(page);
-        page.waitForLoadState(LoadState.NETWORKIDLE);
+        page.waitForLoadState(LoadState.LOAD);
 
         // Verify page refreshed
         // Add your assertions here
@@ -159,7 +159,7 @@ public class MobileGesturesExampleTests extends BaseWebTest {
     @Description("Complete end-to-end mobile user journey with gestures")
     public void testCompleteMobileWorkflow() {
         // 1. Wait for page to load
-        page.waitForLoadState(LoadState.NETWORKIDLE);
+        page.waitForLoadState(LoadState.LOAD);
 
         // 2. Scroll to explore content
         MobileUtils.swipeUp(page);
