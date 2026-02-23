@@ -4,14 +4,9 @@
 
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
     </listeners>
-
-    <!-- All BDD Tests -->
-    <test name="All Cucumber BDD Tests" parallel="false">
-        <classes>
-            <class name="com.automation.bdd.runners.CucumberTestRunner"/>
-        </classes>
-    </test>
 
     <!-- UI BDD Tests -->
     <test name="UI BDD Tests" parallel="false">

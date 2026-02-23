@@ -7,8 +7,10 @@ import org.testng.annotations.DataProvider;
 @CucumberOptions(
         features = "src/test/resources/features",
         glue = "com.automation.bdd",
+        monochrome = true,
         plugin = {
                 "pretty",
+                "html:target/cucumber-reports/all-report.html",
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         }
 )

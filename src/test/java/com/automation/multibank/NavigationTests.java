@@ -48,6 +48,10 @@ public class NavigationTests extends BaseMultibankTest {
         String currentUrl = page.url();
         log.info("URL after clicking {}: {}", itemName, currentUrl);
 
+        assertThat(currentUrl)
+                .as("URL should contain '%s' after clicking '%s'", expectedUrlPart, itemName)
+                .containsIgnoringCase(expectedUrlPart);
+
         assertNavigationMenuVisible();
 
         navigateToHomePage();

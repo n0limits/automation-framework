@@ -270,8 +270,7 @@ public class UserDatabaseTests extends BaseTest {
         long initialCount = dbUtils.countRows("users");
 
         // Insert batch
-        dataBuilder.forTable("users");
-        List<Long> userIds = dataBuilder.insertBatch(users);
+        List<Long> userIds = dataBuilder.forTable("users").insertBatch(users);
 
         log.info("Created {} users: {}", userIds.size(), userIds);
 
@@ -298,12 +297,9 @@ public class UserDatabaseTests extends BaseTest {
         log.info("=== Test: Count Users By Status ===");
 
         // Create users with different statuses
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "active_user_1").with("email", "a1@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "active_user_2").with("email", "a2@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "pending_user_1").with("email", "p1@test.com").with("status", "pending").insert();
+        dataBuilder.forTable("users").with("username", "active_user_1").with("email", "a1@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "active_user_2").with("email", "a2@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "pending_user_1").with("email", "p1@test.com").with("status", "pending").insert();
 
         // Count active users
         long activeCount = dbUtils.countRowsWhere("users", "status = ?", "active");
@@ -329,10 +325,8 @@ public class UserDatabaseTests extends BaseTest {
         log.info("=== Test: Query Users With Conditions ===");
 
         // Create test users
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "query_test_active").with("email", "qa@test.com").with("status", "active").insert();
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "query_test_inactive").with("email", "qi@test.com").with("status", "inactive").insert();
+        dataBuilder.forTable("users").with("username", "query_test_active").with("email", "qa@test.com").with("status", "active").insert();
+        dataBuilder.forTable("users").with("username", "query_test_inactive").with("email", "qi@test.com").with("status", "inactive").insert();
 
         // Query active users
         List<Map<String, Object>> activeUsers = dbUtils.executeQuery(
@@ -367,8 +361,8 @@ public class UserDatabaseTests extends BaseTest {
         try {
             dbUtils.executeInTransaction(db -> {
                 // Insert user within transaction
-                dataBuilder.forTable("users");
                 Long userId = dataBuilder
+                        .forTable("users")
                         .with("username", "rollback_test")
                         .with("email", "rollback@test.com")
                         .with("status", "active")
@@ -409,11 +403,8 @@ public class UserDatabaseTests extends BaseTest {
         // Execute successful transaction
         dbUtils.executeInTransaction(db -> {
             // Insert users within transaction
-            dataBuilder.forTable("users");
-            dataBuilder.with("username", "commit_test_1").with("email", "c1@test.com").with("status", "active").insert();
-
-            dataBuilder.forTable("users");
-            dataBuilder.with("username", "commit_test_2").with("email", "c2@test.com").with("status", "active").insert();
+            dataBuilder.forTable("users").with("username", "commit_test_1").with("email", "c1@test.com").with("status", "active").insert();
+            dataBuilder.forTable("users").with("username", "commit_test_2").with("email", "c2@test.com").with("status", "active").insert();
 
             log.info("Inserted 2 users in transaction");
         });
@@ -472,11 +463,8 @@ public class UserDatabaseTests extends BaseTest {
         int initialTrackedCount = dataBuilder.getTrackedRecordCount();
 
         // Create multiple users
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "tracked_1").with("email", "t1@test.com").insert();
-
-        dataBuilder.forTable("users");
-        dataBuilder.with("username", "tracked_2").with("email", "t2@test.com").insert();
+        dataBuilder.forTable("users").with("username", "tracked_1").with("email", "t1@test.com").insert();
+        dataBuilder.forTable("users").with("username", "tracked_2").with("email", "t2@test.com").insert();
 
         int newTrackedCount = dataBuilder.getTrackedRecordCount();
 

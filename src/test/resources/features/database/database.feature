@@ -9,6 +9,7 @@ Feature: Database Operations
 
   # ===== Schema Validation =====
 
+  @smoke
   Scenario: Users table exists
     Then the "users" table exists
 

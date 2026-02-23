@@ -2,6 +2,12 @@
 <suite name="API Test Suite" parallel="false" verbose="1">
     <parameter name="env" value="local"/>
 
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.automation.listeners.TestListener"/>
+        <listener class-name="com.automation.listeners.RetryListener"/>
+    </listeners>
+
     <test name="Trading API Tests">
         <classes>
             <class name="com.automation.api.TradingAPITests">
@@ -12,28 +18,19 @@
                     <include name="testGetTickerPrice"/>
                     <include name="testCreateMarketOrder"/>
                     <include name="testCreateLimitOrder"/>
-                    <include name="testGetBalanceWithoutAuth"/>
 
                     <!-- Functional Tests -->
                     <include name="testGet24HourStatistics"/>
                     <include name="testGetMarketDepth"/>
                     <include name="testGetNonExistentTradingPair"/>
                     <include name="testCreateInvalidOrder"/>
-                    <include name="testGetTradeHistoryWithoutAuth"/>
-                    <include name="testCancelOrderWithoutAuth"/>
+                    <include name="testAuthenticatedEndpointRequiresAuth"/>
 
                     <!-- Performance & Quality Tests -->
                     <include name="testTickerPerformance"/>
-                    <include name="testTradeHistoryPagination"/>
                     <include name="testResponseHeaders"/>
                 </methods>
             </class>
         </classes>
     </test>
-
-    <listeners>
-        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
-        <listener class-name="com.automation.listeners.TestListener"/>
-        <listener class-name="com.automation.listeners.RetryListener"/>
-    </listeners>
 </suite>

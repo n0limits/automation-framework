@@ -8,8 +8,10 @@ import org.testng.annotations.DataProvider;
         features = "src/test/resources/features/database",
         glue = "com.automation.bdd",
         tags = "@db",
+        monochrome = true,
         plugin = {
                 "pretty",
+                "html:target/cucumber-reports/db-report.html",
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         }
 )

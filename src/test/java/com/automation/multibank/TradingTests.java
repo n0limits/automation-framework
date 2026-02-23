@@ -4,7 +4,6 @@ import com.automation.base.BaseMultibankTest;
 import com.automation.providers.TestDataProviders;
 import io.qameta.allure.*;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -16,23 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Epic("MultiBank Trading Platform")
 @Feature("Trading Functionality")
 public class TradingTests extends BaseMultibankTest {
-
-    @DataProvider(name = "tradingTabsProvider")
-    public Object[][] tradingTabsProvider() {
-        return new Object[][] {
-            { "All Pairs" },
-            { "Favorites" }
-        };
-    }
-
-    @DataProvider(name = "expectedColumnsProvider")
-    public Object[][] expectedColumnsProvider() {
-        return new Object[][] {
-            { "Pair" },
-            { "Max Leverage" },
-            { "Change 24h" }
-        };
-    }
 
     @Test(description = "Click All Pairs tab and read trading pair data", priority = 1)
     @Severity(SeverityLevel.CRITICAL)
@@ -59,7 +41,7 @@ public class TradingTests extends BaseMultibankTest {
     }
 
     @Test(description = "Verify tab displays trading table after switching",
-          dataProvider = "tradingTabsProvider", priority = 2)
+          dataProvider = "tradingTabsProvider", dataProviderClass = TestDataProviders.class, priority = 2)
     @Severity(SeverityLevel.CRITICAL)
     @Story("Tab Switching")
     @Description("Clicks a trading tab and verifies the trading table structure is preserved")
@@ -107,7 +89,7 @@ public class TradingTests extends BaseMultibankTest {
     }
 
     @Test(description = "Verify expected column is present in trading table",
-          dataProvider = "expectedColumnsProvider", priority = 4)
+          dataProvider = "expectedColumnsProvider", dataProviderClass = TestDataProviders.class, priority = 4)
     @Severity(SeverityLevel.NORMAL)
     @Story("Table Structure")
     @Description("Verifies that a specific column is present in the trading table")

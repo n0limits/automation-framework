@@ -8,17 +8,17 @@ import java.util.*;
 
 /**
  * Database Test Utilities
- * Provides database connectivity and common database operations for testing.
- * Uses ConnectionPoolManager (HikariCP) for high-performance, thread-safe connections.
+ * Facade providing database connectivity and common database operations for testing.
+ * Delegates to focused classes: {@link TransactionManager}, {@link SchemaInspector}.
  *
  * Features:
  * - Thread-safe connection management via ThreadLocal
  * - Connection pooling via HikariCP (ConnectionPoolManager)
  * - Query execution (SELECT, INSERT, UPDATE, DELETE)
  * - Result set processing
- * - Transaction management
+ * - Transaction management (via TransactionManager)
+ * - Schema validation (via SchemaInspector)
  * - Database cleanup operations
- * - Schema validation
  *
  * Usage Example:
  * <pre>
@@ -35,12 +35,17 @@ public class DatabaseTestUtils {
     private final ThreadLocal<Connection> connectionHolder = new ThreadLocal<>();
     private final DatabaseType dbType;
 
+    private final TransactionManager transactionManager;
+    private final SchemaInspector schemaInspector;
+
     /**
      * Initialize database utilities with default configuration.
      * Detects database type from application.properties (sql.connection.string).
      */
     public DatabaseTestUtils() {
         this.dbType = detectDatabaseType();
+        this.transactionManager = new TransactionManager(this::getConnectionUnchecked);
+        this.schemaInspector = new SchemaInspector(this::getConnectionUnchecked, this);
         log.info("DatabaseTestUtils initialized (pooled, thread-safe) for database type: {}", dbType);
     }
 
@@ -51,6 +56,8 @@ public class DatabaseTestUtils {
      */
     public DatabaseTestUtils(DatabaseType dbType) {
         this.dbType = dbType;
+        this.transactionManager = new TransactionManager(this::getConnectionUnchecked);
+        this.schemaInspector = new SchemaInspector(this::getConnectionUnchecked, this);
         log.info("DatabaseTestUtils initialized (pooled, thread-safe) for database type: {}", dbType);
     }
 
@@ -63,6 +70,18 @@ public class DatabaseTestUtils {
             return DatabaseType.POSTGRESQL;
         }
         return DatabaseType.MYSQL;
+    }
+
+    /**
+     * Unchecked wrapper for getConnection() used by delegates.
+     * Converts checked SQLException to unchecked RuntimeException.
+     */
+    private Connection getConnectionUnchecked() {
+        try {
+            return getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to obtain database connection", e);
+        }
     }
 
     // ========== Connection Management ==========
@@ -257,7 +276,7 @@ public class DatabaseTestUtils {
         }
     }
 
-    // ========== Transaction Management ==========
+    // ========== Transaction Management (delegates to TransactionManager) ==========
 
     /**
      * Begin transaction
@@ -265,9 +284,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if transaction start fails
      */
     public void beginTransaction() throws SQLException {
-        Connection conn = getConnection();
-        conn.setAutoCommit(false);
-        log.info("Transaction started");
+        transactionManager.beginTransaction();
     }
 
     /**
@@ -276,12 +293,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if commit fails
      */
     public void commitTransaction() throws SQLException {
-        Connection connection = connectionHolder.get();
-        if (connection != null && !connection.getAutoCommit()) {
-            connection.commit();
-            connection.setAutoCommit(true);
-            log.info("Transaction committed");
-        }
+        transactionManager.commitTransaction();
     }
 
     /**
@@ -290,12 +302,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if rollback fails
      */
     public void rollbackTransaction() throws SQLException {
-        Connection connection = connectionHolder.get();
-        if (connection != null && !connection.getAutoCommit()) {
-            connection.rollback();
-            connection.setAutoCommit(true);
-            log.info("Transaction rolled back");
-        }
+        transactionManager.rollbackTransaction();
     }
 
     /**
@@ -305,18 +312,32 @@ public class DatabaseTestUtils {
      * @throws Exception if transaction fails
      */
     public void executeInTransaction(TransactionCallback transaction) throws Exception {
-        try {
-            beginTransaction();
-            transaction.execute(this);
-            commitTransaction();
-        } catch (Exception e) {
-            rollbackTransaction();
-            log.error("Transaction failed and was rolled back", e);
-            throw e;
-        }
+        transactionManager.executeInTransaction(this, db -> transaction.execute(db));
     }
 
-    // ========== Data Validation ==========
+    // ========== Schema Inspection (delegates to SchemaInspector) ==========
+
+    /**
+     * Check if table exists
+     *
+     * @param tableName Table name
+     * @return true if table exists
+     * @throws SQLException if query fails
+     */
+    public boolean tableExists(String tableName) throws SQLException {
+        return schemaInspector.tableExists(tableName);
+    }
+
+    /**
+     * Get table columns
+     *
+     * @param tableName Table name
+     * @return List of column names
+     * @throws SQLException if query fails
+     */
+    public List<String> getTableColumns(String tableName) throws SQLException {
+        return schemaInspector.getTableColumns(tableName);
+    }
 
     /**
      * Count rows in table
@@ -326,9 +347,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if query fails
      */
     public long countRows(String tableName) throws SQLException {
-        String query = String.format("SELECT COUNT(*) FROM %s", tableName);
-        Object count = executeQuerySingleValue(query);
-        return count == null ? 0 : ((Number) count).longValue();
+        return schemaInspector.countRows(tableName);
     }
 
     /**
@@ -341,9 +360,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if query fails
      */
     public long countRowsWhere(String tableName, String whereClause, Object... params) throws SQLException {
-        String query = String.format("SELECT COUNT(*) FROM %s WHERE %s", tableName, whereClause);
-        Object count = executeQuerySingleValue(query, params);
-        return count == null ? 0 : ((Number) count).longValue();
+        return schemaInspector.countRowsWhere(tableName, whereClause, params);
     }
 
     /**
@@ -356,43 +373,7 @@ public class DatabaseTestUtils {
      * @throws SQLException if query fails
      */
     public boolean recordExists(String tableName, String whereClause, Object... params) throws SQLException {
-        return countRowsWhere(tableName, whereClause, params) > 0;
-    }
-
-    /**
-     * Get table columns
-     *
-     * @param tableName Table name
-     * @return List of column names
-     * @throws SQLException if query fails
-     */
-    public List<String> getTableColumns(String tableName) throws SQLException {
-        List<String> columns = new ArrayList<>();
-        DatabaseMetaData metaData = getConnection().getMetaData();
-
-        try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
-            while (rs.next()) {
-                columns.add(rs.getString("COLUMN_NAME"));
-            }
-        }
-
-        log.info("Table '{}' has columns: {}", tableName, columns);
-        return columns;
-    }
-
-    /**
-     * Check if table exists
-     *
-     * @param tableName Table name
-     * @return true if table exists
-     * @throws SQLException if query fails
-     */
-    public boolean tableExists(String tableName) throws SQLException {
-        DatabaseMetaData metaData = getConnection().getMetaData();
-
-        try (ResultSet rs = metaData.getTables(null, null, tableName, new String[]{"TABLE"})) {
-            return rs.next();
-        }
+        return schemaInspector.recordExists(tableName, whereClause, params);
     }
 
     // ========== Data Cleanup ==========
@@ -429,11 +410,6 @@ public class DatabaseTestUtils {
 
     /**
      * Prepare statement with parameters
-     *
-     * @param query SQL query
-     * @param params Parameters
-     * @return Prepared statement
-     * @throws SQLException if preparation fails
      */
     private PreparedStatement prepareStatement(String query, Object... params) throws SQLException {
         Connection conn = getConnection();
@@ -444,10 +420,6 @@ public class DatabaseTestUtils {
 
     /**
      * Set parameters on prepared statement
-     *
-     * @param stmt PreparedStatement
-     * @param params Parameters
-     * @throws SQLException if parameter setting fails
      */
     private void setParameters(PreparedStatement stmt, Object... params) throws SQLException {
         for (int i = 0; i < params.length; i++) {

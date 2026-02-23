@@ -89,7 +89,7 @@ public class SmokeTests extends BaseMultibankTest {
         log.info("Starting smoke test: Full page scroll and return");
 
         footerPage.scrollToFooter();
-        page.waitForTimeout(1000);
+        page.waitForLoadState();
 
         assertThat(footerPage.isFooterDisplayed())
                 .as("Footer should be visible after scrolling down")

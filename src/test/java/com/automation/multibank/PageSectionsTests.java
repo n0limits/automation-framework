@@ -64,7 +64,7 @@ public class PageSectionsTests extends BaseMultibankTest {
         log.info("Starting test: Footer download links verification");
 
         footerPage.scrollToFooter();
-        page.waitForTimeout(1000);
+        page.waitForLoadState();
 
         assertThat(footerPage.isFooterDisplayed())
                 .as("Footer should be displayed")

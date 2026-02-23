@@ -1,5 +1,6 @@
 package com.automation.pages.multibank;
 
+import com.automation.config.TestConfig;
 import com.automation.pages.BasePage;
 import com.microsoft.playwright.Locator;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,10 @@ import java.util.List;
 
 @Slf4j
 public class FooterPage extends BasePage {
+
+    // Configurable timeouts from TestConfig
+    private final int elementTimeout;
+    private final int shortTimeout;
 
     // ============================================================
     // Locator Fields
@@ -36,6 +41,11 @@ public class FooterPage extends BasePage {
     public FooterPage() {
         super();
 
+        // Initialize configurable timeouts
+        TestConfig config = TestConfig.getInstance();
+        this.elementTimeout = config.getElementTimeout();
+        this.shortTimeout = config.getShortTimeout();
+
         // Initialize Footer Locators
         this.footerSection = page.locator("[class*='app-download-container'], [class*='buttons-container']").first();
 
@@ -60,7 +70,7 @@ public class FooterPage extends BasePage {
 
     public boolean isFooterDisplayed() {
         try {
-            footerSection.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            footerSection.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Footer section is displayed");
             return true;
         } catch (Exception e) {
@@ -71,7 +81,7 @@ public class FooterPage extends BasePage {
 
     public boolean isAppStoreLinkVisible() {
         try {
-            appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("App Store link is visible");
             return true;
         } catch (Exception e) {
@@ -82,7 +92,7 @@ public class FooterPage extends BasePage {
 
     public boolean isGooglePlayLinkVisible() {
         try {
-            googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Google Play link is visible");
             return true;
         } catch (Exception e) {
@@ -92,14 +102,14 @@ public class FooterPage extends BasePage {
     }
 
     public String getAppStoreUrl() {
-        appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+        appStoreLink.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
         String href = appStoreLink.getAttribute("href");
         log.info("App Store URL: {}", href);
         return href;
     }
 
     public String getGooglePlayUrl() {
-        googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+        googlePlayLink.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
         String href = googlePlayLink.getAttribute("href");
         log.info("Google Play URL: {}", href);
         return href;
@@ -107,7 +117,7 @@ public class FooterPage extends BasePage {
 
     public boolean isQRCodeVisible() {
         try {
-            qrCode.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            qrCode.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("QR code is visible");
             return true;
         } catch (Exception e) {
@@ -123,7 +133,7 @@ public class FooterPage extends BasePage {
             page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
 
             // Wait for at least one banner with explicit timeout
-            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             int count = marketingBanner.count();
             log.info("Found {} marketing banners", count);
             return count > 0;
@@ -136,7 +146,7 @@ public class FooterPage extends BasePage {
     public List<String> getMarketingBannerTexts() {
         List<String> bannerTexts = new ArrayList<>();
         try {
-            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            marketingBanner.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             List<Locator> banners = marketingBanner.all();
 
             for (Locator banner : banners) {
@@ -156,7 +166,7 @@ public class FooterPage extends BasePage {
 
     public boolean isInstantBuyBannerVisible() {
         try {
-            instantBuyBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            instantBuyBanner.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Instant Buy banner is visible");
             return true;
         } catch (Exception e) {
@@ -167,7 +177,7 @@ public class FooterPage extends BasePage {
 
     public boolean isCardTransferBannerVisible() {
         try {
-            cardTransferBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            cardTransferBanner.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Card/Transfer banner is visible");
             return true;
         } catch (Exception e) {
@@ -178,7 +188,7 @@ public class FooterPage extends BasePage {
 
     public boolean isSupportBannerVisible() {
         try {
-            supportBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            supportBanner.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Support banner is visible");
             return true;
         } catch (Exception e) {
@@ -194,7 +204,7 @@ public class FooterPage extends BasePage {
             page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
 
             Locator specificBanner = page.locator(String.format(":has-text('%s')", bannerText)).first();
-            specificBanner.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+            specificBanner.waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
             log.debug("Banner containing '{}' is visible", bannerText);
             return true;
         } catch (Exception e) {
@@ -216,7 +226,7 @@ public class FooterPage extends BasePage {
     public boolean areSocialMediaLinksVisible() {
         try {
             // Use shorter timeout since these might not exist
-            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(3000));
+            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             int count = socialMediaLinks.count();
             log.info("Found {} social media links", count);
             return count > 0;
@@ -229,7 +239,7 @@ public class FooterPage extends BasePage {
     public List<String> getSocialMediaLinks() {
         List<String> links = new ArrayList<>();
         try {
-            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+            socialMediaLinks.first().waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             List<Locator> socialLinks = socialMediaLinks.all();
 
             for (Locator link : socialLinks) {
@@ -252,26 +262,17 @@ public class FooterPage extends BasePage {
         log.debug("Scrolled to footer");
     }
 
-    public boolean verifyDownloadLinksPointToCorrectStores() {
-        boolean appStoreValid = false;
-        boolean googlePlayValid = false;
-
-        try {
-            String appStoreUrl = getAppStoreUrl();
-            appStoreValid = appStoreUrl != null && appStoreUrl.contains("apple.com");
-            log.info("App Store link valid: {}", appStoreValid);
-        } catch (Exception e) {
-            log.error("Failed to verify App Store link", e);
+    public void verifyDownloadLinksPointToCorrectStores() {
+        String appStoreUrl = getAppStoreUrl();
+        if (appStoreUrl == null || !appStoreUrl.contains("apple.com")) {
+            throw new AssertionError("App Store link is invalid. URL: " + appStoreUrl);
         }
+        log.info("App Store link valid: {}", appStoreUrl);
 
-        try {
-            String googlePlayUrl = getGooglePlayUrl();
-            googlePlayValid = googlePlayUrl != null && googlePlayUrl.contains("play.google.com");
-            log.info("Google Play link valid: {}", googlePlayValid);
-        } catch (Exception e) {
-            log.error("Failed to verify Google Play link", e);
+        String googlePlayUrl = getGooglePlayUrl();
+        if (googlePlayUrl == null || !googlePlayUrl.contains("play.google.com")) {
+            throw new AssertionError("Google Play link is invalid. URL: " + googlePlayUrl);
         }
-
-        return appStoreValid && googlePlayValid;
+        log.info("Google Play link valid: {}", googlePlayUrl);
     }
 }

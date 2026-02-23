@@ -25,14 +25,14 @@ public class PageSectionsSteps {
     @When("I scroll to the bottom of the page")
     public void iScrollToTheBottomOfThePage() {
         getFooterPage().scrollToFooter();
-        PlaywrightManager.getPage().waitForTimeout(1000);
+        PlaywrightManager.getPage().waitForLoadState();
         log.info("Scrolled to bottom of page");
     }
 
     @When("I scroll to the top of the page")
     public void iScrollToTheTopOfThePage() {
         PlaywrightManager.getPage().evaluate("window.scrollTo(0, 0)");
-        PlaywrightManager.getPage().waitForTimeout(500);
+        PlaywrightManager.getPage().waitForLoadState();
         log.info("Scrolled to top of page");
     }
 

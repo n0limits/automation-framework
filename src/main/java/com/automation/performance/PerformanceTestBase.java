@@ -101,46 +101,14 @@ public abstract class PerformanceTestBase extends BaseTest {
         // Submit tasks
         for (int user = 0; user < numberOfUsers; user++) {
             for (int iteration = 0; iteration < iterationsPerUser; iteration++) {
-                Future<Boolean> future = executorService.submit(() -> {
-                    long requestStart = System.currentTimeMillis();
-                    boolean success = false;
-
-                    try {
-                        success = task.call();
-                        long responseTime = System.currentTimeMillis() - requestStart;
-                        metricsCollector.recordRequest(responseTime, success);
-                    } catch (Exception e) {
-                        long responseTime = System.currentTimeMillis() - requestStart;
-                        metricsCollector.recordRequest(responseTime, false);
-                        log.error("Request failed", e);
-                    }
-
-                    return success;
-                });
-                futures.add(future);
+                futures.add(submitTimedTask(task));
             }
         }
 
         // Wait for all tasks to complete
-        int successCount = 0;
-        int failureCount = 0;
-
-        for (Future<Boolean> future : futures) {
-            try {
-                Boolean result = future.get(defaultTimeout, TimeUnit.SECONDS);
-                if (result != null && result) {
-                    successCount++;
-                } else {
-                    failureCount++;
-                }
-            } catch (TimeoutException e) {
-                failureCount++;
-                log.error("Request timed out", e);
-            } catch (Exception e) {
-                failureCount++;
-                log.error("Request execution failed", e);
-            }
-        }
+        int[] counts = collectResults(futures);
+        int successCount = counts[0];
+        int failureCount = counts[1];
 
         long endTime = System.currentTimeMillis();
         long totalDuration = endTime - startTime;
@@ -158,12 +126,12 @@ public abstract class PerformanceTestBase extends BaseTest {
         log.info("  Total Requests: {}", result.getTotalRequests());
         log.info("  Successful: {}", result.getSuccessfulRequests());
         log.info("  Failed: {}", result.getFailedRequests());
-        log.info("  Success Rate: {:.2f}%", result.getSuccessRate());
+        log.info("  Success Rate: {}%", String.format("%.2f", result.getSuccessRate()));
         log.info("  Duration: {} ms", result.getTotalDuration());
-        log.info("  Throughput: {:.2f} req/s", result.getThroughput());
-        log.info("  Avg Response Time: {:.2f} ms", result.getAverageResponseTime());
-        log.info("  P95 Response Time: {:.2f} ms", result.getP95ResponseTime());
-        log.info("  P99 Response Time: {:.2f} ms", result.getP99ResponseTime());
+        log.info("  Throughput: {} req/s", String.format("%.2f", result.getThroughput()));
+        log.info("  Avg Response Time: {} ms", String.format("%.2f", result.getAverageResponseTime()));
+        log.info("  P95 Response Time: {} ms", String.format("%.2f", result.getP95ResponseTime()));
+        log.info("  P99 Response Time: {} ms", String.format("%.2f", result.getP99ResponseTime()));
 
         return result;
     }
@@ -197,23 +165,7 @@ public abstract class PerformanceTestBase extends BaseTest {
 
             for (int user = 0; user < usersThisSecond; user++) {
                 for (int iteration = 0; iteration < iterationsPerUser; iteration++) {
-                    Future<Boolean> future = executorService.submit(() -> {
-                        long requestStart = System.currentTimeMillis();
-                        boolean success = false;
-
-                        try {
-                            success = task.call();
-                            long responseTime = System.currentTimeMillis() - requestStart;
-                            metricsCollector.recordRequest(responseTime, success);
-                        } catch (Exception e) {
-                            long responseTime = System.currentTimeMillis() - requestStart;
-                            metricsCollector.recordRequest(responseTime, false);
-                            log.error("Request failed during ramp", e);
-                        }
-
-                        return success;
-                    });
-                    futures.add(future);
+                    futures.add(submitTimedTask(task));
                 }
             }
 
@@ -229,29 +181,15 @@ public abstract class PerformanceTestBase extends BaseTest {
         }
 
         // Wait for all tasks to complete
-        int successCount = 0;
-        int failureCount = 0;
-
-        for (Future<Boolean> future : futures) {
-            try {
-                Boolean result = future.get(defaultTimeout, TimeUnit.SECONDS);
-                if (result != null && result) {
-                    successCount++;
-                } else {
-                    failureCount++;
-                }
-            } catch (Exception e) {
-                failureCount++;
-            }
-        }
+        int[] counts = collectResults(futures);
 
         long endTime = System.currentTimeMillis();
         long totalDuration = endTime - startTime;
 
         return new PerformanceResult(
                 futures.size(),
-                successCount,
-                failureCount,
+                counts[0],
+                counts[1],
                 totalDuration,
                 metricsCollector
         );
@@ -291,29 +229,15 @@ public abstract class PerformanceTestBase extends BaseTest {
         futures.addAll(submitLoadForDuration(task, normalLoad, normalDuration));
 
         // Collect results
-        int successCount = 0;
-        int failureCount = 0;
-
-        for (Future<Boolean> future : futures) {
-            try {
-                Boolean result = future.get(defaultTimeout, TimeUnit.SECONDS);
-                if (result != null && result) {
-                    successCount++;
-                } else {
-                    failureCount++;
-                }
-            } catch (Exception e) {
-                failureCount++;
-            }
-        }
+        int[] counts = collectResults(futures);
 
         long endTime = System.currentTimeMillis();
         long totalDuration = endTime - startTime;
 
         return new PerformanceResult(
                 futures.size(),
-                successCount,
-                failureCount,
+                counts[0],
+                counts[1],
                 totalDuration,
                 metricsCollector
         );
@@ -335,22 +259,7 @@ public abstract class PerformanceTestBase extends BaseTest {
 
         while (System.currentTimeMillis() < endTime) {
             for (int i = 0; i < users; i++) {
-                Future<Boolean> future = executorService.submit(() -> {
-                    long requestStart = System.currentTimeMillis();
-                    boolean success = false;
-
-                    try {
-                        success = task.call();
-                        long responseTime = System.currentTimeMillis() - requestStart;
-                        metricsCollector.recordRequest(responseTime, success);
-                    } catch (Exception e) {
-                        long responseTime = System.currentTimeMillis() - requestStart;
-                        metricsCollector.recordRequest(responseTime, false);
-                    }
-
-                    return success;
-                });
-                futures.add(future);
+                futures.add(submitTimedTask(task));
             }
 
             // Small delay between iterations
@@ -363,6 +272,55 @@ public abstract class PerformanceTestBase extends BaseTest {
         }
 
         return futures;
+    }
+
+    /**
+     * Submit a single timed task that records metrics on completion.
+     * Centralises the submit-and-record pattern used by all load test modes.
+     */
+    private Future<Boolean> submitTimedTask(Callable<Boolean> task) {
+        return executorService.submit(() -> {
+            long requestStart = System.currentTimeMillis();
+            boolean success = false;
+
+            try {
+                success = task.call();
+                long responseTime = System.currentTimeMillis() - requestStart;
+                metricsCollector.recordRequest(responseTime, success);
+            } catch (Exception e) {
+                long responseTime = System.currentTimeMillis() - requestStart;
+                metricsCollector.recordRequest(responseTime, false);
+                log.error("Request failed", e);
+            }
+
+            return success;
+        });
+    }
+
+    /**
+     * Collect results from futures, counting successes and failures.
+     *
+     * @return int array where [0] = successCount, [1] = failureCount
+     */
+    private int[] collectResults(List<Future<Boolean>> futures) {
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (Future<Boolean> future : futures) {
+            try {
+                Boolean result = future.get(defaultTimeout, TimeUnit.SECONDS);
+                if (result != null && result) {
+                    successCount++;
+                } else {
+                    failureCount++;
+                }
+            } catch (Exception e) {
+                failureCount++;
+                log.error("Request execution failed", e);
+            }
+        }
+
+        return new int[]{successCount, failureCount};
     }
 
     /**
@@ -387,10 +345,10 @@ public abstract class PerformanceTestBase extends BaseTest {
                 result.getP95ResponseTime(), maxP95ResponseTime, meetsP95ResponseTime);
         log.info("  [OK] P99 Response Time: {} ms <= {} ms: {}",
                 result.getP99ResponseTime(), maxP99ResponseTime, meetsP99ResponseTime);
-        log.info("  [OK] Success Rate: {:.2f}% >= {:.2f}%: {}",
-                result.getSuccessRate(), minSuccessRate, meetsSuccessRate);
-        log.info("  [OK] Throughput: {:.2f} req/s >= {:.2f} req/s: {}",
-                result.getThroughput(), minThroughput, meetsThroughput);
+        log.info("  [OK] Success Rate: {}% >= {}%: {}",
+                String.format("%.2f", result.getSuccessRate()), String.format("%.2f", minSuccessRate), meetsSuccessRate);
+        log.info("  [OK] Throughput: {} req/s >= {} req/s: {}",
+                String.format("%.2f", result.getThroughput()), String.format("%.2f", minThroughput), meetsThroughput);
 
         boolean meetsSLA = meetsAvgResponseTime && meetsP95ResponseTime &&
                 meetsP99ResponseTime && meetsSuccessRate && meetsThroughput;
@@ -412,13 +370,13 @@ public abstract class PerformanceTestBase extends BaseTest {
         log.info("Total Requests: {}", metricsCollector.getTotalRequests());
         log.info("Successful Requests: {}", metricsCollector.getSuccessfulRequests());
         log.info("Failed Requests: {}", metricsCollector.getFailedRequests());
-        log.info("Success Rate: {:.2f}%", metricsCollector.getSuccessRate());
-        log.info("Average Response Time: {:.2f} ms", metricsCollector.getAverageResponseTime());
+        log.info("Success Rate: {}%", String.format("%.2f", metricsCollector.getSuccessRate()));
+        log.info("Average Response Time: {} ms", String.format("%.2f", metricsCollector.getAverageResponseTime()));
         log.info("Min Response Time: {} ms", metricsCollector.getMinResponseTime());
         log.info("Max Response Time: {} ms", metricsCollector.getMaxResponseTime());
-        log.info("P50 Response Time: {:.2f} ms", metricsCollector.getPercentile(50));
-        log.info("P95 Response Time: {:.2f} ms", metricsCollector.getPercentile(95));
-        log.info("P99 Response Time: {:.2f} ms", metricsCollector.getPercentile(99));
+        log.info("P50 Response Time: {} ms", String.format("%.2f", metricsCollector.getPercentile(50)));
+        log.info("P95 Response Time: {} ms", String.format("%.2f", metricsCollector.getPercentile(95)));
+        log.info("P99 Response Time: {} ms", String.format("%.2f", metricsCollector.getPercentile(99)));
         log.info("=======================================");
     }
 

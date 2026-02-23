@@ -140,29 +140,26 @@ public class TradingPage extends BasePage {
 
     public List<String> getTradingPairs() {
         List<String> pairs = new ArrayList<>();
-        try {
-            // Wait for rows to be present
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            // Wait for data to populate using configurable polling
-            waitForDataToPopulate(tradingPairRows.first().locator("td").first());
+        // Wait for rows to be present
+        tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            List<Locator> rows = tradingPairRows.all();
+        // Wait for data to populate using configurable polling
+        waitForDataToPopulate(tradingPairRows.first().locator("td").first());
 
-            for (Locator row : rows) {
-                Locator firstCell = row.locator("td").first();
-                if (firstCell.count() > 0) {
-                    String pair = firstCell.textContent().trim();
-                    if (!pair.isEmpty()) {
-                        pairs.add(pair);
-                    }
+        List<Locator> rows = tradingPairRows.all();
+
+        for (Locator row : rows) {
+            Locator firstCell = row.locator("td").first();
+            if (firstCell.count() > 0) {
+                String pair = firstCell.textContent().trim();
+                if (!pair.isEmpty()) {
+                    pairs.add(pair);
                 }
             }
-
-            log.info("Found {} trading pairs", pairs.size());
-        } catch (Exception e) {
-            log.error("Failed to get trading pairs", e);
         }
+
+        log.info("Found {} trading pairs", pairs.size());
         return pairs;
     }
 
@@ -202,58 +199,52 @@ public class TradingPage extends BasePage {
 
     public Map<String, String> getTradingPairData(String pairName) {
         Map<String, String> data = new HashMap<>();
-        try {
-            // Wait for rows to be present and populated with data
-            tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            // Wait for data to populate using configurable polling
-            waitForDataToPopulate(tradingPairRows.first().locator("td").first());
+        // Wait for rows to be present and populated with data
+        tradingPairRows.first().waitFor(new Locator.WaitForOptions().setTimeout(elementTimeout));
 
-            List<Locator> rows = tradingPairRows.all();
+        // Wait for data to populate using configurable polling
+        waitForDataToPopulate(tradingPairRows.first().locator("td").first());
 
-            for (Locator row : rows) {
-                Locator firstCell = row.locator("td").first();
+        List<Locator> rows = tradingPairRows.all();
 
-                if (firstCell.count() > 0) {
-                    String firstCellText = firstCell.textContent();
+        for (Locator row : rows) {
+            Locator firstCell = row.locator("td").first();
 
-                    if (firstCellText != null && firstCellText.contains(pairName)) {
-                        List<Locator> cells = row.locator("td").all();
+            if (firstCell.count() > 0) {
+                String firstCellText = firstCell.textContent();
 
-                        // Columns: Pair, Max Leverage, Short, Long, Charts, Change 24h
-                        if (cells.size() > 0) data.put("pair", cells.get(0).textContent());
-                        if (cells.size() > 1) data.put("leverage", cells.get(1).textContent());
-                        if (cells.size() > 5) data.put("change", cells.get(5).textContent());
+                if (firstCellText != null && firstCellText.contains(pairName)) {
+                    List<Locator> cells = row.locator("td").all();
 
-                        log.info("Retrieved trading pair data for {}", pairName);
-                        break;
-                    }
+                    // Columns: Pair, Max Leverage, Short, Long, Charts, Change 24h
+                    if (cells.size() > 0) data.put("pair", cells.get(0).textContent());
+                    if (cells.size() > 1) data.put("leverage", cells.get(1).textContent());
+                    if (cells.size() > 5) data.put("change", cells.get(5).textContent());
+
+                    log.info("Retrieved trading pair data for {}", pairName);
+                    break;
                 }
             }
-        } catch (Exception e) {
-            log.error("Failed to get trading pair data for {}", pairName, e);
         }
+
         return data;
     }
 
     public List<String> getTableColumns() {
         List<String> columns = new ArrayList<>();
-        try {
-            // Target: Pair, Max Leverage, Short, Long, Charts, Change 24h
-            Locator headers = tradingPairsTable.locator("thead th, thead td, th");
 
-            for (Locator h : headers.all()) {
-                String text = h.textContent();
-                if (text != null && !text.trim().isEmpty()) {
-                    columns.add(text.trim());
-                }
+        // Target: Pair, Max Leverage, Short, Long, Charts, Change 24h
+        Locator headers = tradingPairsTable.locator("thead th, thead td, th");
+
+        for (Locator h : headers.all()) {
+            String text = h.textContent();
+            if (text != null && !text.trim().isEmpty()) {
+                columns.add(text.trim());
             }
-
-            log.info("Found table columns: {}", columns);
-        } catch (Exception e) {
-            log.error("Failed to read table columns", e);
         }
 
+        log.info("Found table columns: {}", columns);
         return columns;
     }
 
@@ -279,9 +270,6 @@ public class TradingPage extends BasePage {
 
     public boolean isMBGTokenSectionVisible() {
         try {
-            // Scroll down to make section visible
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.6)");
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
             mbgTokenSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return mbgTokenSection.isVisible();
         } catch (Exception e) {
@@ -292,9 +280,6 @@ public class TradingPage extends BasePage {
 
     public boolean isRealWorldAssetsSectionVisible() {
         try {
-            // Scroll down to make section visible
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight * 0.7)");
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED);
             realWorldAssetsSection.waitFor(new Locator.WaitForOptions().setTimeout(shortTimeout));
             return realWorldAssetsSection.isVisible();
         } catch (Exception e) {

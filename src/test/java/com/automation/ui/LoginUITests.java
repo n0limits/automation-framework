@@ -1,6 +1,6 @@
 package com.automation.ui;
 
-import com.automation.base.BaseTest;
+import com.automation.base.BaseWebTest;
 import com.automation.pages.LoginPage;
 import com.automation.pages.TradingDashboardPage;
 import io.qameta.allure.*;
@@ -11,7 +11,12 @@ import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * UI Tests for Login functionality
+ * UI Tests for Login functionality.
+ *
+ * <p><b>STATUS: DISABLED</b> — All {@code @Test} annotations are commented out because
+ * no login credentials are available for the target environment. Re-enable when
+ * credentials or a test account are provisioned.</p>
+ *
  * Tests cover:
  * - Valid login scenarios
  * - Invalid credentials handling
@@ -23,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @Feature("Login UI")
-public class LoginUITests extends BaseTest {
+public class LoginUITests extends BaseWebTest {
     private LoginPage loginPage;
     private TradingDashboardPage dashboardPage;
 

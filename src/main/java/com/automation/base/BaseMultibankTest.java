@@ -37,7 +37,7 @@ public class BaseMultibankTest extends BaseWebTest {
      */
     protected void scrollToPercentage(double percentage) {
         page.evaluate("window.scrollTo(0, document.body.scrollHeight * " + percentage + ")");
-        page.waitForTimeout(500);
+        page.waitForLoadState();
         log.debug("Scrolled to {}% of page", (int) (percentage * 100));
     }
 
@@ -46,7 +46,7 @@ public class BaseMultibankTest extends BaseWebTest {
      */
     protected void scrollToTop() {
         page.evaluate("window.scrollTo(0, 0)");
-        page.waitForTimeout(500);
+        page.waitForLoadState();
         log.debug("Scrolled to top of page");
     }
 

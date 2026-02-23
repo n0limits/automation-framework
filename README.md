@@ -1,6 +1,6 @@
 # Core Automation Framework
 
-Version 2.0
+Version 2.2
 
 **Created by:** Victor Grozev
 
@@ -12,6 +12,7 @@ Enterprise-grade test automation framework built with Playwright, RestAssured, T
 
 - [Overview](#overview)
 - [Framework Architecture](#framework-architecture)
+- [Architecture Reference](#architecture-reference)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
@@ -99,11 +100,18 @@ The Core Automation Framework is a production-ready test automation solution tha
 ### Design Patterns Implemented
 
 - **Page Object Model (POM)** -- UI test organization and maintainability
-- **Factory Pattern** -- Browser creation (BrowserFactory, CloudBrowserFactory), database connections (DatabaseConnectionFactory)
+- **Template Method Pattern** -- Lifecycle extension hooks (`performAdditionalSetup()`, `performAdditionalAPISetup()`, `performAdditionalAWSSetup()`) let subclasses inject behaviour without overriding `@BeforeMethod` / `@AfterMethod`
+- **Factory Pattern** -- Browser creation (BrowserFactory, CloudBrowserFactory)
 - **Builder Pattern** -- Test data construction (TestDataBuilder, PersonDataBuilder, etc.), SQL queries (QueryBuilder), self-healing locators (SelfHealingLocator)
 - **Singleton Pattern** -- Configuration (TestConfig), metrics (TestMetrics)
 - **ThreadLocal Pattern** -- Thread-safe parallel execution (PlaywrightManager stores Playwright, Browser, BrowserContext, Page per thread)
 - **Fluent Interface Pattern** -- Chainable assertions (UIAssertions, DatabaseAssertions), data builders
+
+---
+
+## Architecture Reference
+
+For deep internals — class hierarchy with lifecycle ordering, thread safety model, extension points, DataProvider architecture, wait strategy rationale, test data isolation patterns, design patterns reference, retry mechanism, and parallelism constraints — see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ---
 
@@ -142,7 +150,7 @@ automation-framework/
 |   |   |   +-- ConnectionPoolManager.java    # HikariCP connection pooling
 |   |   |   +-- DatabaseAssertions.java       # Fluent DB assertions
 |   |   |   +-- DatabaseConnection.java       # Connection interface
-|   |   |   +-- DatabaseConnectionFactory.java # Factory for DB connections
+|   |   |   +-- DatabaseConnectionFactory.java # (Deprecated) Legacy connection factory
 |   |   |   +-- DatabaseTestUtils.java        # JDBC utility methods
 |   |   |   +-- DatabaseType.java             # DB type enum
 |   |   |   +-- MongoDBConnection.java        # MongoDB implementation
@@ -297,7 +305,8 @@ automation-framework/
 |       +-- testdata/                         # Test data JSON files
 |
 +-- pom.xml                                  # Maven configuration
-+-- README.md                                 # This file
++-- README.md                                # This file
++-- ARCHITECTURE.md                          # Developer reference (class hierarchy, lifecycle, thread safety)
 ```
 
 ---
@@ -753,7 +762,7 @@ All page objects extend `BasePage`, which provides 30+ methods:
 
 **Navigation:**
 - `navigateTo(url)` -- navigate and wait for load
-- `waitForPageLoad()` -- wait for network idle
+- `waitForPageLoad()` -- wait for page load (LOAD state)
 - `reload()` -- reload page
 - `getCurrentUrl()` / `getTitle()`
 
@@ -933,15 +942,16 @@ public class MyAPITests extends BaseAPITest {
 - **MySQL / MariaDB** -- via JDBC (MySQL Connector)
 - **PostgreSQL** -- via JDBC (PostgreSQL Driver)
 
-### Connection Factory
+### Connection Management
 
-Connections are created via `DatabaseConnectionFactory`:
+Database connections are managed by `ConnectionPoolManager` using HikariCP for pooling. Access them through `DatabaseTestUtils` — this is the canonical entry point for all SQL tests:
 
 ```java
-DatabaseConnection conn = DatabaseConnectionFactory.create(DatabaseType.MYSQL);
+DatabaseTestUtils dbUtils = new DatabaseTestUtils();
+// ConnectionPoolManager and HikariCP handle pooling transparently
 ```
 
-Connection pooling is managed by `ConnectionPoolManager` using HikariCP.
+> **Note:** `DatabaseConnectionFactory` is deprecated and no longer used by any active test code. Use `DatabaseTestUtils` directly.
 
 ### DatabaseTestUtils
 
@@ -1280,7 +1290,28 @@ Map<String, Object> order = new OrderDataBuilder()
 
 ### TestNG Data Providers
 
-`TestDataProviders` provides reusable data providers for parameterized tests. JSON test data files are loaded via `TestDataReader`.
+`TestDataProviders` centralizes all reusable data providers for parameterized tests:
+
+| Provider Name | Data | Used By |
+|--------------|------|---------|
+| `navigationItemsProvider` | Dashboard, Markets with expected URL paths | NavigationTests |
+| `allNavigationItemsProvider` | All 6 nav items with expected URL paths | NavigationTests |
+| `tradingSymbolsProvider` | BTCUSD, ETHUSD, XRPUSD | TradingTests, TradingAPITests |
+| `tradingTabsProvider` | All Pairs, Favorites tab names | TradingTests |
+| `expectedColumnsProvider` | Pair, Max Leverage, Change 24h | TradingTests |
+| `authenticatedEndpointsProvider` | API endpoint paths that require authentication | TradingAPITests |
+| `userDataProvider` | Randomly generated username + email pairs | UI / API tests |
+
+`userDataProvider` is backed by `TestDataFactory` (JavaFaker) and generates unique, realistic credentials on every run:
+
+```java
+@Test(dataProvider = "userDataProvider", dataProviderClass = TestDataProviders.class)
+public void testWithUser(String username, String email) {
+    // username and email are freshly generated per iteration
+}
+```
+
+JSON test data files are loaded via `TestDataReader`.
 
 ---
 
@@ -1550,6 +1581,35 @@ Traces are only saved on test failure when `tracing.enabled=true`.
 
 ---
 
+## Changelog
+
+### Version 2.2 (refactoring_bdd branch)
+
+**Test reliability, correctness, and documentation:**
+
+- **Hollow API tests eliminated** -- Removed dual-outcome `if/else` assertions from `TradingAPITests` (`testCreateMarketOrder`, `testCreateLimitOrder`, `testCreateInvalidOrder`). Each test now asserts the single expected outcome; `testTradeHistoryPagination` was removed as a duplicate of the data-driven auth test.
+- **Parallel-safe DB test data** -- All hardcoded unique constraint values in `DataIntegrityTests` (usernames, order numbers) now carry a `System.currentTimeMillis()` suffix, preventing constraint violations under concurrent or retry execution. `testGroupByQuery` uses a shared prefix threaded into both inserts and the LIKE query.
+- **Integration test base class corrected** -- `TradingWorkflowIntegrationTests` now extends `BaseAWSTest` (previously `BaseTest`), inheriting the `StepFunctionsClient` lifecycle and removing duplicated setup/teardown code.
+- **APIClientTest wired into framework** -- `APIClientTest` now extends `BaseAPITest`, gaining automatic `RequestSpecification` setup/teardown per test. Added `@Feature("API Client Infrastructure")` and `@Severity` annotations on all 7 tests.
+- **`NETWORKIDLE` eliminated** -- All `waitForLoadState(NETWORKIDLE)` calls replaced with `waitForLoadState(LOAD)` across `BaseWebTest`, `BasePage`, `TradingDashboardPage`, `AccountPage`, `MobileGesturesExampleTests`, and `CommonSteps`. `NETWORKIDLE` caused CI timeouts on trading UIs with live WebSocket price feeds.
+- **ARCHITECTURE.md added** -- New developer reference covering class hierarchy, lifecycle execution order, thread safety model, extension points, DataProvider architecture, wait strategy, test data isolation, design patterns, retry mechanism, and parallelism constraints.
+
+### Version 2.1 (refactoring_bdd branch)
+
+**Quality improvements and structural fixes:**
+
+- **UI test base class corrected** -- `LoginUITests`, `AccountUITests`, and `TradingDashboardUITests` now extend `BaseWebTest` (previously `BaseTest`), ensuring Playwright is properly initialized when these tests are enabled.
+- **Single DB connection system** -- Removed the legacy `DatabaseConnectionFactory` teardown from `BaseTest`. `ConnectionPoolManager` (HikariCP) is now the sole active connection mechanism. `DatabaseConnectionFactory` is marked `@Deprecated`.
+- **Navigation URL assertion wired** -- `testNavigationItemFunctionality` in `NavigationTests` now asserts the URL after clicking each nav item, making the `expectedUrlPart` parameter meaningful.
+- **SLF4J log format fixed** -- Corrected 13 invalid `{:.2f}` format placeholders in `APIPerformanceTests` (SLF4J only supports `{}`); values are now pre-formatted with `String.format("%.2f", ...)`.
+- **TradingPage SoC restored** -- Removed hidden scroll side-effects from `isMBGTokenSectionVisible()` and `isRealWorldAssetsSectionVisible()`; visibility checks are now pure and callers control scrolling.
+- **DataProvider centralization** -- `tradingTabsProvider` and `expectedColumnsProvider` moved from `TradingTests` into the shared `TestDataProviders` class; `TradingTests` now references `dataProviderClass = TestDataProviders.class`.
+- **TestDataFactory wired** -- Added `userDataProvider` to `TestDataProviders`, backed by `TestDataFactory` (JavaFaker), making generated test data available to any parameterized test.
+- **Hardcoded sleeps replaced** -- `page.waitForTimeout(1000)` replaced with `page.waitForLoadState()` in `SmokeTests` and `PageSectionsTests`.
+- **TestDataBuilder fluent chain fixed** -- Six non-fluent `dataBuilder.forTable(); dataBuilder.with(...)` call sites in `UserDatabaseTests` corrected to proper method chaining.
+
+---
+
 ## License
 
 This project is licensed under the MIT License.
@@ -1561,7 +1621,7 @@ This project is licensed under the MIT License.
 **Victor Grozev**
 Framework Creator and Lead Developer
 
-Core Automation Framework - Version 2.0
+Core Automation Framework - Version 2.2
 
 ---
 

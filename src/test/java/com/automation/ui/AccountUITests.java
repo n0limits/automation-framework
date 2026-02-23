@@ -1,6 +1,6 @@
 package com.automation.ui;
 
-import com.automation.base.BaseTest;
+import com.automation.base.BaseWebTest;
 import com.automation.pages.AccountPage;
 import com.automation.pages.LoginPage;
 import io.qameta.allure.*;
@@ -11,7 +11,12 @@ import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * UI Tests for Account Management
+ * UI Tests for Account Management.
+ *
+ * <p><b>STATUS: DISABLED</b> — All {@code @Test} annotations are commented out because
+ * no login credentials are available for the target environment. Re-enable when
+ * credentials or a test account are provisioned.</p>
+ *
  * Tests cover:
  * - Profile viewing and updating
  * - Security settings management
@@ -24,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @Feature("Account Management UI")
-public class AccountUITests extends BaseTest {
+public class AccountUITests extends BaseWebTest {
     private LoginPage loginPage;
     private AccountPage accountPage;
 

@@ -2,16 +2,13 @@ package com.automation.integration;
 
 import com.automation.api.APIAssertions;
 import com.automation.api.TradingAPIClient;
-import com.automation.aws.AWSClientManager;
-import com.automation.aws.StepFunctionsClient;
-import com.automation.base.BaseTest;
+import com.automation.base.BaseAWSTest;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import software.amazon.awssdk.services.sfn.model.ExecutionStatus;
@@ -31,31 +28,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @Feature("Trading Workflow Integration")
-public class TradingWorkflowIntegrationTests extends BaseTest {
+public class TradingWorkflowIntegrationTests extends BaseAWSTest {
     private TradingAPIClient tradingAPI;
-    private StepFunctionsClient stepFunctionsClient;
 
     @BeforeMethod
     public void setupIntegration() {
         log.info("===== Setting up Integration Test =====");
 
-        // Initialize API client
         tradingAPI = new TradingAPIClient();
         log.info("TradingAPIClient initialized");
-
-        // Initialize Step Functions client
-        stepFunctionsClient = new StepFunctionsClient();
-        log.info("StepFunctionsClient initialized");
-        log.info("AWS Region: {}", AWSClientManager.getRegion());
-    }
-
-    @AfterMethod
-    public void tearDownIntegration() {
-        log.info("===== Tearing down Integration Test =====");
-
-        // Cleanup AWS clients
-        AWSClientManager.cleanup();
-        log.info("AWS clients cleaned up");
     }
 
     @Test(description = "Verify API data retrieval and Step Functions workflow execution")

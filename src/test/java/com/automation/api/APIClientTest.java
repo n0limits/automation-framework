@@ -1,9 +1,12 @@
 package com.automation.api;
 
+import com.automation.base.BaseAPITest;
 import com.automation.config.TestConfig;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -19,9 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Victor Grozev
  */
 @Slf4j
-public class APIClientTest {
+@Feature("API Client Infrastructure")
+public class APIClientTest extends BaseAPITest {
 
     @Test(description = "Verify APIClient initialization works")
+    @Severity(SeverityLevel.CRITICAL)
     public void testAPIClientInitialization() {
         log.info("=== Testing APIClient Initialization ===");
 
@@ -40,6 +45,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify ThreadLocal pattern - each thread gets isolated RequestSpec")
+    @Severity(SeverityLevel.CRITICAL)
     public void testThreadLocalIsolation() throws InterruptedException, ExecutionException {
         log.info("=== Testing ThreadLocal Isolation ===");
 
@@ -82,6 +88,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify cleanup removes ThreadLocal reference")
+    @Severity(SeverityLevel.NORMAL)
     public void testCleanup() {
         log.info("=== Testing ThreadLocal Cleanup ===");
 
@@ -106,6 +113,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify withAuth adds Authorization header")
+    @Severity(SeverityLevel.NORMAL)
     public void testWithAuth() {
         log.info("=== Testing withAuth() Method ===");
 
@@ -117,6 +125,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify withApiKey adds X-API-Key header")
+    @Severity(SeverityLevel.NORMAL)
     public void testWithApiKey() {
         log.info("=== Testing withApiKey() Method ===");
 
@@ -128,6 +137,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify getBaseUri returns correct value")
+    @Severity(SeverityLevel.NORMAL)
     public void testGetBaseUri() {
         log.info("=== Testing getBaseUri() Method ===");
 
@@ -141,6 +151,7 @@ public class APIClientTest {
     }
 
     @Test(description = "Verify parallel access doesn't cause race conditions")
+    @Severity(SeverityLevel.CRITICAL)
     public void testParallelAccessSafety() throws InterruptedException {
         log.info("=== Testing Parallel Access Safety ===");
 
@@ -193,10 +204,4 @@ public class APIClientTest {
         log.info("[PASS] Parallel access safe - {} threads executed without race conditions", numberOfThreads);
     }
 
-    @AfterClass
-    public void cleanup() {
-        log.info("=== Test Class Cleanup ===");
-        APIClient.cleanup();
-        log.info("APIClient ThreadLocal cleaned up");
-    }
 }

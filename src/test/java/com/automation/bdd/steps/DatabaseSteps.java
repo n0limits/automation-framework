@@ -13,16 +13,30 @@ import lombok.extern.slf4j.Slf4j;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class DatabaseSteps {
 
+    private static final AtomicLong COUNTER = new AtomicLong(System.currentTimeMillis() % 100_000);
+
     private final ScenarioContext scenarioContext;
 
     public DatabaseSteps(ScenarioContext scenarioContext) {
         this.scenarioContext = scenarioContext;
+    }
+
+    /**
+     * Append a unique suffix to prevent collisions during parallel execution.
+     * Uses threadId + counter to guarantee uniqueness across threads and scenarios.
+     */
+    private String uniquify(String baseName) {
+        long suffix = COUNTER.incrementAndGet();
+        String unique = baseName + "_" + Thread.currentThread().getId() + "_" + suffix;
+        log.debug("Uniquified '{}' → '{}'", baseName, unique);
+        return unique;
     }
 
     private DatabaseTestUtils getDbUtils() {
@@ -46,32 +60,45 @@ public class DatabaseSteps {
 
     @Given("a user exists with username {string} and email {string}")
     public void aUserExistsWithUsernameAndEmail(String username, String email) throws SQLException {
+        String actualUsername = uniquify(username);
+        String actualEmail = uniquify(email);
         Long userId = getDataBuilder()
                 .forTable("users")
-                .with("username", username)
-                .with("email", email)
+                .with("username", actualUsername)
+                .with("email", actualEmail)
                 .with("status", "active")
                 .insert();
         scenarioContext.set("lastUserId", userId);
-        log.info("Created user '{}' with ID: {}", username, userId);
+        scenarioContext.set("lastUsername", actualUsername);
+        scenarioContext.set("lastEmail", actualEmail);
+        log.info("Created user '{}' with ID: {}", actualUsername, userId);
     }
 
     @Given("a user exists with username {string} email {string} and status {string}")
     public void aUserExistsWithUsernameEmailAndStatus(String username, String email, String status) throws SQLException {
+        String actualUsername = uniquify(username);
+        String actualEmail = uniquify(email);
         Long userId = getDataBuilder()
                 .forTable("users")
-                .with("username", username)
-                .with("email", email)
+                .with("username", actualUsername)
+                .with("email", actualEmail)
                 .with("status", status)
                 .insert();
         scenarioContext.set("lastUserId", userId);
-        log.info("Created user '{}' (status: {}) with ID: {}", username, status, userId);
+        scenarioContext.set("lastUsername", actualUsername);
+        scenarioContext.set("lastEmail", actualEmail);
+        log.info("Created user '{}' (status: {}) with ID: {}", actualUsername, status, userId);
     }
 
     // ===== When =====
 
+    private static final List<String> ALLOWED_TABLES = List.of("users", "orders");
+
     @When("I query the {string} table")
     public void iQueryTheTable(String tableName) throws SQLException {
+        if (!ALLOWED_TABLES.contains(tableName.toLowerCase())) {
+            throw new IllegalArgumentException("Table name not in allowlist: " + tableName);
+        }
         List<Map<String, Object>> results = getDbUtils().executeQuery(
                 String.format("SELECT * FROM %s", tableName));
         scenarioContext.set("queryResults", results);
@@ -89,15 +116,19 @@ public class DatabaseSteps {
 
     @When("I create a user with username {string} and email {string}")
     public void iCreateAUserWithUsernameAndEmail(String username, String email) throws SQLException {
+        String actualUsername = uniquify(username);
+        String actualEmail = uniquify(email);
         Long userId = getDataBuilder()
                 .forTable("users")
-                .with("username", username)
-                .with("email", email)
+                .with("username", actualUsername)
+                .with("email", actualEmail)
                 .with("status", "active")
                 .withCurrentTimestamp("created_at")
                 .insert();
         scenarioContext.set("lastUserId", userId);
-        log.info("Created user '{}' with ID: {}", username, userId);
+        scenarioContext.set("lastUsername", actualUsername);
+        scenarioContext.set("lastEmail", actualEmail);
+        log.info("Created user '{}' with ID: {}", actualUsername, userId);
     }
 
     @When("I update the user status to {string}")
@@ -122,15 +153,16 @@ public class DatabaseSteps {
     @When("I create an order for the user with order number {string} and amount {double}")
     public void iCreateAnOrderForTheUser(String orderNumber, double amount) throws SQLException {
         Long userId = scenarioContext.get("lastUserId");
+        String actualOrderNumber = uniquify(orderNumber);
         Long orderId = getDataBuilder()
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", orderNumber)
+                .with("order_number", actualOrderNumber)
                 .with("amount", amount)
                 .with("status", "pending")
                 .insert();
         scenarioContext.set("lastOrderId", orderId);
-        log.info("Created order '{}' (amount: {}) with ID: {}", orderNumber, amount, orderId);
+        log.info("Created order '{}' (amount: {}) with ID: {}", actualOrderNumber, amount, orderId);
     }
 
     @When("I create {int} orders for the user with amounts:")
@@ -140,7 +172,7 @@ public class DatabaseSteps {
             getDataBuilder()
                     .forTable("orders")
                     .with("user_id", userId)
-                    .with("order_number", row.get("order_number"))
+                    .with("order_number", uniquify(row.get("order_number")))
                     .with("amount", Double.parseDouble(row.get("amount")))
                     .with("status", row.getOrDefault("status", "pending"))
                     .insert();
@@ -195,18 +227,22 @@ public class DatabaseSteps {
     public void theQueriedUserHasUsername(String expectedUsername) {
         Map<String, Object> user = scenarioContext.get("queriedUser");
         assertThat(user).isNotNull();
+        // Compare against the actual stored username (which has a unique suffix)
+        String actualUsername = scenarioContext.get("lastUsername");
         assertThat(user.get("username"))
-                .as("Username should match")
-                .isEqualTo(expectedUsername);
+                .as("Username should match (base: '%s')", expectedUsername)
+                .isEqualTo(actualUsername);
     }
 
     @Then("the queried user has email {string}")
     public void theQueriedUserHasEmail(String expectedEmail) {
         Map<String, Object> user = scenarioContext.get("queriedUser");
         assertThat(user).isNotNull();
+        // Compare against the actual stored email (which has a unique suffix)
+        String actualEmail = scenarioContext.get("lastEmail");
         assertThat(user.get("email"))
-                .as("Email should match")
-                .isEqualTo(expectedEmail);
+                .as("Email should match (base: '%s')", expectedEmail)
+                .isEqualTo(actualEmail);
     }
 
     @Then("the queried user has status {string}")
@@ -292,20 +328,22 @@ public class DatabaseSteps {
 
     @Then("a duplicate username {string} is rejected")
     public void aDuplicateUsernameIsRejected(String username) {
+        // Use the actual (uniquified) username that was inserted in the Given step
+        String actualUsername = scenarioContext.get("lastUsername");
         boolean duplicateFailed = false;
         try {
             getDataBuilder()
                     .forTable("users")
-                    .with("username", username)
-                    .with("email", "duplicate@test.com")
+                    .with("username", actualUsername)
+                    .with("email", uniquify("duplicate@test.com"))
                     .with("status", "active")
                     .insert(false);
         } catch (SQLException e) {
             duplicateFailed = true;
-            log.info("Duplicate username rejected as expected: {}", e.getMessage());
+            log.info("Duplicate username '{}' rejected as expected: {}", actualUsername, e.getMessage());
         }
         assertThat(duplicateFailed)
-                .as("Duplicate username should be rejected")
+                .as("Duplicate username '%s' should be rejected", actualUsername)
                 .isTrue();
     }
 }

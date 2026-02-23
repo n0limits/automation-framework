@@ -62,10 +62,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testUserOrderRelationship() throws SQLException {
         log.info("=== Test: User-Order Relationship ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "order_user")
+                .with("username", "order_user_" + ts)
                 .with("email", "orderuser@test.com")
                 .with("status", "active")
                 .insert();
@@ -76,7 +78,7 @@ public class DataIntegrityTests extends BaseTest {
         Long orderId = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", "ORD-" + System.currentTimeMillis())
+                .with("order_number", "ORD-" + ts)
                 .with("amount", 100.50)
                 .with("status", "pending")
                 .insert();
@@ -104,10 +106,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testOneToManyRelationship() throws SQLException {
         log.info("=== Test: One-to-Many Relationship ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "multi_order_user")
+                .with("username", "multi_order_user_" + ts)
                 .with("email", "multiorder@test.com")
                 .with("status", "active")
                 .insert();
@@ -117,7 +121,7 @@ public class DataIntegrityTests extends BaseTest {
             dataBuilder
                     .forTable("orders")
                     .with("user_id", userId)
-                    .with("order_number", "ORD-" + System.currentTimeMillis() + "-" + i)
+                    .with("order_number", "ORD-" + ts + "-" + i)
                     .with("amount", 50.0 * i)
                     .with("status", "pending")
                     .insert();
@@ -156,10 +160,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testDataConsistency() throws SQLException {
         log.info("=== Test: Data Consistency ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "consistency_user")
+                .with("username", "consistency_user_" + ts)
                 .with("email", "consistency@test.com")
                 .with("status", "active")
                 .insert();
@@ -168,7 +174,7 @@ public class DataIntegrityTests extends BaseTest {
         Long order1 = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", "CONS-001")
+                .with("order_number", "CONS-001-" + ts)
                 .with("amount", 100.0)
                 .with("status", "pending")
                 .insert();
@@ -176,7 +182,7 @@ public class DataIntegrityTests extends BaseTest {
         Long order2 = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", "CONS-002")
+                .with("order_number", "CONS-002-" + ts)
                 .with("amount", 200.0)
                 .with("status", "pending")
                 .insert();
@@ -225,10 +231,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testNullHandling() throws SQLException {
         log.info("=== Test: NULL Handling ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user with optional NULL fields
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "null_test_user")
+                .with("username", "null_test_user_" + ts)
                 .with("email", "nulltest@test.com")
                 .with("status", "active")
                 .withNull("phone")
@@ -300,10 +308,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testDataTypeValidation() throws SQLException {
         log.info("=== Test: Data Type Validation ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create order with correct data types
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "datatype_user")
+                .with("username", "datatype_user_" + ts)
                 .with("email", "datatype@test.com")
                 .with("status", "active")
                 .insert();
@@ -311,7 +321,7 @@ public class DataIntegrityTests extends BaseTest {
         Long orderId = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId) // Integer/Long
-                .with("order_number", "DT-001") // String
+                .with("order_number", "DT-001-" + ts) // String
                 .with("amount", 123.45) // Decimal/Double
                 .with("status", "completed") // String
                 .insert();
@@ -343,10 +353,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testCascadingOperations() throws SQLException {
         log.info("=== Test: Cascading Operations ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user with orders
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "cascade_user")
+                .with("username", "cascade_user_" + ts)
                 .with("email", "cascade@test.com")
                 .with("status", "active")
                 .insert(false); // Don't track for auto-cleanup
@@ -354,7 +366,7 @@ public class DataIntegrityTests extends BaseTest {
         Long order1 = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", "CAS-001")
+                .with("order_number", "CAS-001-" + ts)
                 .with("amount", 100.0)
                 .with("status", "pending")
                 .insert(false); // Don't track
@@ -362,7 +374,7 @@ public class DataIntegrityTests extends BaseTest {
         Long order2 = dataBuilder
                 .forTable("orders")
                 .with("user_id", userId)
-                .with("order_number", "CAS-002")
+                .with("order_number", "CAS-002-" + ts)
                 .with("amount", 200.0)
                 .with("status", "pending")
                 .insert(false); // Don't track
@@ -396,10 +408,12 @@ public class DataIntegrityTests extends BaseTest {
     public void testAggregateFunctions() throws SQLException {
         log.info("=== Test: Aggregate Functions ===");
 
+        long ts = System.currentTimeMillis();
+
         // Create user
         Long userId = dataBuilder
                 .forTable("users")
-                .with("username", "aggregate_user")
+                .with("username", "aggregate_user_" + ts)
                 .with("email", "aggregate@test.com")
                 .with("status", "active")
                 .insert();
@@ -453,11 +467,13 @@ public class DataIntegrityTests extends BaseTest {
     public void testGroupByQuery() throws SQLException {
         log.info("=== Test: GROUP BY Query ===");
 
+        String grpPrefix = "GRP-" + System.currentTimeMillis();
+
         // Create users with orders
         for (int i = 1; i <= 2; i++) {
             Long userId = dataBuilder
                     .forTable("users")
-                    .with("username", "group_user_" + i)
+                    .with("username", "group_user_" + i + "_" + grpPrefix)
                     .with("email", "group" + i + "@test.com")
                     .with("status", "active")
                     .insert();
@@ -467,7 +483,7 @@ public class DataIntegrityTests extends BaseTest {
                 dataBuilder
                         .forTable("orders")
                         .with("user_id", userId)
-                        .with("order_number", "GRP-" + i + "-" + j)
+                        .with("order_number", grpPrefix + "-" + i + "-" + j)
                         .with("amount", 100.0 * j)
                         .with("status", "completed")
                         .insert();
@@ -477,8 +493,9 @@ public class DataIntegrityTests extends BaseTest {
         // Query with GROUP BY
         List<Map<String, Object>> groupResults = dbUtils.executeQuery(
                 "SELECT user_id, COUNT(*) as order_count, SUM(amount) as total_amount " +
-                        "FROM orders WHERE order_number LIKE 'GRP-%' " +
-                        "GROUP BY user_id"
+                        "FROM orders WHERE order_number LIKE ? " +
+                        "GROUP BY user_id",
+                grpPrefix + "-%"
         );
 
         assertThat(groupResults)

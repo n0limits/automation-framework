@@ -47,7 +47,10 @@ public class TestDataBuilder {
     private final DatabaseTestUtils dbUtils;
     private final List<CleanupRecord> cleanupRecords;
 
+    private static final String DEFAULT_PK_COLUMN = "id";
+
     private String currentTable;
+    private String pkColumn = DEFAULT_PK_COLUMN;
     private Map<String, Object> currentValues;
     private Map<String, Object> defaultValues;
 
@@ -75,8 +78,22 @@ public class TestDataBuilder {
      */
     public TestDataBuilder forTable(String tableName) {
         this.currentTable = tableName;
+        this.pkColumn = DEFAULT_PK_COLUMN;
         this.currentValues = new LinkedHashMap<>();
         log.debug("Building data for table: {}", tableName);
+        return this;
+    }
+
+    /**
+     * Specify the primary key column name for cleanup tracking.
+     * Defaults to "id" if not called.
+     *
+     * @param column Primary key column name
+     * @return this for chaining
+     */
+    public TestDataBuilder withPrimaryKey(String column) {
+        this.pkColumn = column;
+        log.debug("Using primary key column: {}", column);
         return this;
     }
 
@@ -212,7 +229,7 @@ public class TestDataBuilder {
 
         // Track for cleanup
         if (trackForCleanup && generatedId != null) {
-            CleanupRecord cleanup = new CleanupRecord(currentTable, "id", generatedId);
+            CleanupRecord cleanup = new CleanupRecord(currentTable, pkColumn, generatedId);
             cleanupRecords.add(cleanup);
             log.debug("Tracking record for cleanup: {}", cleanup);
         }
@@ -261,7 +278,7 @@ public class TestDataBuilder {
      * @throws SQLException if update fails
      */
     public int update(Long id) throws SQLException {
-        return updateWhere("id = ?", id);
+        return updateWhere(pkColumn + " = ?", id);
     }
 
     /**

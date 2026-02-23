@@ -94,8 +94,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 25   // 25 iterations each = 500 total requests
         );
 
-        log.info("Throughput: {:.2f} requests/second", result.getThroughput());
-        log.info("Throughput: {:.2f} requests/minute", result.getThroughput() * 60);
+        log.info("Throughput: {} requests/second", String.format("%.2f", result.getThroughput()));
+        log.info("Throughput: {} requests/minute", String.format("%.2f", result.getThroughput() * 60));
 
         // Verify throughput meets minimum requirement
         assertThat(result.getThroughput())
@@ -188,8 +188,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 10, 10
         );
 
-        log.info("getTradingPair - Avg: {:.2f}ms, P95: {:.2f}ms",
-                result1.getAverageResponseTime(), result1.getP95ResponseTime());
+        log.info("getTradingPair - Avg: {}ms, P95: {}ms",
+                String.format("%.2f", result1.getAverageResponseTime()), String.format("%.2f", result1.getP95ResponseTime()));
 
         // Test getTickerPrice endpoint
         log.info("Testing getTickerPrice endpoint");
@@ -201,8 +201,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 10, 10
         );
 
-        log.info("getTickerPrice - Avg: {:.2f}ms, P95: {:.2f}ms",
-                result2.getAverageResponseTime(), result2.getP95ResponseTime());
+        log.info("getTickerPrice - Avg: {}ms, P95: {}ms",
+                String.format("%.2f", result2.getAverageResponseTime()), String.format("%.2f", result2.getP95ResponseTime()));
 
         // Test getMarketDepth endpoint
         log.info("Testing getMarketDepth endpoint");
@@ -214,8 +214,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 10, 10
         );
 
-        log.info("getMarketDepth - Avg: {:.2f}ms, P95: {:.2f}ms",
-                result3.getAverageResponseTime(), result3.getP95ResponseTime());
+        log.info("getMarketDepth - Avg: {}ms, P95: {}ms",
+                String.format("%.2f", result3.getAverageResponseTime()), String.format("%.2f", result3.getP95ResponseTime()));
 
         // All endpoints should perform reasonably
         assertThat(result1.getAverageResponseTime()).isLessThan(1000.0);
@@ -267,9 +267,9 @@ public class APIPerformanceTests extends PerformanceTestBase {
         double stdDev = Math.sqrt(variance);
 
         log.info("Consistency Metrics:");
-        log.info("  Mean: {:.2f}ms", mean);
-        log.info("  Std Dev: {:.2f}ms", stdDev);
-        log.info("  Coefficient of Variation: {:.2f}%", (stdDev / mean) * 100);
+        log.info("  Mean: {}ms", String.format("%.2f", mean));
+        log.info("  Std Dev: {}ms", String.format("%.2f", stdDev));
+        log.info("  Coefficient of Variation: {}%", String.format("%.2f", (stdDev / mean) * 100));
 
         // Standard deviation should be relatively small (< 30% of mean)
         assertThat(stdDev / mean)
@@ -309,8 +309,8 @@ public class APIPerformanceTests extends PerformanceTestBase {
                 .as("Success rate should be high")
                 .isGreaterThan(95.0);
 
-        log.info("Error Rate: {:.2f}%", result.getFailureRate());
-        log.info("Success Rate: {:.2f}%", result.getSuccessRate());
+        log.info("Error Rate: {}%", String.format("%.2f", result.getFailureRate()));
+        log.info("Success Rate: {}%", String.format("%.2f", result.getSuccessRate()));
 
         log.info("[PASS] API error rate test passed");
     }
@@ -335,9 +335,9 @@ public class APIPerformanceTests extends PerformanceTestBase {
         double p99 = result.getP99ResponseTime();
 
         log.info("Percentile Response Times:");
-        log.info("  P50 (Median): {:.2f}ms", p50);
-        log.info("  P95: {:.2f}ms", p95);
-        log.info("  P99: {:.2f}ms", p99);
+        log.info("  P50 (Median): {}ms", String.format("%.2f", p50));
+        log.info("  P95: {}ms", String.format("%.2f", p95));
+        log.info("  P99: {}ms", String.format("%.2f", p99));
 
         // Verify percentiles meet SLA
         assertThat(p50).as("P50 should be fast").isLessThan(500.0);
